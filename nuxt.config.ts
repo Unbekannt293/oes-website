@@ -43,6 +43,14 @@ export default defineNuxtConfig({
     },
   },
 
+  // VORLAEUFIG: Solange nur die Linkseite fertig ist, leitet die
+  // Startseite dorthin um. Bewusst 302 und nicht 301 - eine permanente
+  // Umleitung wuerde sich in den Browsern der Besucher festsetzen.
+  // Diesen Block loeschen, sobald die Website live gehen soll.
+  routeRules: {
+    '/': { redirect: { to: '/links', statusCode: 302 } },
+  },
+
   nitro: {
     compressPublicAssets: true,
   },
