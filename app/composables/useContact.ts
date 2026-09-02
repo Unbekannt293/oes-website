@@ -11,8 +11,7 @@ export function useContact() {
   return {
     phone: '0159 06839267',
     phoneRaw: '+4915906839267',
-    /** Noch ungeklärt: ottos.event-service@ oder office.event-service@ */
-    email: 'ottos.event-service@outlook.de',
+    email: 'info@ottos-eventservice.de',
     /** Bewusst nur der Stadtteil, keine Hausanschrift. So gewünscht. */
     district: 'Hamburg Wandsbek-Tonndorf',
   }

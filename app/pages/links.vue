@@ -107,6 +107,8 @@ useSeoMeta({
 
         <p class="tel">
           <a :href="`tel:${contact.phoneRaw}`">{{ contact.phone }}</a>
+          <span class="tel__sep" aria-hidden="true">&middot;</span>
+          <a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
         </p>
       </div>
     </main>
@@ -176,13 +178,18 @@ a.row:hover .badge { background: #1C1B19; }
 }
 
 /* ---- Telefon ---- */
-.tel { margin-top: var(--s-7); text-align: center; }
+.tel {
+  margin-top: var(--s-7);
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline;
+  gap: var(--s-2); row-gap: var(--s-2);
+}
 .tel a {
-  font-size: 1.0625rem; letter-spacing: 0.02em;
+  font-size: 1rem; letter-spacing: 0.01em;
   border-bottom: 1px solid var(--c-gold-hair);
   padding-bottom: 2px;
 }
 .tel a:hover { color: var(--c-gold); border-color: var(--c-gold); }
+.tel__sep { color: var(--c-gold-hair); }
 
 /* Ausgegraut: gestrichelte Kontur, keine Fuellung */
 .row--soon {
