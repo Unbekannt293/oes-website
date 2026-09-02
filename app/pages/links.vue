@@ -150,13 +150,13 @@ useSeoMeta({
 }
 a.row:hover { border-color: var(--c-gold); box-shadow: var(--shadow-card); }
 
-/* Runde Plakette, voll gold mit weissem Icon */
+/* Runde Plakette, schwarz mit weissem Icon */
 .badge {
   flex: none; width: 44px; height: 44px;
   display: grid; place-items: center;
   border-radius: 50%;
   background: var(--c-ink);
-  color: var(--c-gold);
+  color: #FFFFFF;
   transition: background var(--d-fast) var(--e-out);
 }
 a.row:hover .badge { background: #1C1B19; }
