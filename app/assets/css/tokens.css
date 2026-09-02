@@ -6,12 +6,12 @@
 
 :root {
   /* ---- Farbe ---- */
-  --c-ink:        #0A0A0A;  /* Header, Footer, Hero-Overlay */
+  --c-ink:        #000000;  /* Header, Footer, Hero-Overlay. Reines Schwarz, wie im PDF gemessen */
   --c-ink-soft:   #1C1B19;
-  --c-paper:      #F7F5F2;  /* Seitenhintergrund, warmes Off-White */
+  --c-paper:      #F5F3F1;  /* Seitenhintergrund, aus dem PDF gemessen */
   --c-paper-pure: #FFFFFF;  /* Karten */
-  --c-gold:       #C8922F;  /* Primaerakzent: Buttons, Sterne, Preise */
-  --c-gold-lift:  #DDA94A;  /* Hover */
+  --c-gold:       #C38B37;  /* Primaerakzent: Buttons, Sterne, Preise. Aus dem PDF gemessen */
+  --c-gold-lift:  #D8A048;  /* Hover */
   --c-gold-hair:  #E7D9BE;  /* Haarlinien, Kartenrahmen */
   --c-text:       #17171A;
   --c-text-muted: #6B6660;
@@ -46,7 +46,8 @@
   --content-w: 1360px;
 
   /* ---- Form ---- */
-  --r-sm: 2px;  --r-md: 4px;  --r-lg: 8px;
+  /* Die Mockups sind durchgehend kantig. Nichts hier wird rund. */
+  --r-sm: 0;  --r-md: 2px;  --r-lg: 2px;
   --border-hair: 1px solid var(--c-gold-hair);
   --shadow-card: 0 1px 2px rgb(23 23 26 / 0.04), 0 8px 24px -12px rgb(23 23 26 / 0.12);
   --shadow-float: 0 24px 60px -20px rgb(23 23 26 / 0.28);
