@@ -155,11 +155,11 @@ a.row:hover { border-color: var(--c-gold); box-shadow: var(--shadow-card); }
   flex: none; width: 44px; height: 44px;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: var(--c-gold);
-  color: #FFFFFF;
+  background: var(--c-ink);
+  color: var(--c-gold);
   transition: background var(--d-fast) var(--e-out);
 }
-a.row:hover .badge { background: var(--c-gold-lift); }
+a.row:hover .badge { background: #1C1B19; }
 
 .row__text { display: grid; gap: 2px; min-width: 0; }
 .row__label { font-size: 0.75rem; color: var(--c-text); }
