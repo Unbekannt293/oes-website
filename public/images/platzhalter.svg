@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Platzhalterbild">
+  <rect width="800" height="600" fill="#1C1B19"/>
+  <g fill="none" stroke="#3A342A" stroke-width="1">
+    <path d="M0 300h800M400 0v600"/>
+  </g>
+  <text x="400" y="312" fill="#6B6660" font-family="Inter, sans-serif"
+        font-size="22" letter-spacing="6" text-anchor="middle">FOTO FOLGT</text>
+</svg>

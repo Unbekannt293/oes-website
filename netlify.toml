@@ -1,0 +1,16 @@
+# Netlify erkennt Nuxt von allein, aber explizit ist nachvollziehbarer.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Nuxt 4 braucht Node 22. Ohne diese Zeile nimmt Netlify eine aeltere Version.
+  NODE_VERSION = "22"
+
+# Sicherheits-Header. Kosten nichts und ersparen spaeter Diskussionen.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"

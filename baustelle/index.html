@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OES – Otto's Event Service | Hamburg</title>
+<meta name="description" content="Zelte, Fotoboxen, Ton- und Lichttechnik mieten in Hamburg. Die Website entsteht gerade – melden Sie sich gern direkt bei uns.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0A0A0A">
+<style>
+  /* Bewusst ohne Google Fonts: keine Besucher-IP in die USA. */
+  :root{
+    --ink:#0A0A0A; --paper:#F7F5F2; --gold:#C8922F; --gold-lift:#DDA94A;
+    --hair:#3A342A; --onink:#EFEBE4; --muted:#A9A296;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--onink);font-family:var(--sans);
+       line-height:1.6;-webkit-font-smoothing:antialiased;
+       display:flex;flex-direction:column;min-height:100dvh}
+  a{color:inherit}
+  .label{font-size:.6875rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+
+  main{flex:1;display:grid;place-items:center;
+       padding:clamp(2.5rem,6vw,5rem) clamp(1.25rem,5vw,3.5rem)}
+  .box{width:100%;max-width:640px;text-align:center}
+
+  .mark{font-family:var(--serif);font-size:clamp(3rem,10vw,4.5rem);line-height:1;letter-spacing:.02em}
+  .sub{font-size:.5rem;letter-spacing:.2em;color:var(--muted);margin-top:.35rem}
+
+  h1{font-family:var(--serif);font-weight:500;letter-spacing:-.02em;line-height:1.05;
+     font-size:clamp(1.9rem,5.5vw,3rem);margin:clamp(2rem,6vw,3rem) 0 0}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lead{color:var(--muted);margin:1.25rem auto 0;max-width:44ch}
+
+  .rule{display:flex;align-items:center;gap:.5rem;color:var(--gold);
+        width:min(200px,60%);margin:2rem auto}
+  .rule span{flex:1;height:1px;background:var(--hair)}
+
+  .contact{list-style:none;padding:0;margin:0;display:grid;gap:.85rem;justify-items:center}
+  .contact a{text-decoration:none;font-size:1.0625rem}
+  .contact a:hover{color:var(--gold)}
+
+  .cta{display:inline-flex;justify-content:center;margin-top:2.25rem;
+       padding:1rem 2.25rem;background:var(--gold);color:#17140D;
+       text-decoration:none;border-radius:2px;transition:background .16s ease}
+  .cta:hover{background:var(--gold-lift)}
+
+  footer{border-top:1px solid var(--hair);padding:1.75rem clamp(1.25rem,5vw,3.5rem);
+         font-size:.8125rem;color:var(--muted)}
+  .imp{max-width:640px;margin:0 auto;display:grid;gap:.4rem}
+  .imp strong{color:var(--onink);font-weight:600}
+  .imp p{margin:0}
+</style>
+</head>
+<body>
+
+<main>
+  <div class="box">
+    <p class="mark">OES</p>
+    <p class="sub label">Otto's Event Service</p>
+
+    <h1>Ihr Event.<br>Unser <em>Service.</em></h1>
+
+    <p class="lead">
+      Zelte, Fotoboxen, Musik und mehr – alles aus einer Hand.
+      Unsere neue Website entsteht gerade. Bis dahin erreichen Sie uns direkt.
+    </p>
+
+    <div class="rule" aria-hidden="true"><span></span>&#9733;<span></span></div>
+
+    <ul class="contact">
+      <li><a href="tel:+4915226248124">01522 6248124</a></li>
+      <li><a href="mailto:ottos.event-service@outlook.de">ottos.event-service@outlook.de</a></li>
+      <li style="color:var(--muted)">Hamburg Wandsbek-Tonndorf</li>
+    </ul>
+
+    <a class="cta label" href="mailto:ottos.event-service@outlook.de?subject=Anfrage%20Eventausstattung">
+      Unverbindlich anfragen
+    </a>
+  </div>
+</main>
+
+<footer>
+  <!-- Pflichtangaben nach § 5 DDG. Die Platzhalter in eckigen Klammern
+       müssen vor dem Hochladen durch die echten Daten ersetzt werden. -->
+  <div class="imp">
+    <p><strong>Impressum</strong></p>
+    <p>[Vollständiger Name des Inhabers]</p>
+    <p>[Straße und Hausnummer]</p>
+    <p>[PLZ] Hamburg</p>
+    <p>Telefon: 01522 6248124</p>
+    <p>E-Mail: ottos.event-service@outlook.de</p>
+    <p>[Umsatzsteuer-ID, falls vorhanden – sonst diese Zeile löschen]</p>
+    <p style="margin-top:.6rem">
+      Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV:
+      [Name], [Anschrift wie oben]
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
