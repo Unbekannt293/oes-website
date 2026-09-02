@@ -46,8 +46,8 @@
   --content-w: 1360px;
 
   /* ---- Form ---- */
-  /* Die Mockups sind durchgehend kantig. Nichts hier wird rund. */
-  --r-sm: 0;  --r-md: 2px;  --r-lg: 2px;
+  /* Karten kantig, Buttons und Plaketten leicht abgerundet. */
+  --r-sm: 2px;  --r-md: 4px;  --r-lg: 10px;
   --border-hair: 1px solid var(--c-gold-hair);
   --shadow-card: 0 1px 2px rgb(23 23 26 / 0.04), 0 8px 24px -12px rgb(23 23 26 / 0.12);
   --shadow-float: 0 24px 60px -20px rgb(23 23 26 / 0.28);

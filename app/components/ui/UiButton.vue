@@ -26,7 +26,7 @@ const tag = computed(() => (to ? resolveComponent('NuxtLink') : 'button'))
   font-weight: 600;
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   transition: background var(--d-fast) var(--e-out),
               color var(--d-fast) var(--e-out),
               border-color var(--d-fast) var(--e-out);
@@ -35,11 +35,11 @@ const tag = computed(() => (to ? resolveComponent('NuxtLink') : 'button'))
 .btn--md { padding: 0.8rem 1.6rem; }
 .btn--lg { padding: 1.05rem 2.4rem; font-size: 0.75rem; }
 
-.btn--solid   { background: var(--c-gold); color: #17140D; }
+.btn--solid   { background: var(--c-gold); color: #FFFFFF; }
 .btn--solid:hover   { background: var(--c-gold-lift); }
 
 .btn--outline { border: 1px solid var(--c-gold); color: var(--c-gold); }
-.btn--outline:hover { background: var(--c-gold); color: #17140D; }
+.btn--outline:hover { background: var(--c-gold); color: #FFFFFF; }
 
 .btn--ghost   { color: var(--c-text); border: 1px solid var(--c-gold-hair); }
 .btn--ghost:hover   { border-color: var(--c-gold); color: var(--c-gold); }

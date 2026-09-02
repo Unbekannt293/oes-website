@@ -14,6 +14,8 @@ interface LinkItem {
 }
 
 // Die drei Ziele durch die echten Profile ersetzen, sobald sie feststehen.
+const contact = useContact()
+
 const links: LinkItem[] = [
   { label: 'Website',       meta: 'ottos-eventservice.de',  icon: 'globe', soon: true },
   { label: 'Kleinanzeigen', meta: 'Unsere Angebote',        icon: 'tag',
@@ -62,10 +64,11 @@ useSeoMeta({
               :rel="l.soon ? undefined : 'noopener'"
               class="row" :class="{ 'row--soon': l.soon }"
             >
-              <span class="badge" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none"
-                     stroke="currentColor" stroke-width="1.5"
-                     stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                class="row__icon" aria-hidden="true" viewBox="0 0 24 24"
+                width="30" height="30" fill="none" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+              >
                   <template v-if="l.icon === 'globe'">
                     <circle cx="12" cy="12" r="9" />
                     <path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" />
@@ -83,8 +86,7 @@ useSeoMeta({
                     <path d="M14 4v9.5a3.5 3.5 0 1 1-3-3.46" />
                     <path d="M14 4c.4 2.2 2 3.7 4.5 3.9" />
                   </template>
-                </svg>
-              </span>
+              </svg>
 
               <span class="row__text">
                 <span class="label row__label">{{ l.label }}</span>
@@ -102,6 +104,10 @@ useSeoMeta({
             </component>
           </li>
         </ul>
+
+        <p class="tel">
+          <a :href="`tel:${contact.phoneRaw}`">{{ contact.phone }}</a>
+        </p>
       </div>
     </main>
   </div>
@@ -135,41 +141,47 @@ useSeoMeta({
 
 .row {
   display: flex; align-items: center; gap: var(--s-4);
-  padding: var(--s-4);
-  background: var(--c-paper-pure);
-  border: 1px solid var(--c-gold-hair);
-  border-radius: var(--r-md);
-  transition: border-color var(--d-fast) var(--e-out),
-              box-shadow var(--d-fast) var(--e-out);
+  padding: var(--s-4) var(--s-5);
+  background: var(--c-gold);
+  color: #FFFFFF;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: background var(--d-fast) var(--e-out);
 }
-a.row:hover { border-color: var(--c-gold); box-shadow: var(--shadow-card); }
+a.row:hover { background: var(--c-gold-lift); }
 
-/* Runde Plakette mit Goldring, wie ueber den Produktbildern */
-.badge {
-  flex: none; width: 44px; height: 44px;
-  display: grid; place-items: center;
-  border-radius: 50%;
-  background: var(--c-ink);
-  border: 1px solid var(--c-gold);
-  color: var(--c-gold);
-}
+.row__icon { flex: none; }
 
-.row__text { display: grid; gap: 3px; min-width: 0; }
-.row__label { font-size: 0.75rem; color: var(--c-text); }
+.row__text { display: grid; gap: 2px; min-width: 0; }
+.row__label { font-size: 0.8125rem; color: #FFFFFF; }
 .row__meta {
-  font-size: var(--t-small); color: var(--c-text-muted);
+  font-size: var(--t-small);
+  color: rgb(255 255 255 / 0.82);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.row__go { flex: none; margin-left: auto; color: var(--c-gold); }
+.row__go { flex: none; margin-left: auto; color: #FFFFFF; }
 
 .row__soon {
   flex: none; margin-left: auto;
   font-size: 0.5625rem; color: var(--c-text-muted);
 }
 
-/* Ausgegraut: erkennbar vorhanden, aber klar noch nicht nutzbar */
-.row--soon { background: transparent; border-style: dashed; }
-.row--soon .badge { background: transparent; border-color: #C9C3B8; color: #A49E93; }
+/* ---- Telefon ---- */
+.tel { margin-top: var(--s-7); text-align: center; }
+.tel a {
+  font-size: 1.0625rem; letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--c-gold-hair);
+  padding-bottom: 2px;
+}
+.tel a:hover { color: var(--c-gold); border-color: var(--c-gold); }
+
+/* Ausgegraut: gestrichelte Kontur, keine Fuellung */
+.row--soon {
+  background: transparent;
+  border: 1px dashed #BFB8AC;
+  color: var(--c-text-muted);
+}
 .row--soon .row__label { color: var(--c-text-muted); }
+.row--soon .row__meta { color: var(--c-text-muted); }
 </style>
