@@ -64,11 +64,10 @@ useSeoMeta({
               :rel="l.soon ? undefined : 'noopener'"
               class="row" :class="{ 'row--soon': l.soon }"
             >
-              <svg
-                class="row__icon" aria-hidden="true" viewBox="0 0 24 24"
-                width="30" height="30" fill="none" stroke="currentColor"
-                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-              >
+              <span class="badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                     stroke="currentColor" stroke-width="1.6"
+                     stroke-linecap="round" stroke-linejoin="round">
                   <template v-if="l.icon === 'globe'">
                     <circle cx="12" cy="12" r="9" />
                     <path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" />
@@ -86,7 +85,8 @@ useSeoMeta({
                     <path d="M14 4v9.5a3.5 3.5 0 1 1-3-3.46" />
                     <path d="M14 4c.4 2.2 2 3.7 4.5 3.9" />
                   </template>
-              </svg>
+                </svg>
+              </span>
 
               <span class="row__text">
                 <span class="label row__label">{{ l.label }}</span>
@@ -141,26 +141,34 @@ useSeoMeta({
 
 .row {
   display: flex; align-items: center; gap: var(--s-4);
-  padding: var(--s-4) var(--s-5);
+  padding: var(--s-4);
+  background: var(--c-paper-pure);
+  border: 1px solid var(--c-gold-hair);
+  border-radius: var(--r-md);
+  transition: border-color var(--d-fast) var(--e-out),
+              box-shadow var(--d-fast) var(--e-out);
+}
+a.row:hover { border-color: var(--c-gold); box-shadow: var(--shadow-card); }
+
+/* Runde Plakette, voll gold mit weissem Icon */
+.badge {
+  flex: none; width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 50%;
   background: var(--c-gold);
   color: #FFFFFF;
-  border: 1px solid transparent;
-  border-radius: 6px;
   transition: background var(--d-fast) var(--e-out);
 }
-a.row:hover { background: var(--c-gold-lift); }
-
-.row__icon { flex: none; }
+a.row:hover .badge { background: var(--c-gold-lift); }
 
 .row__text { display: grid; gap: 2px; min-width: 0; }
-.row__label { font-size: 0.8125rem; color: #FFFFFF; }
+.row__label { font-size: 0.75rem; color: var(--c-text); }
 .row__meta {
-  font-size: var(--t-small);
-  color: rgb(255 255 255 / 0.82);
+  font-size: var(--t-small); color: var(--c-text-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.row__go { flex: none; margin-left: auto; color: #FFFFFF; }
+.row__go { flex: none; margin-left: auto; color: var(--c-gold); }
 
 .row__soon {
   flex: none; margin-left: auto;
@@ -180,8 +188,11 @@ a.row:hover { background: var(--c-gold-lift); }
 .row--soon {
   background: transparent;
   border: 1px dashed #BFB8AC;
-  color: var(--c-text-muted);
+}
+.row--soon .badge {
+  background: transparent;
+  border: 1px dashed #BFB8AC;
+  color: #A49E93;
 }
 .row--soon .row__label { color: var(--c-text-muted); }
-.row--soon .row__meta { color: var(--c-text-muted); }
 </style>
