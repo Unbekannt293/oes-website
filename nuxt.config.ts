@@ -19,6 +19,15 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'theme-color', content: '#0A0A0A' },
       ],
+      // Nuxt fuegt fuer public/favicon.ico kein <link> von selbst ein -
+      // ohne diese Zeilen bleibt der Browser-Tab beim generischen
+      // Standardsymbol, egal wie viele Icon-Dateien im public-Ordner liegen.
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+      ],
     },
   },
 
