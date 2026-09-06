@@ -26,8 +26,7 @@ export function useContact() {
       zip: '22047',
       city: 'Hamburg',
       country: 'Deutschland',
-      /** So durchgegeben; der Mobilfunk-Präfix 159 fehlt darin. */
-      phone: '+49 06839267',
+      phone: '+49 159 06839267',
     },
   }
 }
