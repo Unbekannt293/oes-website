@@ -13,7 +13,7 @@ interface LinkItem {
   soon?: boolean
 }
 
-// Die drei Ziele durch die echten Profile ersetzen, sobald sie feststehen.
+// Kleinanzeigen-Profil noch offen, durch das echte ersetzen sobald da.
 const contact = useContact()
 
 const links: LinkItem[] = [
@@ -21,9 +21,9 @@ const links: LinkItem[] = [
   { label: 'Kleinanzeigen', meta: 'Unsere Angebote',        icon: 'tag',
     href: 'https://www.kleinanzeigen.de/' },
   { label: 'Instagram',     meta: 'Eindrücke & Aktionen',  icon: 'instagram',
-    href: 'https://instagram.com/' },
+    href: 'https://www.instagram.com/ottoseventservice' },
   { label: 'TikTok',        meta: 'Videos von Events',      icon: 'tiktok',
-    href: 'https://tiktok.com/' },
+    href: 'https://www.tiktok.com/@ottos.event.servi' },
 ]
 
 useSeoMeta({
@@ -109,6 +109,10 @@ useSeoMeta({
           <a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
           <a :href="`tel:${contact.phoneRaw}`">{{ contact.phone }}</a>
         </p>
+
+        <p class="legal">
+          <NuxtLink to="/impressum">Impressum</NuxtLink>
+        </p>
       </div>
     </main>
   </div>
@@ -187,6 +191,10 @@ a.row:hover .badge { background: #1C1B19; }
   padding-bottom: 2px;
 }
 .tel a:hover { color: var(--c-gold); border-color: var(--c-gold); }
+
+.legal { margin-top: var(--s-6); text-align: center; }
+.legal a { font-size: 0.75rem; color: var(--c-text-muted); }
+.legal a:hover { color: var(--c-gold); }
 
 /* Ausgegraut: gestrichelte Kontur, keine Fuellung */
 .row--soon {
