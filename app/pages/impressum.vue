@@ -15,6 +15,13 @@ useSeoMeta({
 
 <template>
   <div class="page">
+    <header class="bar">
+      <NuxtImg
+        src="/images/oes-logo-hell.png" alt="Otto's Event Service"
+        width="900" height="486" class="bar__logo" preload
+      />
+    </header>
+
     <main class="body">
       <div class="inner">
         <h1 class="display title">Impressum</h1>
@@ -43,6 +50,10 @@ useSeoMeta({
             E-Mail: <a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
           </p>
         </section>
+
+        <p class="back">
+          <NuxtLink to="/links">&larr; Zurück zur Übersicht</NuxtLink>
+        </p>
       </div>
     </main>
   </div>
@@ -51,7 +62,15 @@ useSeoMeta({
 <style scoped>
 .page { min-height: 100dvh; background: var(--c-paper); }
 
-.body { padding: clamp(3rem, 8vw, 5rem) var(--s-4); }
+/* Derselbe schwarze Kopfbalken wie auf der Linkseite, ohne Navigation. */
+.bar {
+  background: var(--c-ink);
+  padding: var(--s-5) var(--s-4);
+  display: grid; place-items: center;
+}
+.bar__logo { width: clamp(112px, 32vw, 140px); height: auto; }
+
+.body { padding: clamp(2.25rem, 7vw, 3.5rem) var(--s-4) var(--s-8); }
 .inner { width: 100%; max-width: 440px; margin-inline: auto; }
 
 .title { font-size: clamp(1.9rem, 6vw, 2.5rem); text-align: center; }
@@ -66,4 +85,8 @@ section + section { margin-top: var(--s-6); }
 h2 { color: var(--c-gold); margin-bottom: var(--s-2); }
 p { line-height: 1.7; }
 a:hover { color: var(--c-gold); }
+
+.back { margin-top: var(--s-8); text-align: center; }
+.back a { font-size: var(--t-small); color: var(--c-text-muted); }
+.back a:hover { color: var(--c-gold); }
 </style>
