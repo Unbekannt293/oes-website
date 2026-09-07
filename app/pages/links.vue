@@ -13,13 +13,16 @@ interface LinkItem {
   soon?: boolean
 }
 
-// Kleinanzeigen-Profil noch offen, durch das echte ersetzen sobald da.
 const contact = useContact()
 
 const links: LinkItem[] = [
   { label: 'Website',       meta: 'ottos-eventservice.de',  icon: 'globe', soon: true },
+  // Zeigt auf die einzelne Fotobox-Anzeige. Kleinanzeigen vergibt beim
+  // Verlängern oder Neueinstellen eine neue ID, der Link bricht dann.
+  // Sobald mehrere Anzeigen laufen, besser auf die Bestandsliste des
+  // Verkäuferprofils umstellen - die bleibt stabil.
   { label: 'Kleinanzeigen', meta: 'Unsere Angebote',        icon: 'tag',
-    href: 'https://www.kleinanzeigen.de/' },
+    href: 'https://www.kleinanzeigen.de/s-anzeige/fotobox-fotoautomat-mieten-hamburg-umgebung/3505837332-168-26507' },
   { label: 'Instagram',     meta: 'Eindrücke & Aktionen',  icon: 'instagram',
     href: 'https://www.instagram.com/ottoseventservice' },
   { label: 'TikTok',        meta: 'Videos von Events',      icon: 'tiktok',
