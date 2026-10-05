@@ -13,6 +13,8 @@ const MAPS = '/images/hero/fotobox-maps.png'
 const FLASH_AT: [number, number] = [0.5, 0.0772]      // LED-Licht auf dem Kasten
 const BOX_CENTER: [number, number] = [0.5009, 0.4394]  // Kastenmitte ohne Licht und Stativ
 const BOX_HEIGHT = 0.5159
+/** Nur der Kasten bekommt Seitenwaende, nicht Licht, Kabel oder Stoff: x0, y0, x1, y1. */
+const BOX_RECT: [number, number, number, number] = [0.0966, 0.1815, 0.9052, 0.6974]
 /**
  * Szene, die der Pinsel hinter der Box freilegt. Leer = dunkle Buehne bleibt.
  * Foto: brunounreal, Pexels (pexels.com/photo/36499158), Pexels-Lizenz.
@@ -28,15 +30,22 @@ let io: IntersectionObserver | null = null
 let unmounted = false
 
 onMounted(async () => {
+  // Referenzen VOR dem await sichern: waehrend three.js laedt, kann die
+  // Komponente schon wieder weg sein (Seitenwechsel, Hot-Reload).
+  const canvasEl = canvas.value
+  const rootEl = root.value
+  if (!canvasEl || !rootEl) return
   try {
     const { createFotoboxHero } = await import('~/lib/fotobox-hero/hero')
+    if (unmounted) return
     const tokens = getComputedStyle(document.documentElement)
-    const created = await createFotoboxHero(canvas.value!, root.value!, {
+    const created = await createFotoboxHero(canvasEl, rootEl, {
       image: IMAGE,
       maps: MAPS,
       flashAt: FLASH_AT,
       boxCenter: BOX_CENTER,
       boxHeight: BOX_HEIGHT,
+      boxRect: BOX_RECT,
       party: PARTY || undefined,
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
       colors: {
@@ -54,7 +63,7 @@ onMounted(async () => {
 
     // Ausserhalb des Sichtfelds nichts rechnen: spart Akku.
     io = new IntersectionObserver(([entry]) => hero?.setVisible(!!entry?.isIntersecting))
-    io.observe(root.value!)
+    io.observe(rootEl)
   }
   catch (err) {
     console.warn('[FotoboxHero] WebGL nicht verfuegbar, statisches Bild bleibt.', err)

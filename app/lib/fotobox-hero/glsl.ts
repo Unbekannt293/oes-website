@@ -208,6 +208,7 @@ uniform vec4 uImgRect;       // Bild: x, y (unten links), Breite, Hoehe in Gerae
 uniform vec2 uBoxCenter;     // Kastenmitte im Bild (uv, y von unten): Drehpunkt
 uniform vec2 uTilt;          // Drehung in Radiant: x = um die Hochachse, y = Nicken
 uniform float uDepth;        // Kastentiefe in Geraetepixeln
+uniform vec4 uBoxRect;       // Kasten im Bild (uv, y von unten): x0, y0, x1, y1
 uniform vec2 uPointer;       // geglaettete Mausposition, -1..1
 uniform vec2 uFlashAt;       // Blitzquelle (Objektiv) im Bild (uv, y von unten)
 uniform float uTime;
@@ -351,7 +352,10 @@ void main() {
   // Seitenwand: was die hintere Ebene zeigt, die vordere aber nicht.
   vec2 buv = planeUv(s, R, uDepth, f);
   vec4 back = inRect(buv) ? texture(tBase, buv) : vec4(0.0);
-  float side = back.a * (1.0 - base.a);
+  // Nur der Kasten ist ein Koerper mit Tiefe. Fuer duenne Teile wie Stoff und
+  // Kabel wuerde die hintere Ebene eine verschobene Doppelung zeigen.
+  bool inBox = all(greaterThanEqual(buv, uBoxRect.xy)) && all(lessThanEqual(buv, uBoxRect.zw));
+  float side = inBox ? back.a * (1.0 - base.a) : 0.0;
 
   // Licht: Normale aus der Hoehenkarte, mit der Box mitgedreht.
   vec2 mt = 1.0 / vec2(textureSize(tMaps, 0));
@@ -368,6 +372,10 @@ void main() {
   // Kantenlicht: Flanken, die zum Cursor zeigen, fangen Licht.
   float rim = pow(1.0 - clamp(N.z, 0.0, 1.0), 1.5) * clamp(dot(normalize(N.xy + 1e-5), normalize(uPointer + vec2(1e-5, 0.4))), 0.0, 1.0);
   vec3 lit = base.rgb * (0.78 + 0.3 * diff) + spec * 0.2 + rim * vec3(0.55, 0.5, 0.42) * 0.8;
+  // Fast schwarze Teile (Anschluss, Kabel) leicht anheben, sonst verschwinden
+  // sie vor der dunklen Buehne und es sieht aus wie eine Luecke.
+  float litLum = dot(lit, vec3(0.2126, 0.7152, 0.0722));
+  lit += vec3(0.07, 0.065, 0.06) * (1.0 - smoothstep(0.0, 0.22, litLum));
 
   float sideLight = 0.3 + 0.35 * clamp(dot(normalize(vec2(-uTilt.x, uTilt.y) + 1e-5), normalize(uPointer + 1e-5)), 0.0, 1.0);
   vec3 sideCol = back.rgb * sideLight;

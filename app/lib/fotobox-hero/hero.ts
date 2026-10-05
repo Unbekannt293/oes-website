@@ -14,6 +14,8 @@ export interface FotoboxHeroOptions {
   boxCenter: [number, number]
   /** Hoehe des Kastens relativ zur Bildhoehe. Daraus folgt die Kastentiefe. */
   boxHeight: number
+  /** Kastenrechteck relativ im Bild (x0, y0, x1, y1, y von oben). Nur dort gibt es Seitenwaende. */
+  boxRect: [number, number, number, number]
   /** Optional: Szene, die der Pinsel hinter der Box freilegt (z. B. eine Party). */
   party?: string
   reducedMotion: boolean
@@ -104,6 +106,7 @@ export async function createFotoboxHero(
       uImgRect: { value: new Vector4() },
       uBoxCenter: { value: new Vector2(opts.boxCenter[0], 1 - opts.boxCenter[1]) },
       uTilt: { value: new Vector2() },
+      uBoxRect: { value: new Vector4(opts.boxRect[0], 1 - opts.boxRect[3], opts.boxRect[2], 1 - opts.boxRect[1]) },
       uDepth: { value: 0 },
       uPointer: { value: new Vector2() },
       uFlashAt: { value: new Vector2(opts.flashAt[0], 1 - opts.flashAt[1]) },
