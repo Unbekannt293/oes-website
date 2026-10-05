@@ -73,10 +73,10 @@ export async function createFotoboxHero(
     // leidet nicht, der Strich beginnt immer genau am Cursor. Durch die harte
     // Kante wird das Ende beim Verblassen schmaler und laeuft spitz aus.
     dyeDissipation: 1.05,
-    velocityDissipation: 3.0,
+    velocityDissipation: 4.0,
     pressure: 0.8,
     pressureIterations: small ? 12 : 20,
-    curl: 3,
+    curl: 0,
   })
 
   const material = new RawShaderMaterial({
@@ -113,6 +113,8 @@ export async function createFotoboxHero(
   // ---------- Layout: dieselben CSS-Variablen wie das Fallback-Bild ----------
   let cssW = 1
   let cssH = 1
+  /** Kastenmitte und -hoehe in 0..1 (y nach oben), fuer die Leerlauf-Wischer. */
+  const box = { x: 0.5, y: 0.5, h: 0.6 }
   function layout() {
     const rect = root.getBoundingClientRect()
     cssW = Math.max(rect.width, 1)
@@ -134,6 +136,9 @@ export async function createFotoboxHero(
     const top = cssH * fy * pr - opts.boxCenter[1] * h
     u.uRes!.value.set(cssW * pr, cssH * pr)
     u.uImgRect!.value.set(left, cssH * pr - top - h, w, h)
+    box.x = fx
+    box.y = 1 - fy
+    box.h = opts.boxHeight * fh
     // Kastentiefe ~ ein Viertel der Kastenhoehe, wie bei einer echten Fotobox.
     u.uDepth!.value = h * opts.boxHeight * 0.24
   }
@@ -162,7 +167,8 @@ export async function createFotoboxHero(
     // Radius im Quadrat (Gauss-Profil): 0.0066 ergibt an der Maskenkante
     // eine Strichbreite von rund 17 % der Hero-Hoehe.
     const base = cssW < 700 ? 0.01 : 0.0066
-    fluid.splat(last.x, last.y, x, y, dx * 2400, dy * 2400, amount, base * widthFactor * widthFactor)
+    // Nur ein Hauch Schub: die Farbe bleibt, wo sie gemalt wurde, wie bei einem Pinsel.
+    fluid.splat(last.x, last.y, x, y, dx * 450, dy * 450, amount, base * widthFactor * widthFactor)
     last = { x, y, t }
   }
 
@@ -188,6 +194,28 @@ export async function createFotoboxHero(
     flashStart = now
   }
 
+  // ---------- Leerlauf-Wischer ----------
+  interface Swipe { t0: number, dur: number, x0: number, y0: number, x1: number, y1: number, bend: number }
+  let swipe: Swipe | null = null
+  let nextSwipeAt = 0
+  let swipeDir = 1
+
+  function makeSwipe(now: number): Swipe {
+    swipeDir = -swipeDir
+    const span = cssW < 700 ? 0.5 : 0.3                  // in Breiten, ueber die Box hinaus
+    const yc = box.y + (Math.random() - 0.5) * box.h * 0.8
+    const tilt = (Math.random() - 0.5) * box.h * 0.35    // leicht schraeg
+    return {
+      t0: now,
+      dur: 420 + Math.random() * 200,
+      x0: box.x - span * swipeDir,
+      y0: yc - tilt / 2,
+      x1: box.x + span * swipeDir,
+      y1: yc + tilt / 2,
+      bend: (Math.random() < 0.5 ? -1 : 1) * box.h * (0.06 + Math.random() * 0.08),
+    }
+  }
+
   // ---------- Schleife ----------
   let raf = 0
   let visible = true
@@ -203,15 +231,29 @@ export async function createFotoboxHero(
     prev = Math.max(prev, now)
     if (!opts.reducedMotion) time += dt
 
-    // Leerlauf: der Blick wandert langsam, eine leise Spur zieht mit.
-    // Ohne das wirkt der Hero auf dem Handy tot, dort gibt es keinen Hover.
+    // Leerlauf wie bei Lando: in Abstaenden ein schneller Wisch quer ueber die
+    // Box, dazwischen Ruhe. Der Blick (Neigung) wandert dabei sanft mit.
+    // Auf dem Handy ist das der ganze Effekt, dort gibt es keinen Hover.
     const idle = now - lastInput > IDLE_AFTER_MS
     if (idle && !opts.reducedMotion) {
-      const t = time * 0.35
-      const ix = 0.5 + Math.sin(t) * 0.28 + Math.sin(t * 2.3) * 0.06
-      const iy = 0.55 + Math.sin(t * 1.4 + 1.0) * 0.22
-      target.set(ix * 2 - 1, iy * 2 - 1)
-      splatTrail(ix, iy, 0.55, now)
+      target.set(Math.sin(time * 0.31) * 0.45, Math.sin(time * 0.23 + 1) * 0.3)
+      if (!swipe && now >= nextSwipeAt) swipe = makeSwipe(now)
+      if (swipe) {
+        const pr = (now - swipe.t0) / swipe.dur
+        if (pr >= 1) {
+          swipe = null
+          last = null
+          nextSwipeAt = now + 900 + Math.random() * 900
+        }
+        else {
+          // Schnell starten (easeOutCubic): sonst steht am Anfang kurz nur die
+          // runde Pinselspitze da, statt sofort ein Band.
+          const e = 1 - (1 - pr) ** 3
+          const sx = swipe.x0 + (swipe.x1 - swipe.x0) * e
+          const sy = swipe.y0 + (swipe.y1 - swipe.y0) * e + Math.sin(Math.PI * e) * swipe.bend
+          splatTrail(sx, sy, 1, now)
+        }
+      }
     }
     else if (idle) {
       last = null

@@ -391,19 +391,18 @@ void main() {
   rays *= exp(-r * 3.0);
   float streak = exp(-pow(dp.y / (px * 0.004), 2.0)) * exp(-abs(dp.x) / (px * 0.55));
   float core = exp(-r * r * 260.0);                                     // gleissender Punkt im Objektiv
-  float glowR = exp(-r * r * 16.0) * 0.6 + exp(-r * 2.4) * 0.2;
-  float energy = 0.5 + 0.5 * clamp(dye, 0.0, 1.0) + uFlash * 0.9;
+  float glowR = exp(-r * r * 10.0) * 0.7 + exp(-r * 2.0) * 0.3;
+  float energy = 0.85 + 0.4 * clamp(dye, 0.0, 1.0) + uFlash * 0.9;
   float light = maps.g * 0.9 + (core * 1.5 + glowR + rays + streak * 0.85) * energy;
 
   vec3 boxLit = clamp(lit * 1.65 + 0.07, 0.0, 1.0) + spec * 0.4;
-  vec3 bgLit = mix(bg, vec3(0.86, 0.84, 0.8), 0.28);
+  vec3 bgLit = mix(bg, vec3(0.86, 0.84, 0.8), 0.42);
   vec3 flashCol = mix(bgLit, mix(sideCol * 1.8, boxLit, base.a), max(base.a, side));
   flashCol = mix(flashCol, uGold, outline * 1.4);
   flashCol = 1.0 - (1.0 - flashCol) * (1.0 - clamp(light, 0.0, 1.0) * vec3(1.0, 0.97, 0.9));
 
-  // ---- Maske: klare Pinselkante, leicht unruhig, ohne Saum ----
-  float wobble = snoise(vec3(frag / px * 3.0, uTime * 0.8)) * 0.05;
-  float k = dye + wobble * smoothstep(0.0, 0.2, dye);
+  // ---- Maske: klare Pinselkante, ohne Rauschen und ohne Saum ----
+  float k = dye;
   float aa = fwidth(k) * 1.5;
   float m = smoothstep(0.33 - aa, 0.33 + aa, k);
   m = max(m, uFlash);
