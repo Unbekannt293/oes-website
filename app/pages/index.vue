@@ -24,35 +24,38 @@ useReveal(gridEl)
 <template>
   <div>
     <!-- ============ Hero ============ -->
-    <section class="hero on-ink">
-      <NuxtImg
-        src="/images/platzhalter.svg" alt="" aria-hidden="true"
-        class="hero__bg" width="1920" height="1080" preload
-      />
-      <div class="hero__veil" aria-hidden="true" />
+    <FotoboxHero class="hero" alt="Fotobox von Otto's Event Service auf Stativ">
+      <div class="hero__stage">
+        <div class="hero__veil" aria-hidden="true" />
 
-      <div class="shell hero__inner">
-        <h1 class="display hero__title">
-          Ihr Event.<br>Unser <em>Service.</em>
-        </h1>
-        <p class="hero__lead">
-          Zelte, Fotoboxen, Musik und mehr. Alles aus einer Hand
-          für unvergessliche Veranstaltungen.
-        </p>
+        <div class="shell hero__inner">
+          <h1 class="display hero__title">
+            Ihr Event.<br>Unser <em>Service.</em>
+          </h1>
+          <p class="hero__lead muted">
+            Zelte, Fotoboxen, Musik und mehr. Alles aus einer Hand
+            für unvergessliche Veranstaltungen.
+          </p>
 
-        <div class="hero__cta">
-          <UiButton to="/pakete" variant="solid" size="lg">Pakete ansehen</UiButton>
-          <UiButton to="/kontakt" variant="outline" size="lg">Beratung anfragen</UiButton>
+          <div class="hero__cta">
+            <UiButton to="/pakete" variant="solid" size="lg">Pakete ansehen</UiButton>
+            <UiButton to="/kontakt" variant="outline" size="lg">Beratung anfragen</UiButton>
+          </div>
+
+          <ul class="hero__trust">
+            <li v-for="t in trust" :key="t.title">
+              <span class="label hero__trust-t">{{ t.title }}</span>
+              <span class="muted">{{ t.text }}</span>
+            </li>
+          </ul>
         </div>
 
-        <ul class="hero__trust">
-          <li v-for="t in trust" :key="t.title">
-            <span class="label hero__trust-t">{{ t.title }}</span>
-            <span class="muted">{{ t.text }}</span>
-          </li>
-        </ul>
+        <p class="label hero__hint" aria-hidden="true">
+          <span class="hero__hint--pointer">Klicken zum Auslösen</span>
+          <span class="hero__hint--touch">Tippen zum Auslösen</span>
+        </p>
       </div>
-    </section>
+    </FotoboxHero>
 
     <!-- ============ Produkte ============ -->
     <section class="section">
@@ -74,24 +77,32 @@ useReveal(gridEl)
 
 <style scoped>
 /* ---- Hero ---- */
-.hero { position: relative; min-height: min(88dvh, 820px); display: grid; align-items: end; }
-.hero__bg {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%; object-fit: cover;
+/* Hell wie bei Lando: das Foto steht auf Papierton. Die Box sitzt rechts
+   der Mitte, links ist Platz fuer die Headline. */
+.hero { --fb-x: 0.64; --fb-h: 0.96; }
+
+.hero__stage {
+  position: relative;
+  min-height: max(620px, calc(100svh - 72px));
+  display: grid;
+  align-items: center;
 }
-/* Verlauf nach links, damit die Schrift auf jedem Foto lesbar bleibt. */
+
+/* Hinter der Schrift leicht aufhellen, damit sie ueber Hoehenlinien
+   und Blitzspur lesbar bleibt. */
 .hero__veil {
   position: absolute; inset: 0;
-  background:
-    linear-gradient(90deg, rgb(10 10 10 / 0.92) 0%, rgb(10 10 10 / 0.55) 45%, rgb(10 10 10 / 0.15) 100%),
-    linear-gradient(0deg, rgb(10 10 10 / 0.85) 0%, transparent 55%);
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgb(245 243 241 / 0.85) 0%, rgb(245 243 241 / 0.5) 30%, transparent 52%);
 }
-.hero__inner { position: relative; padding-block: var(--s-9) var(--s-8); }
+
+.hero__inner { position: relative; padding-block: var(--s-8); }
 
 .hero__title { font-size: var(--t-hero); max-width: 14ch; }
 .hero__title em { font-style: normal; color: var(--c-gold); }
 
-.hero__lead { margin-top: var(--s-5); max-width: 44ch; font-size: 1.0625rem; }
+.hero__lead { margin-top: var(--s-5); max-width: 36ch; font-size: 1.0625rem; }
 
 .hero__cta { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-6); }
 
@@ -99,9 +110,32 @@ useReveal(gridEl)
   list-style: none; padding: 0; margin-top: var(--s-8);
   display: flex; flex-wrap: wrap; gap: var(--s-7);
   border-top: 1px solid var(--c-gold-hair); padding-top: var(--s-5);
+  max-width: 32rem;
 }
 .hero__trust li { display: grid; gap: 2px; font-size: var(--t-small); }
 .hero__trust-t { color: var(--c-gold); }
+
+.hero__hint {
+  position: absolute; top: var(--s-5); right: var(--gutter);
+  color: var(--c-gold); font-size: 0.625rem;
+  pointer-events: none;
+}
+.hero__hint--touch { display: none; }
+@media (hover: none) {
+  .hero__hint--pointer { display: none; }
+  .hero__hint--touch { display: inline; }
+}
+
+@media (max-width: 720px) {
+  .hero { --fb-x: 0.5; --fb-h: 0.8; }
+  .hero__stage { align-items: end; }
+  .hero__veil {
+    background: linear-gradient(0deg,
+      rgb(245 243 241 / 0.95) 0%, rgb(245 243 241 / 0.75) 30%, transparent 52%);
+  }
+  .hero__inner { padding-block: var(--s-6); }
+  .hero__trust { display: none; }
+}
 
 /* ---- Produktraster ---- */
 .grid {
