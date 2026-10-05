@@ -35,7 +35,6 @@ onMounted(async () => {
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
       colors: {
         bg: '#0B0A09',
-        line: '#2B2620',
         gold: tokens.getPropertyValue('--c-gold'),
       },
     })

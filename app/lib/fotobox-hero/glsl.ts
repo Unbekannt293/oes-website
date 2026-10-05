@@ -27,18 +27,30 @@ out vec4 fragColor;
 // ---------- Fluid-Simulation (Stable Fluids nach Jos Stam) ----------
 // Jeder Pass ist ein Rechenschritt der Navier-Stokes-Gleichung auf der GPU.
 
-/** Fuegt an einer Stelle Geschwindigkeit bzw. "Farbe" (unsere Maske) hinzu. */
+/**
+ * Malt einen Strich als Kapsel von pointA nach point, nicht als runden Punkt:
+ * So entsteht ein gleichmaessig breites Band statt einer Perlenkette.
+ * useMax = 1 fuer die Maske (kein Aufstauen bei langsamer Bewegung),
+ * useMax = 0 fuer die Geschwindigkeit (die soll sich addieren).
+ */
 export const splatFrag = head + /* glsl */ `
 uniform sampler2D uTarget;
 uniform float aspectRatio;
 uniform vec3 color;
 uniform vec2 point;
+uniform vec2 pointA;
 uniform float radius;
+uniform float useMax;
 void main() {
-  vec2 p = vUv - point;
-  p.x *= aspectRatio;
-  vec3 splat = exp(-dot(p, p) / radius) * color;
-  fragColor = vec4(texture(uTarget, vUv).xyz + splat, 1.0);
+  vec2 pa = vUv - pointA;
+  vec2 ba = point - pointA;
+  pa.x *= aspectRatio;
+  ba.x *= aspectRatio;
+  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-8), 0.0, 1.0);
+  vec2 d = pa - ba * h;
+  vec3 splat = exp(-dot(d, d) / radius) * color;
+  vec3 base = texture(uTarget, vUv).xyz;
+  fragColor = vec4(mix(base + splat, max(base, splat), useMax), 1.0);
 }`
 
 /** Transportiert eine Groesse entlang des Geschwindigkeitsfelds und laesst sie abklingen. */
@@ -201,11 +213,63 @@ uniform vec2 uFlashAt;       // Blitzquelle (Objektiv) im Bild (uv, y von unten)
 uniform float uTime;
 uniform float uFlash;        // Klick-Blitz, Huelle 0..1
 uniform float uFlashWhite;   // kurzer weisser Lichtstoss am Anfang
-uniform vec3 uBg, uLine, uGold;
+uniform vec3 uBg, uGold;
 
 ${noise}
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+vec2 hash2(vec2 p) {
+  vec3 q = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+  q += dot(q, q.yzx + 33.33);
+  return fract((q.xx + q.yz) * q.zy);
+}
+
+// Eine Lichterkette wie im Festzelt, unscharf im Hintergrund: Gluehbirnen
+// entlang einer durchhaengenden Linie. Unschaerfe = Bokeh-Scheibe mit etwas
+// hellerem Rand, so wie ein Objektiv Lichtpunkte abbildet.
+float festoon(vec2 p, float topY, float sag, float spacing, float radius, float soft, float t, float seed) {
+  // Zwischen Zeltstangen haengt die Kette in mehreren Boegen durch.
+  float period = 0.62 + 0.18 * fract(seed * 0.618);
+  float phase = seed * 0.37;
+  float k0 = floor(p.x / spacing);
+  float acc = 0.0;
+  for (int i = -1; i <= 1; i++) {
+    float k = k0 + float(i);
+    float bx = (k + 0.5) * spacing;
+    float u = 2.0 * fract(bx / period + phase) - 1.0;
+    float by = topY - sag * (1.0 - u * u) + sin(t * 0.5 + seed * 3.0 + k * 0.8) * 0.003;
+    float d = length(p - vec2(bx, by));
+    float disc = 1.0 - smoothstep(radius * (1.0 - soft), radius, d);
+    float ring = smoothstep(radius * 0.45, radius * 0.95, d) * disc * 0.35;
+    float flicker = 0.82 + 0.18 * sin(t * (1.3 + fract(k * 0.37 + seed)) + k * 2.1);
+    acc += (disc * 0.65 + ring) * flicker;
+  }
+  return acc;
+}
+
+// Funkelnde Sterne in der Form des Sterns aus dem OES-Logo: eine konkave
+// Raute (Astroide). Wenige, die einzeln aufleuchten und wieder vergehen.
+float sparkles(vec2 p, float t) {
+  vec2 g = p * 7.0;
+  vec2 id = floor(g);
+  float acc = 0.0;
+  for (int y = -1; y <= 1; y++) {
+    for (int x = -1; x <= 1; x++) {
+      vec2 cid = id + vec2(float(x), float(y));
+      if (hash(cid + 11.0) > 0.16) continue;
+      vec2 q = g - (cid + 0.2 + 0.6 * hash2(cid + 4.0));
+      float life = max(sin(t * (0.35 + 0.4 * hash(cid)) + hash(cid + 2.0) * 6.283), 0.0);
+      float size = 0.03 + 0.07 * life;
+      float d = pow(abs(q.x) / size, 0.5) + pow(abs(q.y) / size, 0.5);
+      // Feste Kantenweiche statt fwidth(): Ableitungen sind nach einem
+      // pixelweise verschiedenen continue nicht definiert.
+      float star = 1.0 - smoothstep(0.82, 1.12, d);
+      float glow = exp(-dot(q, q) / (size * size * 1.5)) * 0.25;
+      acc += (star + glow) * life;
+    }
+  }
+  return acc;
+}
 
 float isoline(float f, float widthPx) {
   float d = abs(fract(f + 0.5) - 0.5);
@@ -250,17 +314,21 @@ void main() {
   vec2 center = uImgRect.xy + uBoxCenter * uImgRect.zw + uPointer * px * 0.006;
   vec2 s = frag - center;
 
-  // ---- Hintergrund: dunkle Buehne, Spot hinter der Box, Hoehenlinien ----
+  // ---- Hintergrund: dunkle Buehne mit Lichterketten wie im Festzelt ----
+  // Drei Ketten in verschiedener Tiefe: fern klein, scharf, langsam in der
+  // Parallaxe, nah gross, weich, schnell. Die Pinselspur schiebt sie mit.
   vec2 p = (frag - 0.5 * uRes) / px;
-  p += uPointer * 0.01;
-  p -= clamp(vel, -300.0, 300.0) * 0.00035;
-  float n = snoise(vec3(p * 1.2, uTime * 0.03)) * 0.65
-          + snoise(vec3(p * 2.6 + 7.3, uTime * 0.045)) * 0.22;
-  float contour = isoline(n * 7.0, 1.1);
+  vec2 flow = clamp(vel, -300.0, 300.0) * 0.00022;
   float spotR = length((frag - center) / px * vec2(0.8, 1.0));
   float spot = exp(-spotR * spotR * 2.2);
-  vec3 bg = uBg + vec3(0.075, 0.068, 0.06) * spot;
-  bg = mix(bg, uLine, contour * (0.35 + 0.4 * spot));
+  vec3 bg = uBg + vec3(0.07, 0.062, 0.055) * spot;
+
+  vec3 warm = vec3(1.0, 0.74, 0.4);
+  float lights = festoon(p + uPointer * 0.006 - flow * 0.5, 0.42, 0.08, 0.055, 0.010, 0.55, uTime, 1.0) * 0.55
+               + festoon(p + uPointer * 0.016 - flow, 0.46, 0.13, 0.085, 0.022, 0.75, uTime, 2.0) * 0.6
+               + festoon(p + uPointer * 0.034 - flow * 1.6, 0.54, 0.2, 0.14, 0.048, 0.92, uTime, 3.0) * 0.45;
+  float stars = sparkles(p + uPointer * 0.022 - flow, uTime);
+  bg += warm * lights * 0.2 + uGold * stars * 0.55;
 
   // Gegenlicht: weicher Schein um die Silhouette trennt schwarzen Filz von schwarzer Buehne.
   // Eine tiefe Mipmap-Stufe ist eine extrem weiche Unschaerfe, die die GPU
@@ -308,13 +376,9 @@ void main() {
   // ---- Outline: schwebt auf eigener Ebene VOR der Box ----
   vec2 pivot = uBoxCenter;
   vec2 ouv1 = (planeUv(s, R, -uDepth * 2.5, f) - pivot) / 1.07 + pivot;
-  vec2 ouv2 = (planeUv(s, R, -uDepth * 5.0, f) - pivot) / 1.15 + pivot;
   float s1 = inRect(ouv1) ? texture(tMaps, ouv1).b : 0.0;
-  float s2 = inRect(ouv2) ? texture(tMaps, ouv2).b : 0.0;
   float o1 = isoline(s1 - 0.5, 1.2) * step(0.02, s1) * step(s1, 0.98);
-  float dash = step(0.5, fract((frag.x + frag.y) / (px * 0.012)));
-  float o2 = isoline(s2 - 0.5, 1.0) * step(0.02, s2) * step(s2, 0.98) * dash;
-  float outline = max(o1 * 0.6, o2 * 0.4) * (1.0 - base.a * 0.9);
+  float outline = o1 * 0.5 * (1.0 - base.a * 0.9);
   normal = mix(normal, uGold * 0.55, outline);
 
   // ---- Blitz aus dem Objektiv ----
@@ -337,15 +401,14 @@ void main() {
   flashCol = mix(flashCol, uGold, outline * 1.4);
   flashCol = 1.0 - (1.0 - flashCol) * (1.0 - clamp(light, 0.0, 1.0) * vec3(1.0, 0.97, 0.9));
 
-  // ---- Maske: fluessige Kante ----
-  float wobble = snoise(vec3(frag / px * 5.0, uTime * 0.5)) * 0.1;
-  float k = dye + wobble * smoothstep(0.0, 0.12, dye);
-  float m = smoothstep(0.16, 0.27, k);
+  // ---- Maske: klare Pinselkante, leicht unruhig, ohne Saum ----
+  float wobble = snoise(vec3(frag / px * 3.0, uTime * 0.8)) * 0.05;
+  float k = dye + wobble * smoothstep(0.0, 0.2, dye);
+  float aa = fwidth(k) * 1.5;
+  float m = smoothstep(0.33 - aa, 0.33 + aa, k);
   m = max(m, uFlash);
-  float edge = smoothstep(0.1, 0.16, k) - smoothstep(0.16, 0.24, k);
 
   vec3 col = mix(normal, flashCol, m);
-  col = 1.0 - (1.0 - col) * (1.0 - edge * (1.0 - uFlash) * vec3(0.6, 0.45, 0.16));
   col = mix(col, vec3(1.0), uFlashWhite);
 
   // Korn nur im Hintergrund: verhindert Banding im Dunkeln, laesst das Foto scharf.

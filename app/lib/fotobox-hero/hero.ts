@@ -15,7 +15,7 @@ export interface FotoboxHeroOptions {
   /** Hoehe des Kastens relativ zur Bildhoehe. Daraus folgt die Kastentiefe. */
   boxHeight: number
   reducedMotion: boolean
-  colors: { bg: string, line: string, gold: string }
+  colors: { bg: string, gold: string }
 }
 
 export interface FotoboxHero {
@@ -30,8 +30,6 @@ export interface FotoboxHero {
 const MAX_YAW = 0.26
 const MAX_PITCH = 0.16
 
-/** Pro Pointer-Ereignis hoechstens so viele Zwischen-Splats bei schnellen Bewegungen. */
-const MAX_SUBSTEPS = 12
 const IDLE_AFTER_MS = 2500
 const FLASH_COOLDOWN_MS = 900
 
@@ -71,11 +69,12 @@ export async function createFotoboxHero(
   const fluid = new Fluid(renderer, {
     simRes: small ? 64 : 128,
     dyeRes: small ? 384 : 768,
-    dyeDissipation: 1.35,
-    velocityDissipation: 1.8,
+    // Schnell verblassen und kaum nachwirbeln: ein Pinselstrich, kein Rauch.
+    dyeDissipation: 2.6,
+    velocityDissipation: 3.0,
     pressure: 0.8,
     pressureIterations: small ? 12 : 20,
-    curl: 12,
+    curl: 3,
   })
 
   const material = new RawShaderMaterial({
@@ -100,7 +99,6 @@ export async function createFotoboxHero(
       uFlash: { value: 0 },
       uFlashWhite: { value: 0 },
       uBg: { value: hexToVec3(opts.colors.bg) },
-      uLine: { value: hexToVec3(opts.colors.line) },
       uGold: { value: hexToVec3(opts.colors.gold) },
     },
   })
@@ -140,26 +138,27 @@ export async function createFotoboxHero(
 
   // ---------- Eingabe ----------
   const target = new Vector2()      // wohin der Parallax-Blick will
-  let last: { x: number, y: number } | null = null
+  let last: { x: number, y: number, t: number } | null = null
+  let widthFactor = 1
   let lastInput = -Infinity
   let lastFlash = -Infinity
   let flashStart = -Infinity
 
-  function splatTrail(x: number, y: number, amount: number) {
+  /** Ein Strich vom letzten zum aktuellen Punkt. Schneller = breiter, wie ein Pinsel. */
+  function splatTrail(x: number, y: number, amount: number, t: number) {
     if (!last) {
-      last = { x, y }
+      last = { x, y, t }
       return
     }
     const dx = x - last.x
     const dy = y - last.y
-    const dist = Math.hypot(dx * (cssW / cssH), dy)
-    const steps = Math.min(MAX_SUBSTEPS, Math.max(1, Math.ceil(dist / 0.012)))
-    const radius = cssW < 700 ? 0.0022 : 0.0013
-    for (let i = 1; i <= steps; i++) {
-      const t = i / steps
-      fluid.splat(last.x + dx * t, last.y + dy * t, dx * 3000 / steps, dy * 3000 / steps, amount / Math.sqrt(steps), radius)
-    }
-    last = { x, y }
+    // Geschwindigkeit in Hero-Hoehen pro Sekunde
+    const speed = Math.hypot(dx * (cssW / cssH), dy) / Math.max((t - last.t) / 1000, 0.008)
+    const target = 0.7 + Math.min(speed / 2.5, 1) * 0.9
+    widthFactor += (target - widthFactor) * 0.3
+    const base = cssW < 700 ? 0.0055 : 0.003
+    fluid.splat(last.x, last.y, x, y, dx * 2400, dy * 2400, amount, base * widthFactor * widthFactor)
+    last = { x, y, t }
   }
 
   function pointerMove(clientX: number, clientY: number) {
@@ -168,7 +167,7 @@ export async function createFotoboxHero(
     const y = 1 - (clientY - rect.top) / rect.height
     target.set(x * 2 - 1, y * 2 - 1)
     lastInput = performance.now()
-    splatTrail(x, y, 0.9)
+    splatTrail(x, y, 1, lastInput)
   }
 
   function pointerLeave() {
@@ -207,7 +206,7 @@ export async function createFotoboxHero(
       const ix = 0.5 + Math.sin(t) * 0.28 + Math.sin(t * 2.3) * 0.06
       const iy = 0.55 + Math.sin(t * 1.4 + 1.0) * 0.22
       target.set(ix * 2 - 1, iy * 2 - 1)
-      splatTrail(ix, iy, 0.28)
+      splatTrail(ix, iy, 0.55, now)
     }
     else if (idle) {
       last = null

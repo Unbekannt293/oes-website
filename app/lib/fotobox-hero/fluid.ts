@@ -101,7 +101,8 @@ export class Fluid {
     this.m = {
       splat: mat(glsl.splatFrag, {
         uTarget: { value: null }, aspectRatio: { value: 1 },
-        color: { value: new Vector3() }, point: { value: new Vector2() }, radius: { value: 0.001 },
+        color: { value: new Vector3() }, point: { value: new Vector2() },
+        pointA: { value: new Vector2() }, radius: { value: 0.001 }, useMax: { value: 0 },
       }),
       advect: mat(glsl.advectFrag, {
         uVelocity: { value: null }, uSource: { value: null },
@@ -134,20 +135,26 @@ export class Fluid {
     this.dyeTexel.set(1 / dye.w, 1 / dye.h)
   }
 
-  /** x, y in 0..1 (y nach oben), dx/dy als Kraft, amount fuer die Maske. */
-  splat(x: number, y: number, dx: number, dy: number, amount: number, radius: number) {
+  /**
+   * Strich von (x0, y0) nach (x1, y1), alles in 0..1 mit y nach oben.
+   * dx/dy ist der Schub in Bewegungsrichtung, amount die Deckkraft der Maske.
+   */
+  splat(x0: number, y0: number, x1: number, y1: number, dx: number, dy: number, amount: number, radius: number) {
     const u = this.m.splat.uniforms
-    u.point!.value.set(x, y)
+    u.pointA!.value.set(x0, y0)
+    u.point!.value.set(x1, y1)
     u.radius!.value = radius
     u.aspectRatio!.value = this.aspect
 
     u.uTarget!.value = this.velocity.read.texture
     u.color!.value.set(dx, dy, 0)
+    u.useMax!.value = 0
     this.run(this.m.splat, this.velocity.write)
     this.velocity.swap()
 
     u.uTarget!.value = this.dye.read.texture
     u.color!.value.set(amount, amount, amount)
+    u.useMax!.value = 1
     this.run(this.m.splat, this.dye.write)
     this.dye.swap()
   }
