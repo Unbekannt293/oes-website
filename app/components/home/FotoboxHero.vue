@@ -17,9 +17,11 @@ const BOX_HEIGHT = 0.5159
 const BOX_RECT: [number, number, number, number] = [0.0966, 0.1815, 0.9052, 0.6974]
 /**
  * Szene, die der Pinsel hinter der Box freilegt. Leer = dunkle Buehne bleibt.
- * Foto: brunounreal, Pexels (pexels.com/photo/36499158), Pexels-Lizenz.
+ * VORLAEUFIG: Konzertfoto, vom Auftraggeber bereitgestellt, Lizenz vor dem
+ * Livegang klaeren. Lizenzsichere Alternative: '/images/hero/party.webp'
+ * (brunounreal, Pexels, pexels.com/photo/36499158).
  */
-const PARTY = '/images/hero/party.webp'
+const PARTY = '/images/hero/party-konzert.webp'
 
 const root = ref<HTMLElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
