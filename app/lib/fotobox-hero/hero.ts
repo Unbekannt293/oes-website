@@ -69,8 +69,10 @@ export async function createFotoboxHero(
   const fluid = new Fluid(renderer, {
     simRes: small ? 64 : 128,
     dyeRes: small ? 384 : 768,
-    // Schnell verblassen und kaum nachwirbeln: ein Pinselstrich, kein Rauch.
-    dyeDissipation: 2.6,
+    // ~1 s sichtbar, kaum Nachwirbeln: ein Pinselstrich, kein Rauch. Das Tempo
+    // leidet nicht, der Strich beginnt immer genau am Cursor. Durch die harte
+    // Kante wird das Ende beim Verblassen schmaler und laeuft spitz aus.
+    dyeDissipation: 1.05,
     velocityDissipation: 3.0,
     pressure: 0.8,
     pressureIterations: small ? 12 : 20,
@@ -154,9 +156,12 @@ export async function createFotoboxHero(
     const dy = y - last.y
     // Geschwindigkeit in Hero-Hoehen pro Sekunde
     const speed = Math.hypot(dx * (cssW / cssH), dy) / Math.max((t - last.t) / 1000, 0.008)
-    const target = 0.7 + Math.min(speed / 2.5, 1) * 0.9
+    // Nie schmaler als die Grundbreite, bei schnellem Zug bis 40 % breiter.
+    const target = 1 + Math.min(speed / 2.5, 1) * 0.4
     widthFactor += (target - widthFactor) * 0.3
-    const base = cssW < 700 ? 0.0055 : 0.003
+    // Radius im Quadrat (Gauss-Profil): 0.0066 ergibt an der Maskenkante
+    // eine Strichbreite von rund 17 % der Hero-Hoehe.
+    const base = cssW < 700 ? 0.01 : 0.0066
     fluid.splat(last.x, last.y, x, y, dx * 2400, dy * 2400, amount, base * widthFactor * widthFactor)
     last = { x, y, t }
   }
