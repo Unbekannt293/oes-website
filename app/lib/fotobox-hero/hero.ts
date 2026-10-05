@@ -1,6 +1,6 @@
 import {
-  GLSL3, LinearFilter, Mesh, OrthographicCamera, PlaneGeometry, RawShaderMaterial,
-  Scene, TextureLoader, Vector2, Vector3, Vector4, WebGLRenderer,
+  GLSL3, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry,
+  RawShaderMaterial, Scene, TextureLoader, Vector2, Vector3, Vector4, WebGLRenderer,
 } from 'three'
 import { Fluid } from './fluid'
 import { compositeFrag, compositeVert } from './glsl'
@@ -10,9 +10,12 @@ export interface FotoboxHeroOptions {
   maps: string
   /** Blitzquelle relativ im Bild, y von oben gezaehlt wie in Bildprogrammen. */
   flashAt: [number, number]
+  /** Mitte des Kastens (ohne Stativ) relativ im Bild, y von oben. Drehpunkt und Layout-Anker. */
+  boxCenter: [number, number]
+  /** Hoehe des Kastens relativ zur Bildhoehe. Daraus folgt die Kastentiefe. */
+  boxHeight: number
   reducedMotion: boolean
-  /** Farben aus den Design-Tokens. */
-  colors: { paper: string, line: string, gold: string }
+  colors: { bg: string, line: string, gold: string }
 }
 
 export interface FotoboxHero {
@@ -22,6 +25,10 @@ export interface FotoboxHero {
   setVisible: (visible: boolean) => void
   destroy: () => void
 }
+
+/** Maximale Drehung zum Cursor hin, in Radiant (~15 bzw. ~9 Grad). */
+const MAX_YAW = 0.26
+const MAX_PITCH = 0.16
 
 /** Pro Pointer-Ereignis hoechstens so viele Zwischen-Splats bei schnellen Bewegungen. */
 const MAX_SUBSTEPS = 12
@@ -50,9 +57,13 @@ export async function createFotoboxHero(
 
   const loader = new TextureLoader()
   const [baseTex, mapsTex] = await Promise.all([loader.loadAsync(opts.image), loader.loadAsync(opts.maps)])
+  // Mipmaps + anisotrope Filterung: scharf auch verkleinert und schraeg gedreht.
+  const aniso = renderer.capabilities.getMaxAnisotropy()
   for (const t of [baseTex, mapsTex]) {
-    t.minFilter = LinearFilter
-    t.generateMipmaps = false
+    t.minFilter = LinearMipmapLinearFilter
+    t.magFilter = LinearFilter
+    t.generateMipmaps = true
+    t.anisotropy = aniso
   }
   const imgAspect = baseTex.image.width / baseTex.image.height
 
@@ -80,12 +91,15 @@ export async function createFotoboxHero(
       tVel: { value: null },
       uRes: { value: new Vector2() },
       uImgRect: { value: new Vector4() },
+      uBoxCenter: { value: new Vector2(opts.boxCenter[0], 1 - opts.boxCenter[1]) },
+      uTilt: { value: new Vector2() },
+      uDepth: { value: 0 },
       uPointer: { value: new Vector2() },
       uFlashAt: { value: new Vector2(opts.flashAt[0], 1 - opts.flashAt[1]) },
       uTime: { value: 0 },
       uFlash: { value: 0 },
       uFlashWhite: { value: 0 },
-      uPaper: { value: hexToVec3(opts.colors.paper) },
+      uBg: { value: hexToVec3(opts.colors.bg) },
       uLine: { value: hexToVec3(opts.colors.line) },
       uGold: { value: hexToVec3(opts.colors.gold) },
     },
@@ -108,14 +122,20 @@ export async function createFotoboxHero(
     renderer.setSize(cssW, cssH, false)
     fluid.resize(cssW, cssH)
 
+    // --fb-x/--fb-y: wo die KASTENMITTE sitzt, --fb-h: Bildhoehe, alles relativ
+    // zum Hero. Das Stativ darf unten herauslaufen.
     const style = getComputedStyle(root)
     const fx = Number.parseFloat(style.getPropertyValue('--fb-x')) || 0.5
-    const fh = Number.parseFloat(style.getPropertyValue('--fb-h')) || 0.95
+    const fy = Number.parseFloat(style.getPropertyValue('--fb-y')) || 0.5
+    const fh = Number.parseFloat(style.getPropertyValue('--fb-h')) || 1
     const h = cssH * fh * pr
     const w = h * imgAspect
+    const left = cssW * fx * pr - opts.boxCenter[0] * w
+    const top = cssH * fy * pr - opts.boxCenter[1] * h
     u.uRes!.value.set(cssW * pr, cssH * pr)
-    // Unterkante buendig: das Stativ laeuft aus dem Bild heraus.
-    u.uImgRect!.value.set(cssW * fx * pr - w / 2, 0, w, h)
+    u.uImgRect!.value.set(left, cssH * pr - top - h, w, h)
+    // Kastentiefe ~ ein Viertel der Kastenhoehe, wie bei einer echten Fotobox.
+    u.uDepth!.value = h * opts.boxHeight * 0.24
   }
 
   // ---------- Eingabe ----------
@@ -196,9 +216,12 @@ export async function createFotoboxHero(
     // Weich nachziehen, unabhaengig von der Bildrate.
     pointer.lerp(target, 1 - Math.exp(-dt * 3.5))
     u.uPointer!.value.copy(pointer)
+    // Die Box dreht ihre Front zum Cursor, wie Landos Kopf.
+    u.uTilt!.value.set(-pointer.x * MAX_YAW, pointer.y * MAX_PITCH)
 
     const since = (now - flashStart) / 1000
-    const env = since < 0.05 ? since / 0.05 : Math.exp(-(since - 0.05) * 2.4)
+    // Anstieg 40 ms, 100 ms voll halten, dann abklingen: so registriert das Auge den Blitz.
+    const env = since < 0.04 ? since / 0.04 : since < 0.14 ? 1 : Math.exp(-(since - 0.14) * 2.4)
     u.uFlash!.value = since >= 0 && since < 3 ? env : 0
     u.uFlashWhite!.value = !opts.reducedMotion && since >= 0 && since < 1 ? Math.exp(-since * 14) * 0.85 : 0
 

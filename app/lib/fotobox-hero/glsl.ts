@@ -192,19 +192,21 @@ uniform sampler2D tMaps;     // R Hoehe, G Panel-Gluehen, B weiche Silhouette
 uniform sampler2D tDye;      // Fluid-Maske
 uniform sampler2D tVel;      // Fluid-Geschwindigkeit
 uniform vec2 uRes;           // Zeichenflaeche in Geraetepixeln
-uniform vec4 uImgRect;       // Lage der Fotobox: x, y (unten links), Breite, Hoehe
+uniform vec4 uImgRect;       // Bild: x, y (unten links), Breite, Hoehe in Geraetepixeln
+uniform vec2 uBoxCenter;     // Kastenmitte im Bild (uv, y von unten): Drehpunkt
+uniform vec2 uTilt;          // Drehung in Radiant: x = um die Hochachse, y = Nicken
+uniform float uDepth;        // Kastentiefe in Geraetepixeln
 uniform vec2 uPointer;       // geglaettete Mausposition, -1..1
-uniform vec2 uFlashAt;       // Blitzquelle (Mitte des Lichtpanels) relativ im Bild, y von unten
+uniform vec2 uFlashAt;       // Blitzquelle (Objektiv) im Bild (uv, y von unten)
 uniform float uTime;
 uniform float uFlash;        // Klick-Blitz, Huelle 0..1
-uniform float uFlashWhite;   // kurzer weisser Lichtstoss am Anfang des Blitzes
-uniform vec3 uPaper, uLine, uGold;
+uniform float uFlashWhite;   // kurzer weisser Lichtstoss am Anfang
+uniform vec3 uBg, uLine, uGold;
 
 ${noise}
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
-// Isolinie mit konstanter Pixelbreite, egal wie steil das Feld ist.
 float isoline(float f, float widthPx) {
   float d = abs(fract(f + 0.5) - 0.5);
   return 1.0 - smoothstep(0.0, fwidth(f) * widthPx, d);
@@ -212,94 +214,141 @@ float isoline(float f, float widthPx) {
 
 bool inRect(vec2 uv) { return all(greaterThanEqual(uv, vec2(0.0))) && all(lessThanEqual(uv, vec2(1.0))); }
 
+// Spaltenweise aufgebaut (GLSL ist spaltenorientiert).
+mat3 rotY(float a) { float c = cos(a), s = sin(a); return mat3(c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c); }
+mat3 rotX(float a) { float c = cos(a), s = sin(a); return mat3(1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c); }
+
+// Kamera bei z = -f schaut nach +z, der Bildschirm liegt bei z = 0. Fuer einen
+// Bildschirmpunkt s (Pixel relativ zur Kastenmitte) schneiden wir den Sehstrahl
+// mit der gedrehten Ebene, die um "back" nach hinten versetzt ist, und geben
+// die Bildkoordinate des Treffers zurueck. back = 0 ist die Vorderseite.
+vec2 planeUv(vec2 s, mat3 R, float back, float f) {
+  vec3 n = R * vec3(0.0, 0.0, 1.0);
+  vec3 d = vec3(s, f);
+  float t = (back + f * n.z) / dot(d, n);
+  vec3 P = vec3(0.0, 0.0, -f) + t * d - n * back;
+  vec2 local = vec2(dot(P, R * vec3(1.0, 0.0, 0.0)), dot(P, R * vec3(0.0, 1.0, 0.0)));
+  return uBoxCenter + local / uImgRect.zw;
+}
+
+// Umgekehrt: Punkt auf der Vorderseite -> Bildschirm (fuer die Blitzquelle).
+vec2 projectUv(vec2 uv, mat3 R, float f) {
+  vec3 P = R * vec3((uv - uBoxCenter) * uImgRect.zw, 0.0);
+  return P.xy * f / (P.z + f);
+}
+
 void main() {
   vec2 frag = gl_FragCoord.xy;
   vec2 suv = frag / uRes;
-  float px = uRes.y;                          // Bezugsgroesse fuer Abstaende
+  float px = uRes.y;
+  float f = px * 1.7;                              // Brennweite: kleiner = staerkere Perspektive
 
   vec2 vel = texture(tVel, suv).xy;
   float dye = texture(tDye, suv).r;
 
-  // ---- Hintergrund: Papier mit Hoehenlinien, die die Fluessigkeit mitzieht ----
+  mat3 R = rotY(uTilt.x) * rotX(uTilt.y);
+  vec2 center = uImgRect.xy + uBoxCenter * uImgRect.zw + uPointer * px * 0.006;
+  vec2 s = frag - center;
+
+  // ---- Hintergrund: dunkle Buehne, Spot hinter der Box, Hoehenlinien ----
   vec2 p = (frag - 0.5 * uRes) / px;
-  p += uPointer * 0.008;                      // hinterste Ebene, bewegt sich am wenigsten
-  // Begrenzt: ein Geschwindigkeitsausreisser darf das Rauschen nicht ins
-  // Unendliche schieben, sonst wird bg zu NaN und reisst per mix() alles mit.
+  p += uPointer * 0.01;
   p -= clamp(vel, -300.0, 300.0) * 0.00035;
   float n = snoise(vec3(p * 1.2, uTime * 0.03)) * 0.65
           + snoise(vec3(p * 2.6 + 7.3, uTime * 0.045)) * 0.22;
   float contour = isoline(n * 7.0, 1.1);
-  vec3 bg = mix(uPaper, uLine, contour * 0.5);
+  float spotR = length((frag - center) / px * vec2(0.8, 1.0));
+  float spot = exp(-spotR * spotR * 2.2);
+  vec3 bg = uBg + vec3(0.075, 0.068, 0.06) * spot;
+  bg = mix(bg, uLine, contour * (0.35 + 0.4 * spot));
 
-  // ---- Fotobox: Parallaxe und Licht, das dem Cursor folgt ----
-  vec2 shift = uPointer * px * 0.012;
-  vec2 iuv = (frag - uImgRect.xy - shift) / uImgRect.zw;
+  // Gegenlicht: weicher Schein um die Silhouette trennt schwarzen Filz von schwarzer Buehne.
+  // Eine tiefe Mipmap-Stufe ist eine extrem weiche Unschaerfe, die die GPU
+  // ohnehin vorraetig hat. So wird der Schein ein Leuchten statt ein Rechteck.
+  vec2 haloUv = (planeUv(s, R, uDepth, f) - uBoxCenter) / 1.22 + uBoxCenter;
+  float halo = inRect(haloUv) ? textureLod(tMaps, haloUv, 4.5).b : 0.0;
+  bg += vec3(0.15, 0.12, 0.08) * halo * 0.32;
+
+  // ---- Fotobox: Vorderseite auf der gedrehten Ebene ----
+  vec2 iuv = planeUv(s, R, 0.0, f);
   bool inside = inRect(iuv);
   vec4 maps = inside ? texture(tMaps, iuv) : vec4(0.0);
-  // Erhabene Teile (Objektiv, Kanten) verschieben sich staerker: unechte Tiefe.
-  vec2 puv = iuv - uPointer * maps.r * vec2(0.010, 0.006);
+  // Erhabenes (Objektiv, Kanten) verschiebt sich mit der Drehung: Relieftiefe.
+  vec2 puv = iuv + vec2(-uTilt.x, uTilt.y) * maps.r * 0.035;
   vec4 base = inside ? texture(tBase, puv) : vec4(0.0);
 
+  // Seitenwand: was die hintere Ebene zeigt, die vordere aber nicht.
+  vec2 buv = planeUv(s, R, uDepth, f);
+  vec4 back = inRect(buv) ? texture(tBase, buv) : vec4(0.0);
+  float side = back.a * (1.0 - base.a);
+
+  // Licht: Normale aus der Hoehenkarte, mit der Box mitgedreht.
   vec2 mt = 1.0 / vec2(textureSize(tMaps, 0));
   float hL = texture(tMaps, iuv - vec2(mt.x, 0.0)).r;
   float hR = texture(tMaps, iuv + vec2(mt.x, 0.0)).r;
   float hD = texture(tMaps, iuv - vec2(0.0, mt.y)).r;
   float hU = texture(tMaps, iuv + vec2(0.0, mt.y)).r;
-  vec3 N = normalize(vec3((hL - hR) * 4.0, (hD - hU) * 4.0, 1.0));
-  vec3 L = normalize(vec3(uPointer * 0.9, 1.3));
+  vec3 Nl = normalize(vec3((hL - hR) * 5.0, (hD - hU) * 5.0, -1.0));    // -z = zur Kamera
+  vec3 Nw = R * Nl;
+  vec3 N = vec3(Nw.xy, -Nw.z);                                           // zurueck: +z = zur Kamera
+  vec3 L = normalize(vec3(uPointer * 0.9, 1.2));
   float diff = dot(N, L);
-  float spec = pow(max(dot(reflect(-L, N), vec3(0.0, 0.0, 1.0)), 0.0), 28.0);
-  vec3 lit = base.rgb * (0.84 + 0.18 * diff) + spec * 0.14;
+  float spec = pow(max(dot(reflect(-L, N), vec3(0.0, 0.0, 1.0)), 0.0), 30.0);
+  // Kantenlicht: Flanken, die zum Cursor zeigen, fangen Licht.
+  float rim = pow(1.0 - clamp(N.z, 0.0, 1.0), 1.5) * clamp(dot(normalize(N.xy + 1e-5), normalize(uPointer + vec2(1e-5, 0.4))), 0.0, 1.0);
+  vec3 lit = base.rgb * (0.78 + 0.3 * diff) + spec * 0.2 + rim * vec3(0.55, 0.5, 0.42) * 0.8;
 
-  vec3 normal = mix(bg, lit, base.a);
+  float sideLight = 0.3 + 0.35 * clamp(dot(normalize(vec2(-uTilt.x, uTilt.y) + 1e-5), normalize(uPointer + 1e-5)), 0.0, 1.0);
+  vec3 sideCol = back.rgb * sideLight;
 
-  // ---- Outline: vergroesserte Silhouette auf eigener, vorderster Ebene ----
-  vec2 oShift = uPointer * px * 0.026;
-  vec2 ouv = (frag - uImgRect.xy - oShift) / uImgRect.zw;
-  vec2 pivot = vec2(0.5, 0.62);
-  float s1 = texture(tMaps, (ouv - pivot) / 1.07 + pivot).b;
-  float s2 = texture(tMaps, (ouv - pivot) / 1.16 + pivot).b;
-  float o1 = inRect((ouv - pivot) / 1.07 + pivot) ? isoline(s1 - 0.5, 1.2) * step(0.02, s1) * step(s1, 0.98) : 0.0;
-  // Zweite Linie gestrichelt, wie eine Masszeichnung.
+  vec3 normal = bg;
+  normal = mix(normal, sideCol, side);
+  normal = mix(normal, lit, base.a);
+
+  // ---- Outline: schwebt auf eigener Ebene VOR der Box ----
+  vec2 pivot = uBoxCenter;
+  vec2 ouv1 = (planeUv(s, R, -uDepth * 2.5, f) - pivot) / 1.07 + pivot;
+  vec2 ouv2 = (planeUv(s, R, -uDepth * 5.0, f) - pivot) / 1.15 + pivot;
+  float s1 = inRect(ouv1) ? texture(tMaps, ouv1).b : 0.0;
+  float s2 = inRect(ouv2) ? texture(tMaps, ouv2).b : 0.0;
+  float o1 = isoline(s1 - 0.5, 1.2) * step(0.02, s1) * step(s1, 0.98);
   float dash = step(0.5, fract((frag.x + frag.y) / (px * 0.012)));
-  float o2 = inRect((ouv - pivot) / 1.16 + pivot) ? isoline(s2 - 0.5, 1.0) * step(0.02, s2) * step(s2, 0.98) * dash : 0.0;
-  float outline = max(o1 * 0.55, o2 * 0.35) * (1.0 - base.a * 0.85);
-  normal = mix(normal, uLine * 0.75, outline);
+  float o2 = isoline(s2 - 0.5, 1.0) * step(0.02, s2) * step(s2, 0.98) * dash;
+  float outline = max(o1 * 0.6, o2 * 0.4) * (1.0 - base.a * 0.9);
+  normal = mix(normal, uGold * 0.55, outline);
 
-  // ---- Blitz: dieselbe Szene im Moment der Ausloesung ----
-  vec2 srcPx = uImgRect.xy + shift + uFlashAt * uImgRect.zw;
+  // ---- Blitz aus dem Objektiv ----
+  vec2 srcPx = center + projectUv(uFlashAt, R, f);
   vec2 dp = frag - srcPx;
   float r = length(dp) / px;
   float ang = atan(dp.y, dp.x);
-  float rays = pow(abs(cos(ang * 3.0 + uTime * 0.12)), 90.0) * 0.7
-             + pow(abs(cos(ang * 7.0 - uTime * 0.07)), 220.0) * 0.45;
-  rays *= exp(-r * 3.2);
-  float streak = exp(-pow(dp.y / (px * 0.004), 2.0)) * exp(-abs(dp.x) / (px * 0.5));
-  float halo = exp(-r * r * 16.0) * 0.55 + exp(-r * 2.6) * 0.16;
-  // Frische Spur leuchtet staerker als verblassende, der Klick am staerksten.
-  float energy = 0.5 + 0.5 * clamp(dye, 0.0, 1.0) + uFlash * 0.8;
-  float light = maps.g * 1.7 + (halo + rays + streak * 0.8) * energy;
+  float rays = pow(abs(cos(ang * 3.0 + uTime * 0.12)), 90.0) * 0.75
+             + pow(abs(cos(ang * 7.0 - uTime * 0.07)), 220.0) * 0.5;
+  rays *= exp(-r * 3.0);
+  float streak = exp(-pow(dp.y / (px * 0.004), 2.0)) * exp(-abs(dp.x) / (px * 0.55));
+  float core = exp(-r * r * 260.0);                                     // gleissender Punkt im Objektiv
+  float glowR = exp(-r * r * 16.0) * 0.6 + exp(-r * 2.4) * 0.2;
+  float energy = 0.5 + 0.5 * clamp(dye, 0.0, 1.0) + uFlash * 0.9;
+  float light = maps.g * 0.9 + (core * 1.5 + glowR + rays + streak * 0.85) * energy;
 
-  // Hartes Licht statt Weisswaschen: Filz, Bildschirm, Drucker bleiben erkennbar.
-  vec3 boxLit = clamp(lit * 1.55 + 0.06, 0.0, 1.0) + spec * 0.35;
-  vec3 bgLit = mix(bg, vec3(1.0), 0.35);
-  vec3 flashCol = mix(bgLit, boxLit, base.a);
-  flashCol = mix(flashCol, uGold, outline * 1.4);           // Outline leuchtet gold
-  flashCol = 1.0 - (1.0 - flashCol) * (1.0 - clamp(light, 0.0, 1.0) * vec3(1.0, 0.98, 0.93));
+  vec3 boxLit = clamp(lit * 1.65 + 0.07, 0.0, 1.0) + spec * 0.4;
+  vec3 bgLit = mix(bg, vec3(0.86, 0.84, 0.8), 0.28);
+  vec3 flashCol = mix(bgLit, mix(sideCol * 1.8, boxLit, base.a), max(base.a, side));
+  flashCol = mix(flashCol, uGold, outline * 1.4);
+  flashCol = 1.0 - (1.0 - flashCol) * (1.0 - clamp(light, 0.0, 1.0) * vec3(1.0, 0.97, 0.9));
 
-  // ---- Maske: fluessige Kante statt glattem Kreis ----
+  // ---- Maske: fluessige Kante ----
   float wobble = snoise(vec3(frag / px * 5.0, uTime * 0.5)) * 0.1;
   float k = dye + wobble * smoothstep(0.0, 0.12, dye);
-  // Enge Kante: die Spur liest sich als Pinselstrich, nicht als Nebel.
   float m = smoothstep(0.16, 0.27, k);
   m = max(m, uFlash);
   float edge = smoothstep(0.1, 0.16, k) - smoothstep(0.16, 0.24, k);
 
   vec3 col = mix(normal, flashCol, m);
-  // Warmer Lichtsaum an der Kante, per Screen-Blend: hellt auf, faerbt nicht braun.
-  col = 1.0 - (1.0 - col) * (1.0 - edge * (1.0 - uFlash) * vec3(0.55, 0.42, 0.16));
+  col = 1.0 - (1.0 - col) * (1.0 - edge * (1.0 - uFlash) * vec3(0.6, 0.45, 0.16));
   col = mix(col, vec3(1.0), uFlashWhite);
 
-  col += (hash(frag + fract(uTime)) - 0.5) * 0.018;        // Filmkorn gegen Banding
+  // Korn nur im Hintergrund: verhindert Banding im Dunkeln, laesst das Foto scharf.
+  col += (hash(frag + fract(uTime)) - 0.5) * 0.022 * (1.0 - base.a);
   fragColor = vec4(col, 1.0);
 }`

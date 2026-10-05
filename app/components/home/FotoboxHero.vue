@@ -9,8 +9,10 @@ defineProps<{ alt: string }>()
 
 const IMAGE = '/images/hero/fotobox.webp'
 const MAPS = '/images/hero/fotobox-maps.png'
-/** Mitte des Lichtpanels relativ im Bild: dort sitzt bei einer Fotobox der Blitz. */
-const FLASH_AT: [number, number] = [0.498, 0.2347]
+/** Werte aus der Bildaufbereitung, relativ im Bild, y von oben. */
+const FLASH_AT: [number, number] = [0.3725, 0.2419]    // Objektiv
+const BOX_CENTER: [number, number] = [0.4997, 0.3768]  // Kastenmitte ohne Stativ
+const BOX_HEIGHT = 0.5293
 
 const root = ref<HTMLElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
@@ -28,10 +30,12 @@ onMounted(async () => {
       image: IMAGE,
       maps: MAPS,
       flashAt: FLASH_AT,
+      boxCenter: BOX_CENTER,
+      boxHeight: BOX_HEIGHT,
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
       colors: {
-        paper: tokens.getPropertyValue('--c-paper'),
-        line: '#D3CBBE',
+        bg: '#0B0A09',
+        line: '#2B2620',
         gold: tokens.getPropertyValue('--c-gold'),
       },
     })
@@ -76,6 +80,7 @@ function onClick(e: MouseEvent) {
 <template>
   <div
     ref="root" class="fbh" :class="{ 'is-ready': ready }"
+    :style="{ '--fb-box-cx': BOX_CENTER[0], '--fb-box-cy': BOX_CENTER[1] }"
     @pointermove="onMove" @pointerleave="onLeave" @click="onClick"
   >
     <img
@@ -91,24 +96,24 @@ function onClick(e: MouseEvent) {
 
 <style scoped>
 .fbh {
-  /* Lage der Fotobox: Mitte bei --fb-x der Breite, --fb-h der Hoehe hoch,
-     unten buendig. Die WebGL-Engine liest dieselben Werte. Gesetzt wird
-     beides von aussen, hier nur Rueckfallwerte per var(). */
+  /* Lage: --fb-x/--fb-y = wo die Kastenmitte sitzt, --fb-h = Bildhoehe, alles
+     relativ zum Hero. Die WebGL-Engine rechnet mit denselben Werten. Gesetzt
+     wird von aussen, hier nur Rueckfallwerte per var(). */
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background: var(--c-paper);
+  background: #0B0A09;
   touch-action: pan-y;
 }
 
 .fbh__fallback {
   position: absolute;
-  bottom: 0;
+  top: calc((var(--fb-y, 0.5) - var(--fb-box-cy) * var(--fb-h, 1)) * 100%);
   left: calc(var(--fb-x, 0.5) * 100%);
-  height: calc(var(--fb-h, 0.95) * 100%);
+  height: calc(var(--fb-h, 1) * 100%);
   width: auto;
   max-width: none;
-  transform: translateX(-50%);
+  transform: translateX(calc(var(--fb-box-cx) * -100%));
   user-select: none;
   -webkit-user-drag: none;
 }
