@@ -13,8 +13,11 @@ const MAPS = '/images/hero/fotobox-maps.png'
 const FLASH_AT: [number, number] = [0.5, 0.0772]      // LED-Licht auf dem Kasten
 const BOX_CENTER: [number, number] = [0.5009, 0.4394]  // Kastenmitte ohne Licht und Stativ
 const BOX_HEIGHT = 0.5159
-/** Szene, die der Pinsel hinter der Box freilegt. Leer = dunkle Buehne bleibt. */
-const PARTY = ''
+/**
+ * Szene, die der Pinsel hinter der Box freilegt. Leer = dunkle Buehne bleibt.
+ * Foto: brunounreal, Pexels (pexels.com/photo/36499158), Pexels-Lizenz.
+ */
+const PARTY = '/images/hero/party.webp'
 
 const root = ref<HTMLElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
