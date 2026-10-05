@@ -14,6 +14,8 @@ export interface FotoboxHeroOptions {
   boxCenter: [number, number]
   /** Hoehe des Kastens relativ zur Bildhoehe. Daraus folgt die Kastentiefe. */
   boxHeight: number
+  /** Optional: Szene, die der Pinsel hinter der Box freilegt (z. B. eine Party). */
+  party?: string
   reducedMotion: boolean
   colors: { bg: string, gold: string }
 }
@@ -54,7 +56,15 @@ export async function createFotoboxHero(
   }
 
   const loader = new TextureLoader()
-  const [baseTex, mapsTex] = await Promise.all([loader.loadAsync(opts.image), loader.loadAsync(opts.maps)])
+  const [baseTex, mapsTex, partyTex] = await Promise.all([
+    loader.loadAsync(opts.image),
+    loader.loadAsync(opts.maps),
+    opts.party ? loader.loadAsync(opts.party) : Promise.resolve(null),
+  ])
+  if (partyTex) {
+    partyTex.minFilter = LinearFilter
+    partyTex.generateMipmaps = false
+  }
   // Mipmaps + anisotrope Filterung: scharf auch verkleinert und schraeg gedreht.
   const aniso = renderer.capabilities.getMaxAnisotropy()
   for (const t of [baseTex, mapsTex]) {
@@ -101,6 +111,9 @@ export async function createFotoboxHero(
       uFlash: { value: 0 },
       uFlashWhite: { value: 0 },
       uBg: { value: hexToVec3(opts.colors.bg) },
+      tParty: { value: partyTex },
+      uHasParty: { value: partyTex ? 1 : 0 },
+      uPartyAspect: { value: partyTex ? partyTex.image.width / partyTex.image.height : 1 },
       uGold: { value: hexToVec3(opts.colors.gold) },
     },
   })
@@ -332,6 +345,7 @@ export async function createFotoboxHero(
     quad.geometry.dispose()
     baseTex.dispose()
     mapsTex.dispose()
+    partyTex?.dispose()
     renderer.dispose()
     // GPU-Kontext sofort freigeben, Browser erlauben nur wenige gleichzeitig.
     renderer.forceContextLoss()

@@ -214,6 +214,9 @@ uniform float uTime;
 uniform float uFlash;        // Klick-Blitz, Huelle 0..1
 uniform float uFlashWhite;   // kurzer weisser Lichtstoss am Anfang
 uniform vec3 uBg, uGold;
+uniform sampler2D tParty;    // optionale Szene unter dem Pinsel
+uniform float uHasParty;
+uniform float uPartyAspect;
 
 ${noise}
 
@@ -375,10 +378,10 @@ void main() {
 
   // ---- Outline: schwebt auf eigener Ebene VOR der Box ----
   vec2 pivot = uBoxCenter;
-  vec2 ouv1 = (planeUv(s, R, -uDepth * 2.5, f) - pivot) / 1.07 + pivot;
+  vec2 ouv1 = (planeUv(s, R, -uDepth * 1.2, f) - pivot) / 1.035 + pivot;
   float s1 = inRect(ouv1) ? texture(tMaps, ouv1).b : 0.0;
   float o1 = isoline(s1 - 0.5, 1.2) * step(0.02, s1) * step(s1, 0.98);
-  float outline = o1 * 0.5 * (1.0 - base.a * 0.9);
+  float outline = o1 * 0.3 * (1.0 - base.a * 0.9);
   normal = mix(normal, uGold * 0.55, outline);
 
   // ---- Blitz aus dem Objektiv ----
@@ -395,11 +398,26 @@ void main() {
   float energy = 0.85 + 0.4 * clamp(dye, 0.0, 1.0) + uFlash * 0.9;
   float light = maps.g * 0.9 + (core * 1.5 + glowR + rays + streak * 0.85) * energy;
 
-  vec3 boxLit = clamp(lit * 1.65 + 0.07, 0.0, 1.0) + spec * 0.4;
+  // Sanft anheben statt ueberbelichten: die weisse Front soll Zeichnung
+  // behalten, der Bildschirm lesbar bleiben.
+  vec3 boxLit = clamp(lit * 1.12 + 0.04, 0.0, 1.0) + spec * 0.25;
   vec3 bgLit = mix(bg, vec3(0.86, 0.84, 0.8), 0.42);
+  if (uHasParty > 0.5) {
+    // Party-Foto bildschirmfuellend (cover), leicht entgegen der Box verschoben:
+    // es liegt hinter ihr, also bewegt es sich weniger.
+    float screenAspect = uRes.x / uRes.y;
+    vec2 cuv = suv - 0.5;
+    if (screenAspect > uPartyAspect) cuv.y *= uPartyAspect / screenAspect;
+    else cuv.x *= screenAspect / uPartyAspect;
+    cuv = cuv * 0.96 + 0.5 - uPointer * 0.012;
+    vec3 party = texture(tParty, cuv).rgb;
+    // Vom Blitz angestrahlt: vorne heller, zum Rand hin abfallend.
+    bgLit = party * (0.75 + 0.55 * exp(-spotR * spotR * 1.4));
+  }
   vec3 flashCol = mix(bgLit, mix(sideCol * 1.8, boxLit, base.a), max(base.a, side));
   flashCol = mix(flashCol, uGold, outline * 1.4);
-  flashCol = 1.0 - (1.0 - flashCol) * (1.0 - clamp(light, 0.0, 1.0) * vec3(1.0, 0.97, 0.9));
+  float lightOnBox = light * (1.0 - base.a * 0.75);
+  flashCol = 1.0 - (1.0 - flashCol) * (1.0 - clamp(lightOnBox, 0.0, 1.0) * vec3(1.0, 0.97, 0.9));
 
   // ---- Maske: klare Pinselkante, ohne Rauschen und ohne Saum ----
   float k = dye;

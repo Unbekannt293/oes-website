@@ -10,9 +10,11 @@ defineProps<{ alt: string }>()
 const IMAGE = '/images/hero/fotobox.webp'
 const MAPS = '/images/hero/fotobox-maps.png'
 /** Werte aus der Bildaufbereitung, relativ im Bild, y von oben. */
-const FLASH_AT: [number, number] = [0.3725, 0.2419]    // Objektiv
-const BOX_CENTER: [number, number] = [0.4997, 0.3768]  // Kastenmitte ohne Stativ
-const BOX_HEIGHT = 0.5293
+const FLASH_AT: [number, number] = [0.5, 0.0772]      // LED-Licht auf dem Kasten
+const BOX_CENTER: [number, number] = [0.5009, 0.4394]  // Kastenmitte ohne Licht und Stativ
+const BOX_HEIGHT = 0.5159
+/** Szene, die der Pinsel hinter der Box freilegt. Leer = dunkle Buehne bleibt. */
+const PARTY = ''
 
 const root = ref<HTMLElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
@@ -32,6 +34,7 @@ onMounted(async () => {
       flashAt: FLASH_AT,
       boxCenter: BOX_CENTER,
       boxHeight: BOX_HEIGHT,
+      party: PARTY || undefined,
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
       colors: {
         bg: '#0B0A09',

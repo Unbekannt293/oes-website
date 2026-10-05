@@ -69,7 +69,8 @@ useReveal(gridEl)
 /* Dunkle Buehne wie bei Lando, damit der Blitz knallt. Die Box steht gross
    in der Mitte (Kasten = ~66 % der Hoehe), das Stativ laeuft unten raus.
    Die Schrift sitzt unten links, ausserhalb der Box. */
-.hero { --fb-x: 0.5; --fb-y: 0.47; --fb-h: 1.25; }
+/* Kasten ~57 % der Hoehe; das LED-Licht sitzt darueber und braucht oben Platz. */
+.hero { --fb-x: 0.5; --fb-y: 0.52; --fb-h: 1.1; }
 
 .hero__stage {
   position: relative;
@@ -114,7 +115,7 @@ useReveal(gridEl)
 
 @media (max-width: 720px) {
   /* Kleiner und hoeher, damit unten Platz fuer Text und Buttons bleibt. */
-  .hero { --fb-y: 0.31; --fb-h: 0.8; }
+  .hero { --fb-y: 0.4; --fb-h: 0.82; }
   .hero__veil {
     background: linear-gradient(0deg,
       rgb(11 10 9 / 0.95) 0%, rgb(11 10 9 / 0.75) 32%, transparent 55%);
