@@ -1,0 +1,12 @@
+[out:json][timeout:90];
+(
+  way["highway"~"^(motorway|trunk|primary|secondary|tertiary|motorway_link|trunk_link|primary_link|residential|unclassified|living_street)$"](53.5640,10.0600,53.6100,10.1750);
+  way["railway"="rail"](53.5640,10.0600,53.6100,10.1750);
+  way["waterway"~"^(river|stream|canal)$"](53.5640,10.0600,53.6100,10.1750);
+  way["natural"="water"](53.5640,10.0600,53.6100,10.1750);
+  way["leisure"~"^(park|golf_course)$"](53.5640,10.0600,53.6100,10.1750);
+  way["landuse"~"^(forest|grass|meadow|cemetery|allotments)$"](53.5640,10.0600,53.6100,10.1750);
+  way["natural"="wood"](53.5640,10.0600,53.6100,10.1750);
+  relation["boundary"="administrative"]["admin_level"="10"]["name"="Tonndorf"];
+);
+out geom;

@@ -53,13 +53,21 @@ watch(() => route.fullPath, () => { open.value = false })
 <style scoped>
 .hdr { position: sticky; top: 0; z-index: var(--z-header); }
 
+/* Drei Spalten, die aeusseren gleich breit: so steht die Navigation
+   wirklich in der Mitte, egal wie breit Logo und Warenkorb sind.
+   Wunsch aus Louis' Unterlagen. */
 .hdr__bar {
-  display: flex; align-items: center; gap: var(--s-5);
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: var(--s-5);
   max-width: var(--content-w); margin-inline: auto;
   padding: var(--s-4) var(--gutter);
 }
 
-.brand { display: block; margin-right: auto; }
+/* Spalten fest zuweisen: mobil ist die Navigation absolut positioniert
+   und belegt keine Zelle, sonst rutschte der Warenkorb in die Mitte. */
+.brand { display: block; grid-column: 1; justify-self: start; }
+.hdr__nav { grid-column: 2; }
+.hdr__actions { grid-column: 3; justify-self: end; }
 /* Das Logo traegt den Schriftzug selbst, der Link hat ein aria-label. */
 .brand__logo { height: 46px; width: auto; }
 

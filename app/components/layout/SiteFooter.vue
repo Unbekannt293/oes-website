@@ -50,7 +50,14 @@ const year = new Date().getFullYear()
 
     <div class="shell ftr__base">
       <p class="muted">&copy; {{ year }} Otto's Event Service</p>
-      <p class="muted">Instagram &middot; TikTok</p>
+      <p class="ftr__social">
+        <a :href="contact.social.instagram" target="_blank" rel="noopener">
+          <UiIcon name="instagram" :size="16" /> Instagram
+        </a>
+        <a :href="contact.social.tiktok" target="_blank" rel="noopener">
+          <UiIcon name="tiktok" :size="16" /> TikTok
+        </a>
+      </p>
     </div>
   </footer>
 </template>
@@ -78,4 +85,7 @@ const year = new Date().getFullYear()
   border-top: 1px solid var(--c-gold-hair);
   font-size: var(--t-small);
 }
+.ftr__social { display: flex; gap: var(--s-5); }
+.ftr__social a { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--c-text-muted); }
+.ftr__social a:hover { color: var(--c-gold); }
 </style>

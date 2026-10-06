@@ -1,0 +1,68 @@
+/* ============================================================
+   Formularfelder. Global, weil Kontakt, Warenkorb und Kasse
+   dieselben Felder brauchen. Beschriftung und Fehler regelt
+   UiField.vue, hier nur das Feld selbst.
+   ============================================================ */
+
+.control {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;              /* unter 16px zoomt iOS beim Antippen */
+  line-height: 1.4;
+  color: var(--c-text);
+  background: var(--c-paper-pure);
+  border: 1px solid #DDD5C8;
+  border-radius: var(--r-sm);
+  transition: border-color var(--d-fast) var(--e-out),
+              box-shadow var(--d-fast) var(--e-out);
+}
+.control::placeholder { color: #A39C92; }
+.control:hover { border-color: #C9BDA9; }
+.control:focus-visible {
+  outline: none;
+  border-color: var(--c-gold);
+  box-shadow: 0 0 0 3px rgb(195 139 55 / 0.18);
+}
+.control[aria-invalid='true'] { border-color: var(--c-danger); }
+.control[aria-invalid='true']:focus-visible { box-shadow: 0 0 0 3px rgb(192 57 43 / 0.15); }
+
+textarea.control { resize: vertical; min-height: 9rem; }
+
+/* Datumsfeld: leer grau wie ein Platzhalter, Kalender-Symbol in Gold. */
+input[type='date'].control { min-height: 3.2rem; }
+input[type='date'].control:invalid,
+input[type='date'].control.is-empty { color: #A39C92; }
+input[type='date'].control::-webkit-calendar-picker-indicator {
+  cursor: pointer; opacity: 0.55;
+  filter: invert(55%) sepia(60%) saturate(500%) hue-rotate(5deg);
+}
+
+/* ---- Checkbox: eckig wie die Karten, Haken in Gold ---- */
+.check {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--s-3);
+  align-items: start;
+  font-size: var(--t-small); line-height: 1.55; color: var(--c-text-muted);
+  cursor: pointer;
+}
+.check input {
+  appearance: none;
+  width: 1.25rem; height: 1.25rem; margin-top: 0.1rem;
+  display: grid; place-items: center;
+  background: var(--c-paper-pure);
+  border: 1px solid #C9BDA9;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--d-fast) var(--e-out), border-color var(--d-fast) var(--e-out);
+}
+.check input::after {
+  content: '';
+  width: 0.35rem; height: 0.65rem; margin-top: -0.12rem;
+  border: solid #FFFFFF; border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform var(--d-fast) var(--e-out);
+}
+.check input:checked { background: var(--c-gold); border-color: var(--c-gold); }
+.check input:checked::after { transform: rotate(45deg) scale(1); }
+.check input[aria-invalid='true'] { border-color: var(--c-danger); }
+.check a { color: var(--c-text); text-decoration: underline; text-underline-offset: 2px; }
+.check a:hover { color: var(--c-gold); }

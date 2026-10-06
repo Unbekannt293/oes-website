@@ -13,6 +13,10 @@ export function useContact() {
     email: 'kontakt@ottos-eventservice.de',
     /** Bewusst nur der Stadtteil, keine Hausanschrift. So gewünscht. */
     district: 'Hamburg Wandsbek-Tonndorf',
+    social: {
+      instagram: 'https://www.instagram.com/ottoseventservice',
+      tiktok: 'https://www.tiktok.com/@ottos.event.servi',
+    },
     /**
      * Ladungsfähige Anschrift fürs Impressum, von Louis wörtlich
      * durchgegeben. Achtung: weicht von der Straße im Homepage-Mockup

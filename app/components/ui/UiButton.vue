@@ -44,4 +44,6 @@ const tag = computed(() => (to ? resolveComponent('NuxtLink') : 'button'))
 
 .btn--ghost   { color: var(--c-text); border: 1px solid var(--c-gold-hair); }
 .btn--ghost:hover   { border-color: var(--c-gold); color: var(--c-gold); }
+
+.btn:disabled { opacity: 0.65; cursor: progress; }
 </style>
