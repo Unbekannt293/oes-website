@@ -8,7 +8,10 @@ const year = new Date().getFullYear()
   <footer class="ftr on-ink">
     <div class="shell ftr__grid">
       <div>
-        <p class="brand__mark display">OES</p>
+        <img
+          src="/images/oes-logo-hell.webp" alt="Otto's Event Service"
+          class="ftr__logo" width="360" height="194" loading="lazy"
+        >
         <p class="muted ftr__claim">
           Zelte, Fotoboxen, Musik und mehr. Alles aus einer Hand
           für unvergessliche Veranstaltungen.
@@ -61,7 +64,7 @@ const year = new Date().getFullYear()
 }
 .ftr__grid > :first-child { grid-column: span 1; max-width: 34ch; }
 
-.brand__mark { font-size: 2.25rem; line-height: 1; }
+.ftr__logo { height: 64px; width: auto; }
 .ftr__claim { margin-top: var(--s-3); font-size: var(--t-small); }
 
 .ftr__h { color: var(--c-gold); margin-bottom: var(--s-4); }

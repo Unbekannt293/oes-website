@@ -8,11 +8,19 @@ useSeoMeta({
     + 'und Firmenfeiern. Auf- und Abbau inklusive.',
 })
 
-// Auf der Startseite nur eine Auswahl. Der Rest lebt unter /produkte.
-const featured = computed(() => products.filter(p => p.available).slice(0, 6))
+// Auf der Startseite genau eine Reihe, damit die Vorschau als ganzer
+// Bildschirm einrastet. Der Rest lebt unter /produkte.
+const featured = computed(() => products.filter(p => p.available).slice(0, 4))
 
 const gridEl = ref<HTMLElement | null>(null)
 useReveal(gridEl)
+
+// Vom Hero mit einer Geste sauber zur Produktvorschau (Mausrad, Pfeil).
+const angebot = ref<HTMLElement | null>(null)
+const { goNext } = useSectionSnap(angebot)
+
+// Fuer Touch-Geraete: CSS-Snap nur auf der Startseite (siehe Stil unten).
+useHead({ htmlAttrs: { class: 'snap-home' } })
 </script>
 
 <template>
@@ -44,7 +52,7 @@ useReveal(gridEl)
           </div>
         </div>
 
-        <a href="#angebot" class="hero__scroll">
+        <a href="#angebot" class="hero__scroll" @click.prevent="goNext">
           <span class="visually-hidden">Weiter zum Angebot</span>
           <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none"
                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -60,7 +68,7 @@ useReveal(gridEl)
     </FotoboxHero>
 
     <!-- ============ Produkte ============ -->
-    <section id="angebot" class="section">
+    <section id="angebot" ref="angebot" class="section angebot">
       <div class="shell">
         <SectionHeading
           title="Unsere Produkte"
@@ -87,7 +95,7 @@ useReveal(gridEl)
 
 .hero__stage {
   position: relative;
-  min-height: max(640px, 100svh);
+  min-height: max(640px, calc(100svh - var(--hdr-h)));
   display: grid;
   align-items: end;
 }
@@ -166,10 +174,32 @@ useReveal(gridEl)
   .hero__btn { flex: 1 1 100%; }
 }
 
+/* ---- Produktvorschau: ein ganzer Bildschirm, auf den der Hero einrastet ---- */
+.angebot {
+  min-height: calc(100svh - var(--hdr-h));
+  display: grid;
+  align-content: center;
+  padding-block: var(--s-7);
+}
+
 /* ---- Produktraster ---- */
 .grid {
   display: grid; gap: var(--s-5);
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 .more { display: flex; justify-content: center; margin-top: var(--s-7); }
+</style>
+
+<style>
+/* Hoehe des klebenden Headers, fuer Hero, Vorschau und Snap-Abstaende. */
+:root { --hdr-h: 78px; }
+
+/* Touch scrollt nativ (Lenis greift dort nicht), also hier CSS-Snap.
+   proximity statt mandatory: unterhalb der Vorschau bis in den Footer
+   soll man frei scrollen koennen. */
+@media (hover: none) and (pointer: coarse) {
+  html.snap-home { scroll-snap-type: y proximity; }
+  html.snap-home .hero,
+  html.snap-home #angebot { scroll-snap-align: start; scroll-margin-top: var(--hdr-h); }
+}
 </style>

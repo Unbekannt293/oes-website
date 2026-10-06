@@ -11,26 +11,18 @@ const open = ref(false)
 const route = useRoute()
 watch(() => route.fullPath, () => { open.value = false })
 
-// Auf der Startseite gehoert der erste Bildschirm ganz dem Hero. Der Header
-// liegt dann ueber der Seite und faehrt erst ein, wenn der Hero weitgehend
-// aus dem Bild gescrollt ist. Auf allen anderen Seiten steht er wie gewohnt.
-const isHome = computed(() => route.path === '/')
-const { y } = useWindowScroll()
-const { height } = useWindowSize()
-const revealed = computed(() => !isHome.value || y.value > height.value * 0.7)
 </script>
 
 <template>
-  <header
-    class="hdr on-ink"
-    :class="{ 'hdr--overlay': isHome, 'is-hidden': !revealed && !open }"
-  >
+  <header class="hdr on-ink">
     <a href="#inhalt" class="visually-hidden">Zum Inhalt springen</a>
 
     <div class="hdr__bar">
       <NuxtLink to="/" class="brand" aria-label="OES, Otto's Event Service, zur Startseite">
-        <span class="brand__mark display">OES</span>
-        <span class="brand__sub label">Otto's Event Service</span>
+        <img
+          src="/images/oes-logo-hell.webp" alt="" class="brand__logo"
+          width="360" height="194"
+        >
       </NuxtLink>
 
       <nav
@@ -61,26 +53,15 @@ const revealed = computed(() => !isHome.value || y.value > height.value * 0.7)
 <style scoped>
 .hdr { position: sticky; top: 0; z-index: var(--z-header); }
 
-/* Startseite: ueber dem Hero, ohne Platz zu belegen, zunaechst versteckt. */
-.hdr--overlay {
-  position: fixed;
-  inset-inline: 0;
-  transition: transform var(--d-base) var(--e-out);
-}
-.hdr--overlay.is-hidden { transform: translateY(-100%); }
-/* Tastatur: wer per Tab hineinkommt, sieht ihn sofort, sonst waere die
-   Navigation fuer Tastaturnutzer unsichtbar. */
-.hdr--overlay.is-hidden:focus-within { transform: none; }
-
 .hdr__bar {
   display: flex; align-items: center; gap: var(--s-5);
   max-width: var(--content-w); margin-inline: auto;
   padding: var(--s-4) var(--gutter);
 }
 
-.brand { display: grid; gap: 2px; margin-right: auto; }
-.brand__mark { font-size: 2rem; line-height: 1; letter-spacing: 0.02em; }
-.brand__sub  { font-size: 0.5rem; color: var(--c-text-muted); letter-spacing: 0.2em; }
+.brand { display: block; margin-right: auto; }
+/* Das Logo traegt den Schriftzug selbst, der Link hat ein aria-label. */
+.brand__logo { height: 46px; width: auto; }
 
 .hdr__navinner { display: flex; gap: clamp(1rem, 2.2vw, 2.25rem); }
 .hdr__link { position: relative; padding-block: var(--s-2); color: var(--c-text-onink); }
