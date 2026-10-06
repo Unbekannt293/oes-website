@@ -1,7 +1,7 @@
 <script setup lang="ts">
 interface Props {
   variant?: 'solid' | 'outline' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   to?: string
 }
 const { variant = 'solid', size = 'md', to } = defineProps<Props>()
@@ -34,6 +34,7 @@ const tag = computed(() => (to ? resolveComponent('NuxtLink') : 'button'))
 .btn--sm { padding: 0.55rem 1rem; }
 .btn--md { padding: 0.8rem 1.6rem; }
 .btn--lg { padding: 1.05rem 2.4rem; font-size: 0.75rem; }
+.btn--xl { padding: 1.3rem 2.8rem; font-size: 0.8125rem; letter-spacing: 0.16em; }
 
 .btn--solid   { background: var(--c-gold); color: #FFFFFF; }
 .btn--solid:hover   { background: var(--c-gold-lift); }

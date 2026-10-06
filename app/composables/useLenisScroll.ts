@@ -15,7 +15,8 @@ export function useLenisScroll() {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (reduce.matches) return
 
-    const lenis = new Lenis({ duration: 1.05, smoothWheel: true })
+    // anchors: Links auf #abschnitt scrollen weich statt zu springen.
+    const lenis = new Lenis({ duration: 1.05, smoothWheel: true, anchors: true })
     let frame = 0
 
     const raf = (time: number) => {

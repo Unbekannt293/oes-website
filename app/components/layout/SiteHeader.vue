@@ -10,10 +10,21 @@ const nav = [
 const open = ref(false)
 const route = useRoute()
 watch(() => route.fullPath, () => { open.value = false })
+
+// Auf der Startseite gehoert der erste Bildschirm ganz dem Hero. Der Header
+// liegt dann ueber der Seite und faehrt erst ein, wenn der Hero weitgehend
+// aus dem Bild gescrollt ist. Auf allen anderen Seiten steht er wie gewohnt.
+const isHome = computed(() => route.path === '/')
+const { y } = useWindowScroll()
+const { height } = useWindowSize()
+const revealed = computed(() => !isHome.value || y.value > height.value * 0.7)
 </script>
 
 <template>
-  <header class="hdr on-ink">
+  <header
+    class="hdr on-ink"
+    :class="{ 'hdr--overlay': isHome, 'is-hidden': !revealed && !open }"
+  >
     <a href="#inhalt" class="visually-hidden">Zum Inhalt springen</a>
 
     <div class="hdr__bar">
@@ -49,6 +60,17 @@ watch(() => route.fullPath, () => { open.value = false })
 
 <style scoped>
 .hdr { position: sticky; top: 0; z-index: var(--z-header); }
+
+/* Startseite: ueber dem Hero, ohne Platz zu belegen, zunaechst versteckt. */
+.hdr--overlay {
+  position: fixed;
+  inset-inline: 0;
+  transition: transform var(--d-base) var(--e-out);
+}
+.hdr--overlay.is-hidden { transform: translateY(-100%); }
+/* Tastatur: wer per Tab hineinkommt, sieht ihn sofort, sonst waere die
+   Navigation fuer Tastaturnutzer unsichtbar. */
+.hdr--overlay.is-hidden:focus-within { transform: none; }
 
 .hdr__bar {
   display: flex; align-items: center; gap: var(--s-5);

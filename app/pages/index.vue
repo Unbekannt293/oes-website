@@ -25,7 +25,7 @@ useReveal(gridEl)
         <div class="shell hero__inner">
           <div class="hero__text">
             <h1 class="display hero__title">
-              Ihr Event.<br>Unser <em>Service.</em>
+              Events<br><em>beleben.</em>
             </h1>
             <p class="hero__lead muted">
               Zelte, Fotoboxen, Musik und mehr. Alles aus einer Hand
@@ -33,11 +33,24 @@ useReveal(gridEl)
             </p>
           </div>
 
+          <!-- Ohne Header sind das die Wege von der Startseite weg. -->
           <div class="hero__cta">
-            <UiButton to="/pakete" variant="solid" size="lg">Pakete ansehen</UiButton>
-            <UiButton to="/kontakt" variant="outline" size="lg">Beratung anfragen</UiButton>
+            <UiButton to="/pakete" variant="solid" size="xl" class="hero__btn hero__btn--main">
+              Pakete ansehen <span aria-hidden="true">&rarr;</span>
+            </UiButton>
+            <UiButton to="/kontakt" variant="outline" size="xl" class="hero__btn">
+              Beratung anfragen
+            </UiButton>
           </div>
         </div>
+
+        <a href="#angebot" class="hero__scroll">
+          <span class="visually-hidden">Weiter zum Angebot</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </a>
 
         <p class="label hero__hint" aria-hidden="true">
           <span class="hero__hint--pointer">Klicken zum Auslösen</span>
@@ -47,7 +60,7 @@ useReveal(gridEl)
     </FotoboxHero>
 
     <!-- ============ Produkte ============ -->
-    <section class="section">
+    <section id="angebot" class="section">
       <div class="shell">
         <SectionHeading
           title="Unsere Produkte"
@@ -74,7 +87,7 @@ useReveal(gridEl)
 
 .hero__stage {
   position: relative;
-  min-height: max(640px, calc(100svh - 72px));
+  min-height: max(640px, 100svh);
   display: grid;
   align-items: end;
 }
@@ -95,12 +108,37 @@ useReveal(gridEl)
 }
 .hero__text { max-width: 30rem; }
 
-.hero__title { font-size: clamp(2.2rem, 1.3rem + 2.6vw, 3.6rem); }
+.hero__title { font-size: clamp(3rem, 1.6rem + 4.2vw, 5.4rem); line-height: 0.95; }
 .hero__title em { font-style: normal; color: var(--c-gold); }
 
 .hero__lead { margin-top: var(--s-4); max-width: 34ch; }
 
 .hero__cta { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.hero__btn { gap: var(--s-3); }
+/* Hauptweg: warmer Schein, damit er vor der dunklen Buehne als Erstes ins Auge faellt */
+.hero__btn--main { box-shadow: 0 10px 40px -10px rgb(195 139 55 / 0.65); }
+.hero__btn--main span { transition: transform var(--d-fast) var(--e-out); }
+.hero__btn--main:hover span { transform: translateX(4px); }
+
+/* Scroll-Hinweis: dunkler Kreis, damit er auch ueber dem weissen Stoff lesbar ist */
+.hero__scroll {
+  position: absolute; left: 50%; bottom: var(--s-5);
+  translate: -50% 0;
+  display: grid; place-items: center;
+  width: 48px; height: 48px; border-radius: 50%;
+  color: var(--c-gold);
+  background: rgb(11 10 9 / 0.65);
+  border: 1px solid rgb(195 139 55 / 0.45);
+  backdrop-filter: blur(6px);
+  animation: hint-bob 2.2s var(--e-out) infinite;
+  transition: background var(--d-fast) var(--e-out), color var(--d-fast) var(--e-out);
+}
+.hero__scroll:hover { background: var(--c-gold); color: #fff; }
+@keyframes hint-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+@media (prefers-reduced-motion: reduce) { .hero__scroll { animation: none; } }
 
 .hero__hint {
   position: absolute; top: var(--s-5); right: var(--gutter);
@@ -115,12 +153,17 @@ useReveal(gridEl)
 
 @media (max-width: 720px) {
   /* Kleiner und hoeher, damit unten Platz fuer Text und Buttons bleibt. */
-  .hero { --fb-y: 0.4; --fb-h: 0.82; }
+  /* Der Textblock unten ist mit Slogan und zwei grossen Buttons ~ halb so hoch
+     wie der Schirm. Die Box (LED-Oberkante bis Kastenunterkante = 66 % der
+     Bildhoehe) muss darueber passen, sonst liegt weisse Schrift auf der weissen Front. */
+  .hero { --fb-y: 0.3; --fb-h: 0.64; }
   .hero__veil {
     background: linear-gradient(0deg,
       rgb(11 10 9 / 0.95) 0%, rgb(11 10 9 / 0.75) 32%, transparent 55%);
   }
-  .hero__inner { padding-block: var(--s-6); }
+  .hero__inner { padding-block: var(--s-6) calc(var(--s-6) + 56px); }
+  .hero__cta { width: 100%; }
+  .hero__btn { flex: 1 1 100%; }
 }
 
 /* ---- Produktraster ---- */
