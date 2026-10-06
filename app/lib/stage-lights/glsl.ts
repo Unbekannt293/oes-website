@@ -1,6 +1,5 @@
 // Buehnenlicht aus dem Startseiten-Hero: Lichterketten und Logo-Sterne.
-// Geteilt zwischen dem Fotobox-Hero (three.js) und dem schlanken
-// Seitenkopf-Renderer (reines WebGL2), damit beide exakt gleich aussehen.
+// Eigenes Modul, damit es ohne die Fotobox-Shader wiederverwendbar ist.
 
 export const stageLights = /* glsl */ `
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }

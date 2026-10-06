@@ -11,17 +11,17 @@ useSeoMeta({
 
 <template>
   <div>
-    <PageHero title="Kontakt" sub="Wir freuen uns auf Ihre Anfrage!" />
+    <PageHero
+      crumb="Kontakt"
+      title="Wir freuen uns auf Ihre Anfrage."
+      sub="Erzählen Sie uns von Ihrer Veranstaltung. Wir melden uns mit einem passenden Angebot."
+    />
 
     <section class="section">
       <div class="shell kt">
         <!-- ============ Formular ============ -->
         <div class="kt__form">
           <h2 class="display kt__h">Schreiben Sie uns</h2>
-          <p class="muted kt__intro">
-            Erzählen Sie uns kurz von Ihrer Veranstaltung. Wir melden uns mit
-            einem passenden Angebot.
-          </p>
           <ContactForm />
         </div>
 
@@ -103,7 +103,7 @@ useSeoMeta({
   width: 3rem; height: 1px; margin-top: var(--s-3);
   background: var(--c-gold);
 }
-.kt__intro { margin: var(--s-4) 0 var(--s-6); max-width: 46ch; }
+.kt__form .kt__h { margin-bottom: var(--s-6); }
 
 /* ---- Kontaktdaten ---- */
 .kt__info { display: grid; gap: var(--s-6); align-content: start; }
