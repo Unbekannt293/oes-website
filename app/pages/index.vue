@@ -9,8 +9,11 @@ useSeoMeta({
 })
 
 // Auf der Startseite genau eine Reihe, damit die Vorschau als ganzer
-// Bildschirm einrastet. Der Rest lebt unter /produkte.
-const featured = computed(() => products.filter(p => p.available).slice(0, 4))
+// Bildschirm einrastet. Mietbares zuerst, den Rest fuellt "Coming soon"
+// auf. Array.sort ist stabil, die Katalogreihenfolge bleibt sonst erhalten.
+const featured = computed(() =>
+  [...products].sort((a, b) => Number(b.available) - Number(a.available)).slice(0, 4),
+)
 
 const gridEl = ref<HTMLElement | null>(null)
 useReveal(gridEl)
@@ -188,6 +191,19 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 .more { display: flex; justify-content: center; margin-top: var(--s-7); }
+
+/* Eine Reihe aus vier Karten muss in genau einen Bildschirm passen, sonst
+   rastet der Snap auf eine halb abgeschnittene Vorschau. Ueberschrift,
+   Kartentext (bis drei Zeilen), Link und Abstaende brauchen zusammen etwa
+   540px, die Bilder bekommen den Rest. Erst ab vier Spalten, darunter
+   bricht das Raster um und passt ohnehin nicht auf einen Bildschirm. */
+@media (min-width: 1100px) {
+  .angebot { padding-block: var(--s-6); }
+  .grid :deep(.card__media) {
+    aspect-ratio: auto;
+    height: clamp(200px, 100svh - var(--hdr-h) - 540px, 380px);
+  }
+}
 </style>
 
 <style>

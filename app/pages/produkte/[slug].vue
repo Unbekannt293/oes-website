@@ -33,9 +33,11 @@ useSeoMeta({
 
     <div class="detail">
       <NuxtImg
+        v-if="product.images[0]"
         :src="product.images[0]" :alt="product.name"
-        width="1200" height="900" class="detail__img"
+        width="1086" height="1448" class="detail__img"
       />
+      <div v-else class="detail__img detail__img--empty" aria-hidden="true" />
 
       <div class="detail__info">
         <p class="label detail__cat">{{ category?.label }}</p>
@@ -46,13 +48,13 @@ useSeoMeta({
           <li v-for="f in product.features" :key="f">{{ f }}</li>
         </ul>
 
-        <p class="detail__price">
+        <p v-if="product.available" class="detail__price">
           <span class="muted">ab</span> {{ formatPrice(product.priceCents) }}
           <span class="muted detail__unit">pro Veranstaltung</span>
         </p>
 
         <p v-if="!product.available" class="detail__soon label">
-          Dieses Produkt ist bald verfügbar.
+          Coming soon: dieses Produkt ist bald bei uns verfügbar.
         </p>
 
         <div class="detail__cta">
@@ -76,6 +78,10 @@ useSeoMeta({
 @media (max-width: 860px) { .detail { grid-template-columns: 1fr; } }
 
 .detail__img { width: 100%; border-radius: var(--r-md); }
+.detail__img--empty {
+  aspect-ratio: 4 / 5;
+  background: radial-gradient(circle at 50% 45%, #F8F5F0, #E8E1D6 75%);
+}
 
 .detail__info { display: grid; gap: var(--s-4); }
 .detail__cat { color: var(--c-gold); }

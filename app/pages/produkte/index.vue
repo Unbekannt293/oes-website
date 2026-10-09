@@ -19,10 +19,11 @@ function setFilter(kat: Filter) {
   router.replace({ query: kat === 'alle' ? {} : { kat } })
 }
 
+// Mietbares zuerst, damit es nicht zwischen den "Coming soon"-Kacheln
+// untergeht. Array.sort ist stabil, sonst bleibt die Katalogreihenfolge.
 const visible = computed(() =>
-  active.value === 'alle'
-    ? products
-    : products.filter(p => p.category === active.value),
+  (active.value === 'alle' ? products : products.filter(p => p.category === active.value))
+    .toSorted((a, b) => Number(b.available) - Number(a.available)),
 )
 </script>
 

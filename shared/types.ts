@@ -16,8 +16,9 @@ export interface Product {
   priceCents: number
   summary: string
   features: string[]
+  /** Leer, solange es kein echtes Foto gibt. */
   images: string[]
-  /** Für "bald verfügbar" quer ueber der Karte. */
+  /** false = "Coming soon" quer ueber der Karte. */
   available: boolean
   /** Wieviele Exemplare existieren. Grundlage der Verfügbarkeitspruefung. */
   stock: number
