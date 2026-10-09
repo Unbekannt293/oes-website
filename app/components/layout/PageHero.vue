@@ -7,7 +7,7 @@
 // fuer Fotoboxen). Bis Louis eigene Eventfotos hat, steht das Konzertfoto.
 const {
   crumb, title, sub, image = '/images/hero/party-konzert.webp',
-  focus = '50% 45%',
+  focus = '50% 45%', tone = 'warm',
 } = defineProps<{
   /** Seitenname fuer die Brotkrumen, z. B. "Kontakt". */
   crumb: string
@@ -16,11 +16,17 @@ const {
   image?: string
   /** Bildausschnitt wie object-position, falls das Motiv nicht mittig sitzt. */
   focus?: string
+  /**
+   * warm: bunte Eventfotos stark abgedunkelt und warm getoent.
+   * mono: Bilder, die schon schwarzweiss und dunkel sind (Produktbanner),
+   * nur leicht abgedunkelt, damit das klare Schwarzweiss bleibt.
+   */
+  tone?: 'warm' | 'mono'
 }>()
 </script>
 
 <template>
-  <header class="ph on-ink">
+  <header class="ph on-ink" :class="`ph--${tone}`">
     <img
       :src="image" alt="" class="ph__img" :style="{ objectPosition: focus }"
       fetchpriority="high" decoding="async"
@@ -61,6 +67,12 @@ const {
   background:
     linear-gradient(90deg, rgb(11 10 9 / 0.92) 0%, rgb(11 10 9 / 0.55) 50%, rgb(11 10 9 / 0.15) 100%),
     linear-gradient(0deg, rgb(11 10 9 / 0.7), transparent 55%);
+}
+.ph--mono .ph__img { filter: grayscale(1) contrast(1.05) brightness(0.9); }
+.ph--mono::before {
+  background:
+    linear-gradient(90deg, rgb(11 10 9 / 0.7) 0%, rgb(11 10 9 / 0.3) 45%, rgb(11 10 9 / 0.2) 100%),
+    linear-gradient(0deg, rgb(11 10 9 / 0.45), transparent 35%);
 }
 /* Goldene Haarlinie als Kante zum hellen Inhalt, nach rechts auslaufend. */
 .ph::after {

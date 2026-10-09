@@ -36,7 +36,7 @@ const popular = allPackages.filter(p => p.highlight)
       crumb="Produkte"
       title="Alles für Ihr Event, aus einer Hand."
       sub="Fotobox und Soundbox mieten Sie schon heute. Zelte und Lichttechnik folgen bald."
-      image="/images/produkte/banner.webp" focus="62% 50%"
+      image="/images/produkte/banner.webp" tone="mono"
     />
 
     <section class="section">
