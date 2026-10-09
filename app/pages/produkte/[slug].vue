@@ -32,10 +32,9 @@ useSeoMeta({
     </nav>
 
     <div class="detail">
-      <NuxtImg
-        v-if="product.images[0]"
-        :src="product.images[0]" :alt="product.name"
-        width="1086" height="1448" class="detail__img"
+      <ProductGallery
+        v-if="product.images.length" :images="product.images" :alt="product.name"
+        thumbs eager :width="1086" :height="1448" class="detail__gallery"
       />
       <div v-else class="detail__img detail__img--empty" aria-hidden="true" />
 
@@ -78,6 +77,7 @@ useSeoMeta({
 @media (max-width: 860px) { .detail { grid-template-columns: 1fr; } }
 
 .detail__img { width: 100%; border-radius: var(--r-md); }
+.detail__gallery :deep(.gal__stage) { aspect-ratio: 3 / 4; border-radius: var(--r-md); }
 .detail__img--empty {
   aspect-ratio: 4 / 5;
   background: radial-gradient(circle at 50% 45%, #F8F5F0, #E8E1D6 75%);

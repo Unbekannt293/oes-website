@@ -45,7 +45,7 @@ export const products: Product[] = [
     slug: 'fotobox', name: 'Fotobox', category: 'fotoautomaten',
     priceCents: 29900, summary: 'Unsere Fotobox mit Touchscreen, LED-Licht und Sofortdruck.',
     features: ['Hochwertige Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder per E-Mail'],
-    images: ['/images/produkte/fotobox-nah.webp', '/images/produkte/fotobox-drucker.webp'], available: true, stock: 1,
+    images: ['/images/produkte/fotobox-nah.webp', '/images/produkte/fotobox-drucker.webp', '/images/produkte/set-fotobox-soundboxen.webp'], available: true, stock: 1,
   },
   {
     slug: 'fotobox-premium', name: 'Fotobox Premium', category: 'fotoautomaten',
