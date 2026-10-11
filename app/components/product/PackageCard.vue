@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { RentalPackage } from '~~/shared/types'
-import { formatPrice } from '~~/shared/pricing'
+import { cheapestWithSoundboxCents, formatPrice } from '~~/shared/pricing'
 
 // Querformat-Karte fuer Pakete: Foto links, Inhalt rechts. Die in Louis'
 // Mockup hervorgehobenen Pakete ("Am beliebtesten") tragen die Plakette.
-defineProps<{ pkg: RentalPackage }>()
+const { pkg } = defineProps<{ pkg: RentalPackage }>()
+const withSoundbox = computed(() => cheapestWithSoundboxCents(pkg))
 </script>
 
 <template>
@@ -22,7 +23,12 @@ defineProps<{ pkg: RentalPackage }>()
         </li>
       </ul>
       <div class="pk__foot">
-        <p class="pk__price">{{ formatPrice(pkg.priceCents) }}</p>
+        <div>
+          <p class="pk__price">{{ formatPrice(pkg.priceCents) }}</p>
+          <p v-if="withSoundbox" class="pk__alt muted">
+            mit Soundbox ab {{ formatPrice(withSoundbox) }}
+          </p>
+        </div>
         <UiButton to="/pakete" variant="outline" size="sm">Paket ansehen</UiButton>
       </div>
     </div>
@@ -60,6 +66,7 @@ defineProps<{ pkg: RentalPackage }>()
   border-top: 1px solid var(--c-gold-hair);
 }
 .pk__price { font-size: 1.35rem; font-weight: 600; color: var(--c-gold); }
+.pk__alt { font-size: var(--t-small); }
 
 @media (max-width: 520px) {
   .pk { grid-template-columns: 1fr; }

@@ -37,6 +37,7 @@ function open() {
       <!-- Kein Preis fuer etwas, das man noch nicht mieten kann. -->
       <p v-if="product.available" class="card__price">
         <span class="muted">ab</span> {{ formatPrice(product.priceCents) }}
+        <span v-if="product.priceUnit" class="muted card__unit">{{ product.priceUnit }}</span>
       </p>
     </div>
   </article>
@@ -95,4 +96,5 @@ function open() {
 .card__summary { font-size: var(--t-small); }
 .card__price { color: var(--c-gold); font-weight: 600; margin-top: var(--s-1); }
 .card__price .muted { font-weight: 400; font-size: var(--t-small); }
+.card__unit { margin-left: 0.15rem; }
 </style>

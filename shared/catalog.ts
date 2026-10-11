@@ -1,4 +1,4 @@
-import type { Addon, Category, Product, RentalPackage } from './types'
+import type { Addon, Category, Product, RentalPackage, SoundboxRates } from './types'
 
 /**
  * Vorlaeufiger Katalog, direkt aus den Mockups uebernommen.
@@ -43,7 +43,7 @@ export const products: Product[] = [
   },
   {
     slug: 'fotobox', name: 'Fotobox', category: 'fotoautomaten',
-    priceCents: 29900, summary: 'Unsere Fotobox mit Touchscreen, LED-Licht und Sofortdruck.',
+    priceCents: 12999, summary: 'Unsere Fotobox mit Touchscreen, LED-Licht und Sofortdruck.',
     features: ['Hochwertige Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder per E-Mail'],
     images: ['/images/produkte/fotobox-nah.webp', '/images/produkte/fotobox-drucker.webp', '/images/produkte/set-fotobox-soundboxen.webp'], available: true, stock: 1,
   },
@@ -61,7 +61,7 @@ export const products: Product[] = [
   },
   {
     slug: 'soundbox', name: 'Soundbox', category: 'ton-musik',
-    priceCents: 14900, summary: 'Akkubetriebene Partybox mit kräftigem Sound, drinnen wie draußen.',
+    priceCents: 2500, priceUnit: 'pro Tag', summary: 'Akkubetriebene Partybox mit kräftigem Sound, drinnen wie draußen.',
     features: ['Bluetooth & Klinke', 'Akkubetrieb, kein Stromanschluss nötig', 'Stativ mit weißer Husse inklusive'],
     images: ['/images/produkte/soundbox-nah.webp', '/images/produkte/soundbox-stativ.webp', '/images/produkte/soundbox-nah-seite.webp', '/images/produkte/soundbox-stativ-seite.webp'],
     available: true, stock: 2,
@@ -98,32 +98,52 @@ export const products: Product[] = [
   },
 ]
 
+/*
+ * Fotobox-Preise von Louis (Oktober 2026). Mit Soundbox gibt es Festpreise je
+ * Wochentag der Veranstaltung. Louis nennt dazu "15 % Rabatt" (1 Soundbox) und
+ * "25 % Rabatt" (2 Soundboxen) als Werbeaussage, gerechnet wird mit den
+ * Festpreisen. Druckerumfang je Stufe stammt noch aus dem Mockup.
+ */
+export const SOUNDBOX_DISCOUNT_PCT = { 1: 15, 2: 25 } as const
+
 export const fotoboxPackages: RentalPackage[] = [
   {
-    slug: 'fotobox-basis', name: 'Basis Paket', kind: 'fotobox', tier: 'basis',
-    priceCents: 29900, freeDeliveryKm: 4,
+    slug: 'fotobox-paket', name: 'Fotobox', kind: 'fotobox', tier: 'fotobox',
+    priceCents: 12999, freeDeliveryKm: 4,
+    withSoundbox: { 1: { moDo: 14999, frSo: 15499 }, 2: { moDo: 16999, frSo: 17499 } },
     includes: ['Fotobox', 'Ohne Drucker', 'Requisiten inklusive', 'Kostenlose Lieferung bis 4 km'],
     image: '/images/produkte/fotobox-nah.webp',
   },
   {
-    slug: 'fotobox-klassik', name: 'Klassik Paket', kind: 'fotobox', tier: 'klassik',
-    priceCents: 49900, freeDeliveryKm: 4,
+    slug: 'fotobox-basic', name: 'Fotobox Basic', kind: 'fotobox', tier: 'basic',
+    priceCents: 24999, freeDeliveryKm: 4,
+    withSoundbox: { 1: { moDo: 26999, frSo: 27499 }, 2: { moDo: 28499, frSo: 29499 } },
     includes: ['Fotobox', 'Drucker + 150 Blatt', 'Requisiten inklusive', 'Kostenlose Lieferung bis 4 km'],
     image: '/images/produkte/fotobox-drucker.webp',
   },
   {
-    slug: 'fotobox-premium-paket', name: 'Premium Paket', kind: 'fotobox', tier: 'premium',
-    priceCents: 69900, freeDeliveryKm: 6, highlight: true,
+    slug: 'fotobox-premium-paket', name: 'Fotobox Premium', kind: 'fotobox', tier: 'premium',
+    priceCents: 37499, freeDeliveryKm: 6, highlight: true,
+    withSoundbox: { 1: { moDo: 39499, frSo: 39999 }, 2: { moDo: 41499, frSo: 42499 } },
     includes: ['Fotobox', 'Drucker + 400 Blatt', 'Requisiten inklusive', 'Kostenlose Lieferung bis 6 km'],
     image: '/images/produkte/fotobox-drucker.webp',
   },
   {
-    slug: 'fotobox-deluxe', name: 'Deluxe Paket', kind: 'fotobox', tier: 'deluxe',
-    priceCents: 89900, freeDeliveryKm: 8,
+    slug: 'fotobox-deluxe', name: 'Fotobox Deluxe', kind: 'fotobox', tier: 'deluxe',
+    priceCents: 47499, freeDeliveryKm: 8,
+    withSoundbox: { 1: { moDo: 49499, frSo: 49999 }, 2: { moDo: 51499, frSo: 51999 } },
     includes: ['Fotobox', 'Drucker + 700 Blatt', 'Requisiten inklusive', 'Kostenlose Lieferung bis 8 km'],
     image: '/images/produkte/fotobox-drucker.webp',
   },
 ]
+
+/** Soundbox-Miete von Louis (Oktober 2026). */
+export const soundboxRates: SoundboxRates = {
+  perDayCents: { moDo: 2500, frSo: 3000 },
+  weekendCents: 6500,
+  weekCents: 14500,
+  extraBatteryPerDayCents: 500,
+}
 
 export const eventPackages: RentalPackage[] = [
   {
@@ -146,13 +166,18 @@ export const eventPackages: RentalPackage[] = [
   },
 ]
 
+/*
+ * Fotobox-Zubehoer von Louis (Oktober 2026). USB-Stick und roter Teppich
+ * stammen aus dem Mockup, Louis hat dafuer keinen Preis genannt: vorerst
+ * nicht buchbar, Preise sind Platzhalter.
+ */
 export const addons: Addon[] = [
-  { slug: 'premium-requisiten', name: 'Premium Requisiten', priceCents: 3900 },
-  { slug: 'hintergrundsystem', name: 'Hintergrundsystem', priceCents: 4900 },
-  { slug: 'persönliches-layout', name: 'Persönliches Layout', priceCents: 2900 },
-  { slug: 'gaestebuch', name: 'Gästebuch inkl. Stift & Kleber', priceCents: 3500 },
-  { slug: 'usb-stick', name: 'USB-Stick mit allen Bildern', priceCents: 1900 },
-  { slug: 'roter-teppich', name: 'Roter Teppich & Absperrständer', priceCents: 9900 },
+  { slug: 'eigenes-layout', name: 'Eigenes Foto-Layout / Branding', priceCents: 1499, available: true },
+  { slug: 'premium-requisiten', name: 'Premium Requisiten', priceCents: 999, available: false },
+  { slug: 'hintergrund', name: 'Hintergrund / Leinwand', priceCents: 2999, available: false },
+  { slug: 'gaestebuch', name: 'Gästebuch', priceCents: 1999, available: false },
+  { slug: 'usb-stick', name: 'USB-Stick mit allen Bildern', priceCents: 1900, available: false },
+  { slug: 'roter-teppich', name: 'Roter Teppich & Absperrständer', priceCents: 9900, available: false },
 ]
 
 export const allPackages = [...eventPackages, ...fotoboxPackages]

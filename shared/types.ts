@@ -12,8 +12,10 @@ export interface Product {
   slug: string
   name: string
   category: CategoryId
-  /** Tagespreis in Cent. Ganzzahlen, damit keine Rundungsfehler entstehen. */
+  /** Einstiegspreis in Cent. Ganzzahlen, damit keine Rundungsfehler entstehen. */
   priceCents: number
+  /** Wofuer der Preis gilt, z. B. "pro Tag". Ohne Angabe: pro Veranstaltung. */
+  priceUnit?: string
   summary: string
   features: string[]
   /** Leer, solange es kein echtes Foto gibt. */
@@ -24,7 +26,10 @@ export interface Product {
   stock: number
 }
 
-export type PackageTier = 'basis' | 'klassik' | 'premium' | 'deluxe'
+export type PackageTier = 'fotobox' | 'basic' | 'premium' | 'deluxe'
+
+/** Louis rechnet nach Wochentag der Veranstaltung: Montag bis Donnerstag oder Freitag bis Sonntag. */
+export type Weekpart = 'moDo' | 'frSo'
 
 export interface RentalPackage {
   slug: string
@@ -32,7 +37,14 @@ export interface RentalPackage {
   /** 'fotobox' = die vier Tiers, 'event' = Komplettpakete */
   kind: 'fotobox' | 'event'
   tier?: PackageTier
+  /** Preis ohne Soundbox. */
   priceCents: number
+  /**
+   * Festpreise mit einer oder zwei Soundboxen, je nach Wochentag. Bewusst
+   * einzeln gespeichert statt aus dem Rabatt gerechnet: Louis' Preise folgen
+   * keiner einheitlichen Formel.
+   */
+  withSoundbox?: Record<1 | 2, Record<Weekpart, number>>
   includes: string[]
   /** Lieferradius ohne Aufpreis, in Kilometern. */
   freeDeliveryKm: number
@@ -44,7 +56,18 @@ export interface Addon {
   slug: string
   name: string
   priceCents: number
+  /** false = noch nicht buchbar ("noch nicht verfügbar" laut Louis). */
+  available: boolean
   image?: string
+}
+
+export interface SoundboxRates {
+  perDayCents: Record<Weekpart, number>
+  /** Pauschale Freitag bis Sonntag, drei Tage. */
+  weekendCents: number
+  /** Pauschale Montag bis Sonntag. */
+  weekCents: number
+  extraBatteryPerDayCents: number
 }
 
 export interface CartLine {

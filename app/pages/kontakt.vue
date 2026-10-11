@@ -15,6 +15,7 @@ useSeoMeta({
       crumb="Kontakt"
       title="Wir freuen uns auf Ihre Anfrage."
       sub="Erzählen Sie uns von Ihrer Veranstaltung. Wir melden uns mit einem passenden Angebot."
+      layout="stack"
     />
 
     <section class="section">
@@ -55,15 +56,22 @@ useSeoMeta({
 
           <!-- Selbst gezeichnete Karte statt Google-Einbettung: laedt nichts
                von Dritten, braucht also keine Einwilligung. Zeigt bewusst nur
-               den Stadtteil, keine Hausnummer. -->
+               den Stadtteil, keine Hausnummer. Erst ein Klick oeffnet Google
+               Maps in einem neuen Tab. -->
           <figure class="kt__map">
-            <img
-              src="/images/kontakt/tonndorf-karte.svg" width="1200" height="800"
-              alt="Karte von Hamburg-Tonndorf mit den Nachbarstadtteilen Wandsbek, Jenfeld, Rahlstedt und Farmsen-Berne"
-              loading="lazy" decoding="async"
-            >
+            <!-- Die ganze Karte ist klickbar. Fuer Tastatur und Screenreader
+                 zaehlt nur der Link im Chip, dieser hier waere doppelt. -->
+            <a :href="contact.mapsUrl" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true" class="kt__maparea">
+              <img
+                src="/images/kontakt/tonndorf-karte.svg" width="1200" height="800"
+                alt="" loading="lazy" decoding="async"
+              >
+            </a>
             <figcaption class="kt__mapcap">
-              <span class="kt__chip"><UiIcon name="pin" :size="14" /> Wandsbek-Tonndorf</span>
+              <a :href="contact.mapsUrl" target="_blank" rel="noopener" class="kt__chip">
+                <UiIcon name="pin" :size="14" /> Wandsbek-Tonndorf
+                <span class="kt__chip-go">In Google Maps öffnen <UiIcon name="arrow" :size="12" /></span>
+              </a>
               <a
                 class="kt__osm" href="https://www.openstreetmap.org/copyright"
                 target="_blank" rel="noopener"
@@ -126,22 +134,37 @@ a.kt__val:hover { color: var(--c-gold); }
   background: #12110F;
   box-shadow: var(--shadow-card);
 }
-.kt__map img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+.kt__map img {
+  width: 100%; aspect-ratio: 3 / 2; object-fit: cover;
+  transition: transform var(--d-slow) var(--e-out);
+}
+.kt__map:hover img { transform: scale(1.03); }
 .kt__mapcap {
   position: absolute; inset: auto 0 0 0;
+  pointer-events: none;
   display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
   gap: var(--s-2);
   padding: var(--s-3);
   background: linear-gradient(0deg, rgb(18 17 15 / 0.85), transparent);
 }
+.kt__chip, .kt__osm { pointer-events: auto; }
 .kt__chip {
   display: inline-flex; align-items: center; gap: 0.4rem;
+  transition: background var(--d-fast) var(--e-out);
   padding: 0.4rem 0.75rem;
   font-size: 0.8125rem; font-weight: 600;
   color: #FFFFFF;
   background: var(--c-gold);
   border-radius: var(--r-md);
 }
+.kt__map:hover .kt__chip { background: var(--c-gold-lift); }
+.kt__chip-go {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  margin-left: 0.35rem; padding-left: 0.6rem;
+  border-left: 1px solid rgb(255 255 255 / 0.4);
+  font-weight: 500;
+}
+.kt__maparea { display: block; }
 .kt__osm { font-size: 0.6875rem; color: #A9A296; }
 .kt__osm:hover { color: #FFFFFF; }
 

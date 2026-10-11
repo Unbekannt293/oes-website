@@ -49,7 +49,7 @@ useSeoMeta({
 
         <p v-if="product.available" class="detail__price">
           <span class="muted">ab</span> {{ formatPrice(product.priceCents) }}
-          <span class="muted detail__unit">pro Veranstaltung</span>
+          <span class="muted detail__unit">{{ product.priceUnit ?? 'pro Veranstaltung' }}</span>
         </p>
 
         <p v-if="!product.available" class="detail__soon label">
