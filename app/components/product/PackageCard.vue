@@ -6,6 +6,8 @@ import { cheapestWithSoundboxCents, formatPrice } from '~~/shared/pricing'
 // Mockup hervorgehobenen Pakete ("Am beliebtesten") tragen die Plakette.
 const { pkg } = defineProps<{ pkg: RentalPackage }>()
 const withSoundbox = computed(() => cheapestWithSoundboxCents(pkg))
+// Fotobox-Pakete fuehren direkt in die Buchung, mit vorausgewaehltem Paket.
+const link = computed(() => (pkg.kind === 'fotobox' ? `/produkte/fotobox?paket=${pkg.slug}#buchen` : '/pakete'))
 </script>
 
 <template>
@@ -29,7 +31,7 @@ const withSoundbox = computed(() => cheapestWithSoundboxCents(pkg))
             mit Soundbox ab {{ formatPrice(withSoundbox) }}
           </p>
         </div>
-        <UiButton to="/pakete" variant="outline" size="sm">Paket ansehen</UiButton>
+        <UiButton :to="link" variant="outline" size="sm">Paket ansehen</UiButton>
       </div>
     </div>
   </article>

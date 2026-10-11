@@ -45,13 +45,8 @@ export const products: Product[] = [
     slug: 'fotobox', name: 'Fotobox', category: 'fotoautomaten',
     priceCents: 12999, summary: 'Unsere Fotobox mit Touchscreen, LED-Licht und Sofortdruck.',
     features: ['Hochwertige Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder per E-Mail'],
-    images: ['/images/produkte/fotobox-nah.webp', '/images/produkte/fotobox-drucker.webp', '/images/produkte/set-fotobox-soundboxen.webp'], available: true, stock: 1,
-  },
-  {
-    slug: 'fotobox-premium', name: 'Fotobox Premium', category: 'fotoautomaten',
-    priceCents: 39900, summary: 'Fotobox im schwarzen Gehaeuse mit individuellem Layout.',
-    features: ['Sofortdruck in Top-Qualität', 'Individuelles Layout & Branding', 'Online-Galerie inklusive'],
-    images: [], available: false, stock: 0,
+    images: ['/images/produkte/fotobox-nah.webp', '/images/produkte/fotobox-drucker.webp'], available: true, stock: 1,
+    booking: 'paket',
   },
   {
     slug: '360-video-booth', name: '360° Video Booth', category: 'fotoautomaten',
@@ -65,6 +60,7 @@ export const products: Product[] = [
     features: ['Bluetooth & Klinke', 'Akkubetrieb, kein Stromanschluss nötig', 'Stativ mit weißer Husse inklusive'],
     images: ['/images/produkte/soundbox-nah.webp', '/images/produkte/soundbox-stativ.webp', '/images/produkte/soundbox-nah-seite.webp', '/images/produkte/soundbox-stativ-seite.webp'],
     available: true, stock: 2,
+    booking: 'zeitraum',
   },
   {
     slug: 'mischpult', name: 'Mischpult', category: 'ton-musik',
@@ -109,28 +105,28 @@ export const SOUNDBOX_DISCOUNT_PCT = { 1: 15, 2: 25 } as const
 export const fotoboxPackages: RentalPackage[] = [
   {
     slug: 'fotobox-paket', name: 'Fotobox', kind: 'fotobox', tier: 'fotobox',
-    priceCents: 12999, freeDeliveryKm: 4,
+    priceCents: 12999, freeDeliveryKm: 4, available: true,
     withSoundbox: { 1: { moDo: 14999, frSo: 15499 }, 2: { moDo: 16999, frSo: 17499 } },
     includes: ['Fotobox', 'Ohne Drucker', 'Requisiten inklusive', 'Kostenlose Lieferung bis 4 km'],
     image: '/images/produkte/fotobox-nah.webp',
   },
   {
     slug: 'fotobox-basic', name: 'Fotobox Basic', kind: 'fotobox', tier: 'basic',
-    priceCents: 24999, freeDeliveryKm: 4,
+    priceCents: 24999, freeDeliveryKm: 4, available: true,
     withSoundbox: { 1: { moDo: 26999, frSo: 27499 }, 2: { moDo: 28499, frSo: 29499 } },
     includes: ['Fotobox', 'Drucker + 150 Blatt', 'Requisiten inklusive', 'Kostenlose Lieferung bis 4 km'],
     image: '/images/produkte/fotobox-drucker.webp',
   },
   {
     slug: 'fotobox-premium-paket', name: 'Fotobox Premium', kind: 'fotobox', tier: 'premium',
-    priceCents: 37499, freeDeliveryKm: 6, highlight: true,
+    priceCents: 37499, freeDeliveryKm: 6, highlight: true, available: true,
     withSoundbox: { 1: { moDo: 39499, frSo: 39999 }, 2: { moDo: 41499, frSo: 42499 } },
     includes: ['Fotobox', 'Drucker + 400 Blatt', 'Requisiten inklusive', 'Kostenlose Lieferung bis 6 km'],
     image: '/images/produkte/fotobox-drucker.webp',
   },
   {
     slug: 'fotobox-deluxe', name: 'Fotobox Deluxe', kind: 'fotobox', tier: 'deluxe',
-    priceCents: 47499, freeDeliveryKm: 8,
+    priceCents: 47499, freeDeliveryKm: 8, available: true,
     withSoundbox: { 1: { moDo: 49499, frSo: 49999 }, 2: { moDo: 51499, frSo: 51999 } },
     includes: ['Fotobox', 'Drucker + 700 Blatt', 'Requisiten inklusive', 'Kostenlose Lieferung bis 8 km'],
     image: '/images/produkte/fotobox-drucker.webp',
@@ -145,22 +141,26 @@ export const soundboxRates: SoundboxRates = {
   extraBatteryPerDayCents: 500,
 }
 
+/*
+ * Event-Komplettpakete aus Louis' Mockup. Sie enthalten Zelte und Licht, die es
+ * noch nicht gibt, und Louis hat dafuer noch keine Preise genannt: Coming soon.
+ */
 export const eventPackages: RentalPackage[] = [
   {
     slug: 'party-starter', name: 'Party Starter', kind: 'event',
-    priceCents: 69900, freeDeliveryKm: 4,
+    priceCents: 69900, freeDeliveryKm: 4, available: false,
     includes: ['Soundbox', 'Lautsprecherständer', 'Faltzelt 3 x 3 m'],
     image: '/images/produkte/soundbox-stativ.webp',
   },
   {
     slug: 'event-premium', name: 'Event Premium', kind: 'event',
-    priceCents: 100000, freeDeliveryKm: 6, highlight: true,
+    priceCents: 100000, freeDeliveryKm: 6, available: false, highlight: true,
     includes: ['Soundbox + Ständer', 'Faltzelt 3 x 3 m', 'Fotobox Premium', 'Auf- & Abbau inklusive'],
     image: '/images/produkte/set-fotobox-soundbox-drucker.webp',
   },
   {
     slug: 'rundum-sorglos', name: 'Rundum-Sorglos', kind: 'event',
-    priceCents: 149900, freeDeliveryKm: 8,
+    priceCents: 149900, freeDeliveryKm: 8, available: false,
     includes: ['Soundanlage', 'Pagodenzelt', 'Fotobox Premium', 'Lichtset Premium', 'Auf- & Abbau inklusive'],
     image: '/images/produkte/set-fotobox-soundboxen-drucker.webp',
   },

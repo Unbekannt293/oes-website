@@ -4,6 +4,7 @@
 export type IconName =
   | 'phone' | 'mail' | 'pin' | 'instagram' | 'tiktok'
   | 'calendar' | 'check' | 'arrow' | 'alert'
+  | 'cart' | 'star' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close'
 
 const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
 </script>
@@ -40,6 +41,41 @@ const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
     </template>
     <template v-else-if="name === 'check'">
       <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </template>
+    <template v-else-if="name === 'cart'">
+      <path d="M3 4h2.2l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2" />
+      <circle cx="9.5" cy="20" r="1.2" />
+      <circle cx="17" cy="20" r="1.2" />
+    </template>
+    <template v-else-if="name === 'star'">
+      <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z" />
+    </template>
+    <template v-else-if="name === 'gem'">
+      <path d="M6.5 4h11l3.5 5-9 11-9-11z" />
+      <path d="M3 9h18M9.5 4 8 9l4 11 4-11-1.5-5" />
+    </template>
+    <template v-else-if="name === 'crown'">
+      <path d="M3.5 8l4.5 4 4-6.5 4 6.5 4.5-4-2 10h-13z" />
+      <path d="M5.5 20h13" />
+    </template>
+    <template v-else-if="name === 'trophy'">
+      <path d="M7 4h10v5a5 5 0 0 1-10 0z" />
+      <path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4M17 6h2.5a2.5 2.5 0 0 1-2.6 4M12 14v3M8.5 20h7M9.5 17h5v3h-5z" />
+    </template>
+    <template v-else-if="name === 'puzzle'">
+      <path d="M9 4h3.2a2 2 0 1 1 3.6 0H19v4.2a2 2 0 1 0 0 3.6V16h-3.2a2 2 0 1 1-3.6 0H9v-3.2a2 2 0 1 1 0-3.6z" />
+      <path d="M5 9v11h11" />
+    </template>
+    <template v-else-if="name === 'chat'">
+      <path d="M4 5h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3.5V15H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+      <path d="M18 9h2a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1v2.5L16 18h-4" />
+    </template>
+    <template v-else-if="name === 'info'">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5.5M12 7.5v.01" />
+    </template>
+    <template v-else-if="name === 'close'">
+      <path d="M6 6l12 12M18 6 6 18" />
     </template>
     <template v-else-if="name === 'alert'">
       <circle cx="12" cy="12" r="9" />

@@ -11,6 +11,15 @@ const open = ref(false)
 const route = useRoute()
 watch(() => route.fullPath, () => { open.value = false })
 
+// Auch Unterseiten markieren: /produkte/fotobox gehoert zu "Produkte".
+// router-link-active greift dort nicht, weil die Detailseite keine
+// Kindroute der Produktliste ist.
+function isActive(to: string) {
+  return to === '/' ? route.path === '/' : route.path.startsWith(to)
+}
+
+const { count } = useCart()
+
 </script>
 
 <template>
@@ -30,14 +39,22 @@ watch(() => route.fullPath, () => { open.value = false })
         aria-label="Hauptnavigation"
       >
         <div class="hdr__navinner">
-          <NuxtLink v-for="item in nav" :key="item.to" :to="item.to" class="label hdr__link">
+          <NuxtLink
+            v-for="item in nav" :key="item.to" :to="item.to"
+            class="label hdr__link" :class="{ 'is-active': isActive(item.to) }"
+          >
             {{ item.label }}
           </NuxtLink>
         </div>
       </nav>
 
       <div class="hdr__actions">
-        <UiButton to="/warenkorb" variant="solid" size="sm">Warenkorb</UiButton>
+        <UiButton to="/warenkorb" variant="solid" size="sm" class="hdr__cart">
+          <UiIcon name="cart" :size="17" />
+          <span class="hdr__cart-label">Warenkorb</span>
+          <span v-if="count" class="hdr__badge" aria-hidden="true">{{ count }}</span>
+          <span class="visually-hidden">{{ count ? `, ${count} Positionen` : ', leer' }}</span>
+        </UiButton>
         <button
           class="hdr__burger" :aria-expanded="open"
           aria-controls="hauptnavigation" @click="open = !open"
@@ -80,13 +97,24 @@ watch(() => route.fullPath, () => { open.value = false })
   transition: transform var(--d-base) var(--e-out);
 }
 .hdr__link:hover::after,
-.hdr__link.router-link-active::after { transform: scaleX(1); }
+.hdr__link.is-active::after { transform: scaleX(1); }
+
+.hdr__cart { position: relative; }
+.hdr__badge {
+  display: grid; place-items: center;
+  min-width: 1.25rem; height: 1.25rem; padding-inline: 0.3rem;
+  margin-left: 0.1rem;
+  font-size: 0.6875rem; font-weight: 700; letter-spacing: 0;
+  color: var(--c-gold); background: #FFFFFF;
+  border-radius: 999px;
+}
 
 .hdr__actions { display: flex; align-items: center; gap: var(--s-3); }
 .hdr__burger { display: none; color: var(--c-text-onink); font-size: 1.25rem; padding: var(--s-2); }
 
 @media (max-width: 900px) {
   .hdr__burger { display: block; }
+  .hdr__cart-label { display: none; }
   .hdr__nav {
     position: absolute; inset-inline: 0; top: 100%;
     background: var(--c-ink);

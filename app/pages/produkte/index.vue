@@ -26,8 +26,11 @@ const visible = computed(() =>
     .toSorted((a, b) => Number(b.available) - Number(a.available)),
 )
 
-// Die in Louis' Mockup hervorgehobenen Pakete ("Am beliebtesten").
-const popular = allPackages.filter(p => p.highlight)
+// Buchbare Pakete, die in Louis' Mockup hervorgehobenen ("Am beliebtesten") zuerst.
+const popular = allPackages
+  .filter(p => p.available)
+  .toSorted((a, b) => Number(!!b.highlight) - Number(!!a.highlight))
+  .slice(0, 2)
 </script>
 
 <template>

@@ -44,13 +44,17 @@ function onScroll() {
         :aria-label="`${alt}, Bild ${index + 1} von ${images.length}`"
         @scroll.passive="onScroll"
       >
-        <NuxtImg
-          v-for="(src, i) in images" :key="src" :src="src"
-          :alt="i === 0 ? alt : `${alt}, Ansicht ${i + 1}`"
-          :width="width" :height="height"
-          :loading="eager && i === 0 ? 'eager' : 'lazy'"
-          class="gal__img"
-        />
+        <!-- Jedes Bild im eigenen Rahmen: ein Zoom beim Hovern bleibt darin,
+             statt das Nachbarbild in den sichtbaren Bereich zu schieben. -->
+        <div v-for="(src, i) in images" :key="src" class="gal__slide">
+          <NuxtImg
+            :src="src"
+            :alt="i === 0 ? alt : `${alt}, Ansicht ${i + 1}`"
+            :width="width" :height="height"
+            :loading="eager && i === 0 ? 'eager' : 'lazy'"
+            class="gal__img"
+          />
+        </div>
       </div>
 
       <template v-if="images.length > 1">
@@ -92,10 +96,14 @@ function onScroll() {
   scrollbar-width: none;
 }
 .gal__track::-webkit-scrollbar { display: none; }
-.gal__img {
-  flex: 0 0 100%; width: 100%; height: 100%;
-  object-fit: cover; object-position: 50% 22%;
+.gal__slide {
+  flex: 0 0 100%; height: 100%;
+  overflow: hidden;
   scroll-snap-align: start;
+}
+.gal__img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 22%;
 }
 
 .gal__btn {

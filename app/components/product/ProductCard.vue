@@ -61,7 +61,7 @@ function open() {
 .card__link:focus-visible { outline: none; }
 .card__media {
   position: relative; z-index: 2;
-  aspect-ratio: 4 / 5; overflow: hidden; background: #ECE8E2;
+  aspect-ratio: 1 / 1; overflow: hidden; background: #ECE8E2;
   cursor: pointer;
 }
 .card__media :deep(.gal__img) { transition: transform var(--d-slow) var(--e-out); }

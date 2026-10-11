@@ -1,3 +1,4 @@
+import { soundboxRates } from './catalog'
 import type { CartLine, DeliveryQuote, RentalPackage, Weekpart } from './types'
 
 /** 0,25 EUR pro Kilometer, aus der Anforderung von Louis. */
@@ -71,4 +72,32 @@ export function packagePriceCents(pkg: RentalPackage, soundboxes: 0 | 1 | 2, iso
 /** Guenstigster Preis mit Soundbox, fuer "mit Soundbox ab ..." in der Anzeige. */
 export function cheapestWithSoundboxCents(pkg: RentalPackage): number | null {
   return pkg.withSoundbox ? pkg.withSoundbox[1].moDo : null
+}
+
+/** Anzahl Miettage, beide Tage eingeschlossen. 0, wenn das Ende vor dem Anfang liegt. */
+export function rentalDays(fromIso: string, toIso: string): number {
+  const ms = new Date(`${toIso}T12:00:00`).getTime() - new Date(`${fromIso}T12:00:00`).getTime()
+  return ms < 0 || Number.isNaN(ms) ? 0 : Math.round(ms / 86_400_000) + 1
+}
+
+/**
+ * Miete einer Soundbox fuer einen Zeitraum.
+ *
+ * ANNAHME, mit Louis zu klaeren: Tagessaetze (Mo-Do 25, Fr-So 30 EUR) werden
+ * addiert. Genau Freitag bis Sonntag kostet pauschal 65 EUR, genau Montag bis
+ * Sonntag 145 EUR. Ist die Summe der Tagessaetze guenstiger, gilt die Summe.
+ */
+export function soundboxRentalCents(fromIso: string, toIso: string): number {
+  const days = rentalDays(fromIso, toIso)
+  if (days === 0) return 0
+  let sum = 0
+  for (let i = 0; i < days; i++) {
+    const d = new Date(`${fromIso}T12:00:00`)
+    d.setDate(d.getDate() + i)
+    sum += soundboxRates.perDayCents[weekpartOf(d.toISOString().slice(0, 10))]
+  }
+  const start = new Date(`${fromIso}T12:00:00`).getDay()
+  if (days === 3 && start === 5) return Math.min(sum, soundboxRates.weekendCents)
+  if (days === 7 && start === 1) return Math.min(sum, soundboxRates.weekCents)
+  return sum
 }

@@ -1,0 +1,51 @@
+/* Gemeinsame Stile der Buchungskaesten (BookingPackage, BookingRental). */
+.bk {
+  display: grid; gap: var(--s-4);
+  padding: var(--s-6) var(--s-5);
+  background: var(--c-paper-pure);
+  border: var(--border-hair);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-card);
+}
+.bk__h { color: var(--c-text); font-size: 0.8125rem; }
+.bk__intro { font-size: var(--t-small); margin-top: calc(var(--s-3) * -1); }
+
+.bk__set { border: 0; padding: 0; margin: 0; display: grid; gap: var(--s-2); min-width: 0; }
+.bk__legend { color: var(--c-text); padding: 0; margin-bottom: var(--s-2); }
+.bk__opt { color: var(--c-text-muted); text-transform: none; letter-spacing: 0; font-weight: 400; }
+.bk__dates { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: var(--s-3); }
+
+.bk__addons { list-style: none; padding: 0; display: grid; gap: var(--s-2); }
+.bk__addon { display: flex; justify-content: space-between; gap: var(--s-3); width: 100%; color: var(--c-text); }
+.bk__addon-price { color: var(--c-text-muted); white-space: nowrap; }
+.bk__addon-soon {
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--c-text-muted);
+}
+.check.is-off { cursor: default; opacity: 0.55; }
+
+.bk__sum {
+  display: grid; gap: var(--s-2);
+  margin: 0; padding-top: var(--s-4);
+  border-top: 1px solid var(--c-gold-hair);
+  font-size: var(--t-small);
+}
+.bk__sum > div { display: flex; justify-content: space-between; gap: var(--s-3); }
+.bk__sum dd { margin: 0; white-space: nowrap; }
+.bk__total { font-size: 1.05rem; font-weight: 600; padding-top: var(--s-2); }
+.bk__total dd { color: var(--c-gold); }
+.bk__note { color: var(--c-text-muted); }
+
+.bk__small { font-size: 0.8125rem; line-height: 1.5; }
+.bk__hint { display: flex; align-items: center; gap: 0.4rem; margin-top: calc(var(--s-2) * -1); }
+.bk__btn { width: 100%; }
+
+.bk__ok {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--t-small);
+  color: var(--c-success);
+  background: rgb(46 125 91 / 0.08);
+  border-left: 2px solid var(--c-success);
+}
+.bk__ok a { margin-left: auto; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; color: var(--c-text); }

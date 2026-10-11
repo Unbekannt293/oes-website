@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { categories, findProduct } from '~~/shared/catalog'
+import { categories, findProduct, fotoboxPackages } from '~~/shared/catalog'
 import { formatPrice } from '~~/shared/pricing'
 
 const route = useRoute()
@@ -15,6 +15,22 @@ const category = computed(() =>
   categories.find(c => c.id === product.value!.category),
 )
 
+const contact = useContact()
+
+// Paketwahl: aus der Adresse (?paket=..., Link von der Pakete-Seite) oder
+// per Klick auf eine Paketkachel unten.
+const paket = ref(typeof route.query.paket === 'string' ? route.query.paket : '')
+const { lenis } = useLenis()
+
+function choose(slug: string) {
+  paket.value = slug
+  const box = document.getElementById('buchen')
+  if (!box) return
+  // Mit Lenis ueber Lenis scrollen, sonst arbeiten zwei Scroller gegeneinander.
+  if (lenis.value) lenis.value.scrollTo(box, { offset: -110 })
+  else box.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 useSeoMeta({
   title: () => product.value!.name,
   description: () => product.value!.summary,
@@ -23,87 +39,141 @@ useSeoMeta({
 
 <template>
   <div v-if="product" class="section shell">
-    <nav class="crumbs label muted" aria-label="Brotkrumen">
+    <nav class="crumbs label" aria-label="Brotkrumen">
       <NuxtLink to="/">Startseite</NuxtLink>
       <span aria-hidden="true">/</span>
       <NuxtLink to="/produkte">Produkte</NuxtLink>
       <span aria-hidden="true">/</span>
-      <span>{{ product.name }}</span>
+      <span aria-current="page" class="crumbs__here">{{ product.name }}</span>
     </nav>
 
-    <div class="detail">
-      <ProductGallery
-        v-if="product.images.length" :images="product.images" :alt="product.name"
-        thumbs eager :width="1086" :height="1448" class="detail__gallery"
-      />
-      <div v-else class="detail__img detail__img--empty" aria-hidden="true" />
-
-      <div class="detail__info">
-        <p class="label detail__cat">{{ category?.label }}</p>
-        <h1 class="display detail__name">{{ product.name }}</h1>
-        <p class="prose">{{ product.summary }}</p>
-
-        <ul class="detail__features">
-          <li v-for="f in product.features" :key="f">{{ f }}</li>
-        </ul>
-
-        <p v-if="product.available" class="detail__price">
-          <span class="muted">ab</span> {{ formatPrice(product.priceCents) }}
-          <span class="muted detail__unit">{{ product.priceUnit ?? 'pro Veranstaltung' }}</span>
-        </p>
-
-        <p v-if="!product.available" class="detail__soon label">
-          Coming soon: dieses Produkt ist bald bei uns verfügbar.
-        </p>
-
-        <div class="detail__cta">
-          <UiButton to="/pakete" variant="solid">Passende Pakete ansehen</UiButton>
-          <UiButton to="/kontakt" variant="ghost">Beratung anfragen</UiButton>
+    <div class="pd">
+      <div class="pd__gallery">
+        <ProductGallery
+          v-if="product.images.length" :images="product.images" :alt="product.name"
+          thumbs eager :width="1086" :height="1448"
+        />
+        <div v-else class="pd__empty" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><path d="M50 0C53 35 65 47 100 50 65 53 53 65 50 100 47 65 35 53 0 50 35 47 47 35 50 0Z" /></svg>
         </div>
       </div>
+
+      <div class="pd__info">
+        <p class="label pd__cat">{{ category?.label }}</p>
+        <h1 class="display pd__name">{{ product.name }}</h1>
+        <p class="pd__summary">{{ product.summary }}</p>
+
+        <ul class="pd__features">
+          <li v-for="f in product.features" :key="f">
+            <span class="pd__tick"><UiIcon name="check" :size="14" /></span>{{ f }}
+          </li>
+        </ul>
+
+        <p v-if="product.available" class="pd__price">
+          <span class="muted">ab</span> {{ formatPrice(product.priceCents) }}
+          <span class="muted pd__unit">{{ product.priceUnit ?? 'pro Veranstaltung' }}</span>
+        </p>
+      </div>
+
+      <aside id="buchen" class="pd__aside">
+        <BookingPackage v-if="product.available && product.booking === 'paket'" v-model:paket="paket" />
+        <BookingRental v-else-if="product.available && product.booking === 'zeitraum'" :product="product" />
+        <div v-else class="pd__soon">
+          <p class="label pd__soon-h">Coming soon</p>
+          <p>Dieses Produkt ist bald bei uns verfügbar. Wir merken Sie gern vor.</p>
+          <UiButton to="/kontakt" variant="solid">Vormerken lassen</UiButton>
+        </div>
+
+        <div class="pd__ask on-ink">
+          <p class="display pd__ask-h">Haben Sie Fragen?</p>
+          <p class="pd__ask-sub">Wir beraten Sie gern persönlich.</p>
+          <a :href="`tel:${contact.phoneRaw}`" class="pd__ask-row"><UiIcon name="phone" :size="16" /> {{ contact.phone }}</a>
+          <a :href="`mailto:${contact.email}`" class="pd__ask-row"><UiIcon name="mail" :size="16" /> {{ contact.email }}</a>
+          <UiButton to="/kontakt" variant="solid" size="sm" class="pd__ask-btn">Kontakt aufnehmen</UiButton>
+        </div>
+      </aside>
     </div>
+
+    <section v-if="product.booking === 'paket'" class="pd__pakete" aria-labelledby="pakete-h">
+      <h2 id="pakete-h" class="display h-col">Unsere Fotobox-Pakete</h2>
+      <div class="pd__tiles">
+        <PackageTile
+          v-for="p in fotoboxPackages" :key="p.slug" :pkg="p"
+          :selected="paket === p.slug" @select="choose"
+        />
+      </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
-.crumbs { display: flex; gap: var(--s-2); margin-bottom: var(--s-6); }
+.crumbs { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-6); color: var(--c-text-muted); }
 .crumbs a:hover { color: var(--c-gold); }
+.crumbs__here { color: var(--c-gold); }
 
-.detail {
-  display: grid; gap: var(--s-7);
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+/* Drei Spalten wie in Louis' Mockup: Bilder, Beschreibung, Buchung. */
+.pd {
+  display: grid; gap: var(--s-6);
+  /* minmax(0, 1fr): sonst darf breiter Inhalt die Spalte ueber den Rand druecken. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'gal' 'info' 'aside';
   align-items: start;
 }
-@media (max-width: 860px) { .detail { grid-template-columns: 1fr; } }
+@media (min-width: 760px) {
+  .pd { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: 'gal info' 'gal aside'; }
+}
+@media (min-width: 1200px) {
+  .pd { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) 360px; grid-template-areas: 'gal info aside'; gap: var(--s-7); }
+  .pd__aside { position: sticky; top: calc(var(--hdr-h, 78px) + var(--s-5)); }
+}
+.pd__gallery { grid-area: gal; }
+.pd__info { grid-area: info; display: grid; gap: var(--s-4); }
+.pd__aside { grid-area: aside; display: grid; gap: var(--s-5); }
 
-.detail__img { width: 100%; border-radius: var(--r-md); }
-.detail__gallery :deep(.gal__stage) { aspect-ratio: 3 / 4; border-radius: var(--r-md); }
-.detail__img--empty {
-  aspect-ratio: 4 / 5;
+/* Quadratisch statt Hochformat: die Fotos sind hoch, die Seite soll es nicht sein. */
+.pd__gallery :deep(.gal__stage) { aspect-ratio: 1 / 1; border-radius: var(--r-md); }
+.pd__empty {
+  aspect-ratio: 1 / 1; border-radius: var(--r-md);
+  display: grid; place-items: center;
   background: radial-gradient(circle at 50% 45%, #F8F5F0, #E8E1D6 75%);
 }
+.pd__empty svg { width: 30%; fill: var(--c-gold); opacity: 0.22; }
 
-.detail__info { display: grid; gap: var(--s-4); }
-.detail__cat { color: var(--c-gold); }
-.detail__name { font-size: var(--t-h1); }
+.pd__cat { color: var(--c-gold); }
+.pd__name { font-size: var(--t-h1); }
+.pd__summary { font-size: 1.0625rem; line-height: 1.65; max-width: 46ch; }
 
-.detail__features { list-style: none; padding: 0; display: grid; gap: var(--s-2); }
-.detail__features li {
-  padding-left: 1.5rem; position: relative; font-size: var(--t-small);
-}
-.detail__features li::before {
-  content: '✓'; position: absolute; left: 0; color: var(--c-gold);
-}
-
-.detail__price { font-size: var(--t-h3); color: var(--c-gold); font-weight: 600; }
-.detail__price .muted { font-size: var(--t-small); font-weight: 400; }
-.detail__unit { display: block; }
-
-.detail__soon {
-  color: var(--c-text-muted);
-  border: 1px solid var(--c-gold-hair); border-radius: var(--r-sm);
-  padding: var(--s-3) var(--s-4);
+.pd__features { list-style: none; padding: 0; display: grid; gap: var(--s-3); }
+.pd__features li { display: flex; align-items: center; gap: var(--s-3); }
+.pd__tick {
+  display: grid; place-items: center; flex: none;
+  width: 1.6rem; height: 1.6rem; border-radius: 50%;
+  color: var(--c-gold); border: 1px solid var(--c-gold-hair);
 }
 
-.detail__cta { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-2); }
+.pd__price { font-size: var(--t-h3); color: var(--c-gold); font-weight: 600; }
+.pd__price .muted { font-size: var(--t-small); font-weight: 400; }
+.pd__unit { display: block; }
+
+.pd__soon {
+  display: grid; gap: var(--s-3); justify-items: start;
+  padding: var(--s-6) var(--s-5);
+  background: var(--c-paper-pure); border: var(--border-hair); border-radius: var(--r-md);
+}
+.pd__soon-h { color: var(--c-gold); }
+
+.pd__ask {
+  display: grid; gap: var(--s-2); justify-items: start;
+  padding: var(--s-6) var(--s-5);
+  border-radius: var(--r-md);
+}
+.pd__ask-h { font-size: var(--t-h3); }
+.pd__ask-sub { color: var(--c-text-muted); font-size: var(--t-small); margin-bottom: var(--s-2); }
+.pd__ask-row { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); }
+.pd__ask-row svg { color: var(--c-gold); }
+.pd__ask-row:hover { color: var(--c-gold); }
+.pd__ask-btn { margin-top: var(--s-3); }
+
+.pd__pakete { margin-top: var(--section-y); display: grid; gap: var(--s-7); }
+.pd__tiles { display: grid; gap: var(--s-6) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
 </style>

@@ -24,6 +24,11 @@ export interface Product {
   available: boolean
   /** Wieviele Exemplare existieren. Grundlage der Verfügbarkeitspruefung. */
   stock: number
+  /**
+   * Wie gebucht wird: 'paket' = Paket und Veranstaltungstag waehlen (Fotobox),
+   * 'zeitraum' = Anzahl und Mietzeitraum (Soundbox). Ohne Angabe: nicht buchbar.
+   */
+  booking?: 'paket' | 'zeitraum'
 }
 
 export type PackageTier = 'fotobox' | 'basic' | 'premium' | 'deluxe'
@@ -49,6 +54,8 @@ export interface RentalPackage {
   /** Lieferradius ohne Aufpreis, in Kilometern. */
   freeDeliveryKm: number
   highlight?: boolean
+  /** false = enthaelt noch nicht vorhandenes Inventar, "Coming soon". */
+  available: boolean
   image: string
 }
 
@@ -71,15 +78,23 @@ export interface SoundboxRates {
 }
 
 export interface CartLine {
+  /** Eindeutig je Zeile, zum Entfernen. */
+  id: string
+  /** Zeilen einer Buchung (Paket plus Zubehoer) teilen sich die Gruppe. */
+  group: string
   kind: 'package' | 'product' | 'addon'
   slug: string
   name: string
+  /** Zusatzinfo fuer die Anzeige, z. B. "mit 1 Soundbox". */
+  detail?: string
   unitPriceCents: number
   quantity: number
   /** ISO-Datum, z. B. '2026-09-12' */
   from: string
   to: string
   freeDeliveryKm: number
+  /** Was diese Zeile zur Kaution beitraegt. */
+  deposit?: { fotobox: boolean, soundboxes: number }
 }
 
 export interface DeliveryQuote {
