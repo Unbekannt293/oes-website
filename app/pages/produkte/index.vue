@@ -117,13 +117,6 @@ const popular = allPackages.filter(p => p.highlight)
   display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
   gap: var(--s-4); margin-bottom: var(--s-6);
 }
-/* Spaltentitel wie auf der Kontaktseite: Displayschrift, kurze Goldlinie. */
-.h-col { font-size: var(--t-h2); }
-.h-col::after {
-  content: ''; display: block;
-  width: 3rem; height: 1px; margin-top: var(--s-3);
-  background: var(--c-gold);
-}
 .pakete__grid { display: grid; gap: var(--s-5); }
 @media (min-width: 960px) { .pakete__grid { grid-template-columns: 1fr 1fr; } }
 </style>

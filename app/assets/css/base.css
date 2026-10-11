@@ -79,3 +79,11 @@ h1, h2, h3 { text-wrap: balance; }
   }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ---- Spaltentitel: Displayschrift mit kurzer Goldlinie darunter ---- */
+.h-col { font-size: var(--t-h2); }
+.h-col::after {
+  content: ''; display: block;
+  width: 3rem; height: 1px; margin-top: var(--s-3);
+  background: var(--c-gold);
+}

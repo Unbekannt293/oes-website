@@ -21,13 +21,13 @@ useSeoMeta({
       <div class="shell kt">
         <!-- ============ Formular ============ -->
         <div class="kt__form">
-          <h2 class="display kt__h">Schreiben Sie uns</h2>
+          <h2 class="display h-col">Schreiben Sie uns</h2>
           <ContactForm />
         </div>
 
         <!-- ============ Kontaktdaten ============ -->
         <aside class="kt__info" aria-labelledby="kt-daten">
-          <h2 id="kt-daten" class="display kt__h">Kontaktdaten</h2>
+          <h2 id="kt-daten" class="display h-col">Kontaktdaten</h2>
 
           <ul class="kt__list">
             <li>
@@ -96,18 +96,11 @@ useSeoMeta({
   .kt { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(3rem, 6vw, 6rem); }
 }
 
-/* Spaltentitel: Displayschrift mit kurzer Goldlinie darunter, wie im Mockup. */
-.kt__h { font-size: var(--t-h2); }
-.kt__h::after {
-  content: ''; display: block;
-  width: 3rem; height: 1px; margin-top: var(--s-3);
-  background: var(--c-gold);
-}
-.kt__form .kt__h { margin-bottom: var(--s-6); }
+.kt__form .h-col { margin-bottom: var(--s-6); }
 
 /* ---- Kontaktdaten ---- */
 .kt__info { display: grid; gap: var(--s-6); align-content: start; }
-.kt__info .kt__h { margin-bottom: calc(var(--s-2) * -1); }
+.kt__info .h-col { margin-bottom: calc(var(--s-2) * -1); }
 
 .kt__list { list-style: none; padding: 0; display: grid; gap: var(--s-5); }
 .kt__list li { display: flex; align-items: center; gap: var(--s-4); }

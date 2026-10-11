@@ -16,12 +16,19 @@ from PIL import Image, ImageEnhance
 
 SRC, OUT = Path(sys.argv[1]).expanduser(), Path(sys.argv[2])
 RATIO = 3.8          # Breite : Hoehe, wie der Seitenkopf auf dem Desktop
-OUT_W = 2880         # 1440 CSS-Pixel bei doppelter Pixeldichte
-# Ausschnitt in Anteilen des Quellbilds. Waagerecht symmetrisch um die
-# Fotobox (Mitte bei x = 0.4905), von Soundbox-Kante zu Soundbox-Kante.
-CX, HALF_W = 0.4905, 0.4465
-CY = 0.4686          # senkrecht: Soundboks-Logo oben bis gut unter die Linse
-
+OUT_W = 2400         # reicht fuer 1440 CSS-Pixel, der Ausschnitt ist ohnehin nur ~1300 px breit
+# Enger Ausschnitt um die Linse. Waagerecht von Soundbox-Gitter zu
+# Soundbox-Gitter (HALF_W kleiner als die Kante der Boxen, damit rechts und
+# links kein dunkler Rand bleibt), senkrecht mit der Linse in der Mitte.
+# Linse im Quellbild bei ca. x = 0.49, y = 0.60 (Anteile).
+# Im Seitenkopf steht links der Titel (endet bei ~47 % der Breite) und rechts
+# die Unterzeile (ab ~58 %). Die Linse gehoert in die Luecke dazwischen.
+LENS_X, LENS_AT = 0.4905, 0.5417   # Linse im Quellbild / im Ausschnitt (Anteil der Breite)
+HALF_W = 0.285
+CY = 0.585
+# Die helle Frontplatte liegt hinter dem Text. Hochlichter abdunkeln, Schwaerzen
+# (Soundbox-Gitter) bleiben, sonst ist weisser Text darauf kaum lesbar.
+HIGHLIGHT_GAMMA, HIGHLIGHT_GAIN = 1.3, 0.72
 src = Image.open(SRC).convert('RGBA')
 W, H = src.size
 
@@ -31,7 +38,8 @@ rgba = Image.merge('RGBA', (gray, gray, gray, src.getchannel('A')))
 
 cw = 2 * HALF_W * W
 ch = cw / RATIO
-box = (round(CX * W - cw / 2), round(CY * H - ch / 2), round(CX * W + cw / 2), round(CY * H + ch / 2))
+left = LENS_X * W - LENS_AT * cw
+box = (round(left), round(CY * H - ch / 2), round(left + cw), round(CY * H + ch / 2))
 crop = rgba.crop(box)
 out_h = round(OUT_W / RATIO)
 crop = crop.resize((OUT_W, out_h), Image.LANCZOS)
@@ -45,6 +53,8 @@ stage = Image.fromarray(bg, 'L').convert('RGBA')
 stage.alpha_composite(crop)
 
 result = stage.convert('L')
+lut = [round(255 * HIGHLIGHT_GAIN * (v / 255) ** HIGHLIGHT_GAMMA) for v in range(256)]
+result = result.point(lut)
 OUT.parent.mkdir(parents=True, exist_ok=True)
 result.save(OUT, 'WEBP', quality=82, method=6)
 print(result.size, f'Ausschnitt {box}', f'{OUT.stat().st_size // 1024} KB')

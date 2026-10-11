@@ -6,7 +6,7 @@
 // Jede Seite kann ihr eigenes Motiv mitgeben (Zelt fuer Zelte, Fotobox
 // fuer Fotoboxen). Bis Louis eigene Eventfotos hat, steht das Konzertfoto.
 const {
-  crumb, title, sub, image = '/images/hero/party-konzert.webp',
+  crumb, title, sub, image = '/images/hero/party-konzert.webp', imageMobile,
   focus = '50% 45%', tone = 'warm',
 } = defineProps<{
   /** Seitenname fuer die Brotkrumen, z. B. "Kontakt". */
@@ -14,6 +14,8 @@ const {
   title: string
   sub?: string
   image?: string
+  /** Eigener Ausschnitt fuer schmale Bildschirme, wenn der breite dort schlecht passt. */
+  imageMobile?: string
   /** Bildausschnitt wie object-position, falls das Motiv nicht mittig sitzt. */
   focus?: string
   /**
@@ -27,10 +29,13 @@ const {
 
 <template>
   <header class="ph on-ink" :class="`ph--${tone}`">
-    <img
-      :src="image" alt="" class="ph__img" :style="{ objectPosition: focus }"
-      fetchpriority="high" decoding="async"
-    >
+    <picture>
+      <source v-if="imageMobile" media="(max-width: 640px)" :srcset="imageMobile">
+      <img
+        :src="image" alt="" class="ph__img" :style="{ objectPosition: focus }"
+        fetchpriority="high" decoding="async"
+      >
+    </picture>
     <div class="shell ph__inner">
       <nav class="ph__crumbs" aria-label="Brotkrumen">
         <NuxtLink to="/">Startseite</NuxtLink>
@@ -38,7 +43,7 @@ const {
         <span aria-current="page" class="ph__here">{{ crumb }}</span>
       </nav>
       <div class="ph__grid">
-        <h1 class="display ph__title">{{ title }}</h1>
+        <h1 class="display ph__title" :class="{ 'ph__title--wide': !sub }">{{ title }}</h1>
         <p v-if="sub" class="ph__sub">{{ sub }}</p>
       </div>
     </div>
@@ -68,6 +73,7 @@ const {
     linear-gradient(90deg, rgb(11 10 9 / 0.92) 0%, rgb(11 10 9 / 0.55) 50%, rgb(11 10 9 / 0.15) 100%),
     linear-gradient(0deg, rgb(11 10 9 / 0.7), transparent 55%);
 }
+.ph--mono .ph__sub { color: var(--c-text-onink); }
 .ph--mono .ph__img { filter: grayscale(1) contrast(1.05) brightness(0.9); }
 .ph--mono::before {
   background:
@@ -109,6 +115,8 @@ const {
   line-height: 1.02;
   max-width: 15ch;
 }
+/* Ohne Unterzeile ist rechts Platz, der Titel darf breiter laufen. */
+.ph__title--wide { max-width: 20ch; }
 .ph__sub {
   max-width: 40ch;
   color: var(--c-text-muted);
