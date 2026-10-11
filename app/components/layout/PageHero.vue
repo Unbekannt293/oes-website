@@ -7,7 +7,7 @@
 // fuer Fotoboxen). Bis Louis eigene Eventfotos hat, steht das Konzertfoto.
 const {
   crumb, title, sub, image = '/images/hero/party-konzert.webp', imageMobile,
-  focus = '50% 45%', tone = 'warm',
+  focus = '50% 45%', tone = 'warm', layout = 'split',
 } = defineProps<{
   /** Seitenname fuer die Brotkrumen, z. B. "Kontakt". */
   crumb: string
@@ -22,13 +22,20 @@ const {
    * warm: bunte Eventfotos stark abgedunkelt und warm getoent.
    * mono: Bilder, die schon schwarzweiss und dunkel sind (Produktbanner),
    * nur leicht abgedunkelt, damit das klare Schwarzweiss bleibt.
+   * plain: Bild ist schon fertig gestaltet (Buehne, Farbe), nichts darueberlegen
+   * ausser einem schwachen Verlauf hinter dem Text.
    */
-  tone?: 'warm' | 'mono'
+  tone?: 'warm' | 'mono' | 'plain'
+  /**
+   * split: Titel links, Unterzeile rechts daneben.
+   * stack: Unterzeile unter dem Titel. Gebraucht, wenn rechts ein Motiv steht.
+   */
+  layout?: 'split' | 'stack'
 }>()
 </script>
 
 <template>
-  <header class="ph on-ink" :class="`ph--${tone}`">
+  <header class="ph on-ink" :class="[`ph--${tone}`, `ph--${layout}`, { 'ph--has-mobile': imageMobile }]">
     <picture>
       <source v-if="imageMobile" media="(max-width: 640px)" :srcset="imageMobile">
       <img
@@ -73,7 +80,23 @@ const {
     linear-gradient(90deg, rgb(11 10 9 / 0.92) 0%, rgb(11 10 9 / 0.55) 50%, rgb(11 10 9 / 0.15) 100%),
     linear-gradient(0deg, rgb(11 10 9 / 0.7), transparent 55%);
 }
+.ph--plain .ph__sub,
 .ph--mono .ph__sub { color: var(--c-text-onink); }
+.ph--plain .ph__img { filter: none; }
+.ph--plain::before {
+  background:
+    linear-gradient(90deg, rgb(11 10 9 / 0.4) 0%, rgb(11 10 9 / 0.12) 50%, transparent 75%),
+    linear-gradient(0deg, rgb(11 10 9 / 0.35), transparent 30%);
+}
+/* Eigenes Handybild: Motiv oben, Text darunter. Damit sie sich nicht
+   ueberdecken, bekommt der Kopf auf schmalen Bildschirmen mehr Hoehe. */
+@media (max-width: 640px) {
+  .ph--has-mobile .ph__inner { min-height: clamp(440px, 140vw, 620px); }
+  /* Der Ausschnitt fuer Desktop (focus) gilt hier nicht, das Handybild ist mittig gebaut. */
+  .ph--has-mobile .ph__img { object-position: 50% 0 !important; }
+}
+.ph--stack .ph__grid { grid-template-columns: minmax(0, 1fr); }
+.ph--stack .ph__sub { padding: 0; border: 0; }
 .ph--mono .ph__img { filter: grayscale(1) contrast(1.05) brightness(0.9); }
 .ph--mono::before {
   background:
