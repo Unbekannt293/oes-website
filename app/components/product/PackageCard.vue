@@ -13,7 +13,7 @@ const link = computed(() => (pkg.kind === 'fotobox' ? `/produkte/fotobox?paket=$
 <template>
   <article class="pk" :class="{ 'pk--hl': pkg.highlight }">
     <div class="pk__media">
-      <NuxtImg :src="pkg.image" :alt="pkg.name" width="600" height="750" loading="lazy" class="pk__img" />
+      <NuxtImg :src="pkg.image" :alt="pkg.name" width="600" height="600" loading="lazy" class="pk__img" />
       <p v-if="pkg.highlight" class="label pk__badge">Am beliebtesten</p>
     </div>
     <div class="pk__body">

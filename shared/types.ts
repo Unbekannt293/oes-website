@@ -20,6 +20,12 @@ export interface Product {
   features: string[]
   /** Leer, solange es kein echtes Foto gibt. */
   images: string[]
+  /**
+   * Welches Bild zu welcher Auswahl im Buchungskasten passt, als Index in
+   * images. Schluessel: 'sb0' bis 'sb2' (Fotobox mit 0-2 Soundboxen),
+   * 'anzahl1', 'anzahl2' (Soundbox-Anzahl). Die Galerie springt dorthin.
+   */
+  imageFor?: Record<string, number>
   /** false = "Coming soon" quer ueber der Karte. */
   available: boolean
   /** Wieviele Exemplare existieren. Grundlage der Verfügbarkeitspruefung. */

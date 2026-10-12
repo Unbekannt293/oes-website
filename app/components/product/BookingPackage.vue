@@ -9,6 +9,10 @@ import { depositCents, formatPrice, packagePriceCents, PRICE_PER_KM_CENTS } from
 const paket = defineModel<string>('paket', { default: '' })
 
 const soundboxes = ref<0 | 1 | 2>(0)
+
+// Die Seite zeigt passend zur Soundbox-Wahl das richtige Foto in der Galerie.
+const emit = defineEmits<{ focus: [key: string] }>()
+watch(soundboxes, n => emit('focus', `sb${n}`))
 const date = ref('')
 const chosen = ref<string[]>([])
 const added = ref(false)

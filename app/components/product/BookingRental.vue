@@ -7,6 +7,10 @@ import { depositCents, formatPrice, rentalDays, soundboxRentalCents } from '~~/s
 const { product } = defineProps<{ product: Product }>()
 
 const count = ref(1)
+
+// Bei zwei Soundboxen zeigt die Galerie das Doppel-Foto.
+const emit = defineEmits<{ focus: [key: string] }>()
+watch(count, n => emit('focus', `anzahl${n}`))
 const from = ref('')
 const to = ref('')
 const battery = ref(false)

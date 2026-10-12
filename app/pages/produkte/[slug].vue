@@ -22,6 +22,13 @@ const contact = useContact()
 const paket = ref(typeof route.query.paket === 'string' ? route.query.paket : '')
 const { lenis } = useLenis()
 
+// Auswahl im Buchungskasten -> passendes Foto (product.imageFor im Katalog).
+const gallery = ref<{ go: (i: number) => void } | null>(null)
+function showImage(key: string) {
+  const i = product.value?.imageFor?.[key]
+  if (i !== undefined) gallery.value?.go(i)
+}
+
 function choose(slug: string) {
   paket.value = slug
   const box = document.getElementById('buchen')
@@ -50,8 +57,8 @@ useSeoMeta({
     <div class="pd">
       <div class="pd__gallery">
         <ProductGallery
-          v-if="product.images.length" :images="product.images" :alt="product.name"
-          thumbs eager :width="1086" :height="1448"
+          v-if="product.images.length" ref="gallery" :images="product.images" :alt="product.name"
+          thumbs eager :width="1254" :height="1254"
         />
         <div v-else class="pd__empty" aria-hidden="true">
           <svg viewBox="0 0 100 100"><path d="M50 0C53 35 65 47 100 50 65 53 53 65 50 100 47 65 35 53 0 50 35 47 47 35 50 0Z" /></svg>
@@ -76,8 +83,8 @@ useSeoMeta({
       </div>
 
       <aside id="buchen" class="pd__aside">
-        <BookingPackage v-if="product.available && product.booking === 'paket'" v-model:paket="paket" />
-        <BookingRental v-else-if="product.available && product.booking === 'zeitraum'" :product="product" />
+        <BookingPackage v-if="product.available && product.booking === 'paket'" v-model:paket="paket" @focus="showImage" />
+        <BookingRental v-else-if="product.available && product.booking === 'zeitraum'" :product="product" @focus="showImage" />
         <div v-else class="pd__soon">
           <p class="label pd__soon-h">Coming soon</p>
           <p>Dieses Produkt ist bald bei uns verfügbar. Wir merken Sie gern vor.</p>

@@ -4,7 +4,7 @@
 // Pfeile scrollen genau eine Bildbreite. Der aktive Punkt folgt der
 // Scrollposition, egal ob per Pfeil, Wischen oder Vorschaubild.
 const {
-  images, alt, thumbs = false, width = 600, height = 750, eager = false,
+  images, alt, thumbs = false, width = 600, height = 600, eager = false,
 } = defineProps<{
   images: string[]
   alt: string
@@ -17,6 +17,7 @@ const {
 }>()
 
 const track = ref<HTMLElement | null>(null)
+const thumbRow = ref<HTMLElement | null>(null)
 const index = ref(0)
 
 function go(i: number) {
@@ -29,6 +30,20 @@ function go(i: number) {
   index.value = next
   el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' })
 }
+
+// Aktives Vorschaubild in der (seitlich scrollbaren) Leiste sichtbar halten.
+watch(index, (i) => {
+  const row = thumbRow.value
+  const t = row?.children[i] as HTMLElement | undefined
+  if (!row || !t) return
+  // Ueber die Bildschirmposition statt offsetLeft: die Leiste ist kein
+  // positioniertes Element, offsetLeft wuerde sich auf die Seite beziehen.
+  const dx = t.getBoundingClientRect().left - row.getBoundingClientRect().left
+  row.scrollTo({ left: row.scrollLeft + dx - row.clientWidth / 2 + t.clientWidth / 2, behavior: 'smooth' })
+})
+
+// Die Seite kann die Galerie zu einem Bild springen lassen (Auswahl im Buchungskasten).
+defineExpose({ go })
 
 function onScroll() {
   const el = track.value
@@ -72,14 +87,14 @@ function onScroll() {
       </template>
     </div>
 
-    <div v-if="thumbs && images.length > 1" class="gal__thumbs">
+    <div v-if="thumbs && images.length > 1" ref="thumbRow" class="gal__thumbs">
       <button
         v-for="(src, i) in images" :key="src" type="button"
         class="gal__thumb" :class="{ 'is-on': i === index }"
         :aria-current="i === index" @click="go(i)"
       >
         <span class="visually-hidden">Bild {{ i + 1 }} zeigen</span>
-        <NuxtImg :src="src" alt="" width="150" height="200" loading="lazy" />
+        <NuxtImg :src="src" alt="" width="150" height="150" loading="lazy" />
       </button>
     </div>
   </div>
@@ -103,7 +118,7 @@ function onScroll() {
 }
 .gal__img {
   width: 100%; height: 100%;
-  object-fit: cover; object-position: 50% 22%;
+  object-fit: cover; object-position: 50% 50%;
 }
 
 .gal__btn {
@@ -141,9 +156,13 @@ function onScroll() {
 }
 .gal__dots span.is-on { width: 16px; border-radius: 3px; background: var(--c-gold); }
 
-.gal__thumbs { display: flex; gap: var(--s-2); }
+.gal__thumbs {
+  display: flex; gap: var(--s-2);
+  overflow-x: auto; scrollbar-width: thin;
+  padding-bottom: 2px;
+}
 .gal__thumb {
-  width: 4.5rem; aspect-ratio: 3 / 4; overflow: hidden;
+  flex: none; width: 4.5rem; aspect-ratio: 1 / 1; overflow: hidden;
   border: 1px solid var(--c-gold-hair); border-radius: var(--r-sm);
   opacity: 0.6;
   transition: opacity var(--d-fast) var(--e-out), border-color var(--d-fast) var(--e-out);
