@@ -34,6 +34,11 @@ export default defineNuxtConfig({
   // Selbst gehostete Schriften. Kein Request an fonts.google.com,
   // damit keine IP-Adressen der Besucher in die USA gehen (DSGVO).
   fonts: {
+    // Unsere Schriften stehen nur in CSS-Variablen (--f-display, --f-ui in
+    // tokens.css). Ohne diese Option ueberspringt das Modul Dateien ohne
+    // direkte font-family-Angabe, dann wird gar keine Schrift geladen und
+    // der Browser nimmt Systemschriften.
+    processCSSVariables: true,
     families: [
       { name: 'Cormorant Garamond', provider: 'google', weights: [400, 500, 600] },
       { name: 'Inter', provider: 'google', weights: [400, 500, 600, 700] },
