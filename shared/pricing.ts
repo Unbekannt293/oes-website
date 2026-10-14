@@ -24,6 +24,12 @@ export function subtotalCents(lines: CartLine[]): number {
  * Premium, Premium Plus und Deluxe 8 km). Liegen mehrere Positionen im Korb, muss
  * entschieden werden, welcher Radius zählt.
  *
+ * Regel von Louis (14.10.2026): Pro Auftrag fährt er viermal (Hinbringen,
+ * Rückfahrt, Abholen, Rückfahrt). Gefahrene Strecke = Entfernung × 4,
+ * Freistrecke = Freiradius × 4, berechnet wird nur der Rest, je Kilometer
+ * PRICE_PER_KM_CENTS. Beispiel: 10 km Entfernung, 4 km frei
+ * → 40 km − 16 km = 24 km × 0,25 € = 6,00 €.
+ *
  * @param distanceKm  Entfernung vom Lager zum Veranstaltungsort,
  *                    kommt aus der Routing-API in server/api/distanz.get.ts
  * @param lines       Alle Positionen im Warenkorb
