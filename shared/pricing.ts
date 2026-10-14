@@ -20,8 +20,8 @@ export function subtotalCents(lines: CartLine[]): number {
 /**
  * Berechnet die Fahrtkosten für einen Warenkorb.
  *
- * Jede Position bringt ihren eigenen Freiradius mit (Fotobox/Basic 4 km,
- * Premium 6 km, Deluxe 8 km). Liegen mehrere Positionen im Korb, muss
+ * Jede Position bringt ihren eigenen Freiradius mit (Basic und Classic 4 km,
+ * Premium, Premium Plus und Deluxe 8 km). Liegen mehrere Positionen im Korb, muss
  * entschieden werden, welcher Radius zählt.
  *
  * @param distanceKm  Entfernung vom Lager zum Veranstaltungsort,

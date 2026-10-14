@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { addons, fotoboxPackages, KOMBI_RABATT_PCT, LAYOUT_ADDON } from '~~/shared/catalog'
-import { depositCents, formatPrice, packagePriceCents } from '~~/shared/pricing'
+import { depositCents, formatPrice, packagePriceCents, PRICE_PER_KM_CENTS } from '~~/shared/pricing'
 
 // Buchung einer Fotobox: Paket, Soundboxen, Veranstaltungstag, Zubehoer.
 // In den Warenkorb geht es erst, wenn Paket und Datum gewaehlt sind
@@ -132,7 +132,7 @@ function addToCart() {
       <div class="bk__total"><dt>Gesamt</dt><dd>{{ priceIsFrom ? 'ab ' : '' }}{{ formatPrice(total) }}</dd></div>
       <div class="bk__note"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
       <p class="bk__small muted">
-        Lieferung bis {{ pkg.freeDeliveryKm }} km inklusive, weitere Entfernung nach Absprache.
+        Lieferung bis {{ pkg.freeDeliveryKm }} km inklusive, jeder weitere Kilometer {{ formatPrice(PRICE_PER_KM_CENTS) }}.
         <template v-if="priceIsFrom">Freitag bis Sonntag etwas teurer.</template>
       </p>
     </dl>

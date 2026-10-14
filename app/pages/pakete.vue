@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RentalPackage, Weekpart } from '~~/shared/types'
 import { addons, fotoboxPackages, KOMBI_RABATT_PCT, soundboxRates } from '~~/shared/catalog'
-import { formatPrice } from '~~/shared/pricing'
+import { formatPrice, PRICE_PER_KM_CENTS } from '~~/shared/pricing'
 
 useSeoMeta({
   title: 'Pakete & Preise',
@@ -134,8 +134,8 @@ const soundboxLines = [
         <div>
           <h2 class="display ask__h">Lieferung</h2>
           <p class="muted">
-            Je nach Paket liefern wir bis 4, 6 oder 8 km ohne Aufpreis.
-            Weitere Entfernung nach Absprache.
+            Je nach Paket liefern wir bis 4 oder 8 km ohne Aufpreis.
+            Jeder weitere Kilometer kostet {{ formatPrice(PRICE_PER_KM_CENTS) }}.
           </p>
         </div>
         <div>
