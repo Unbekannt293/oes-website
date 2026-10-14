@@ -7,8 +7,23 @@ import type { H3Event } from 'h3'
  * als Absender wuerde Gmail & Co. die Mail wegen DMARC ablehnen, deshalb
  * steht der Kunde nur im Reply-To.
  */
+/**
+ * Beim Kopieren aus Webseiten oder Messengern rutschen unsichtbare Zeichen
+ * mit (z. B. U+2060). STRATO kennt "⁠kontakt@..." dann nicht und
+ * schickt die Mail mit "No such mailbox" zurueck.
+ */
+function clean(v: unknown) {
+  return String(v ?? '').replace(/[​-‍⁠﻿ ]/g, '').trim()
+}
+
 export function useMailer(event: H3Event) {
-  const cfg = useRuntimeConfig(event)
+  const raw = useRuntimeConfig(event)
+  const cfg = {
+    smtpHost: clean(raw.smtpHost),
+    smtpUser: clean(raw.smtpUser),
+    smtpPass: String(raw.smtpPass ?? ''), // Passwort nie veraendern
+    mailTo: clean(raw.mailTo),
+  }
   if (!cfg.smtpHost || !cfg.smtpUser || !cfg.smtpPass || !cfg.mailTo) {
     throw createError({ statusCode: 503, statusMessage: 'Mailversand ist noch nicht eingerichtet' })
   }
