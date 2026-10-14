@@ -1,11 +1,8 @@
-export type CategoryId =
-  | 'zelte' | 'fotoautomaten' | 'ton-musik'
-  | 'lichttechnik' | 'posten-theken' | 'zubehoer'
+export type CategoryId = 'fotobox' | 'sound' | 'zelte' | 'mobiliar' | 'licht'
 
 export interface Category {
   id: CategoryId
   label: string
-  blurb: string
 }
 
 export interface Product {
@@ -37,32 +34,35 @@ export interface Product {
   booking?: 'paket' | 'zeitraum'
 }
 
-export type PackageTier = 'fotobox' | 'basic' | 'premium' | 'deluxe'
+export type PackageTier = 'basic' | 'classic' | 'premium' | 'premium-plus' | 'deluxe'
 
 /** Louis rechnet nach Wochentag der Veranstaltung: Montag bis Donnerstag oder Freitag bis Sonntag. */
 export type Weekpart = 'moDo' | 'frSo'
 
+/** Ein Fotobox-Paket aus Louis' Preisliste. */
 export interface RentalPackage {
   slug: string
+  /** Voller Name fuer Warenkorb und Rechnung, z. B. "Fotobox Premium". */
   name: string
-  /** 'fotobox' = die vier Tiers, 'event' = Komplettpakete */
-  kind: 'fotobox' | 'event'
-  tier?: PackageTier
+  /** Kurzname fuer Listen, z. B. "Premium". */
+  short: string
+  tier: PackageTier
   /** Preis ohne Soundbox. */
   priceCents: number
+  /** Anzahl Ausdrucke. 0 = nur digital, ohne Drucker. */
+  prints: number
+  /** Individuelles Fotodesign ist im Preis enthalten. */
+  designIncluded?: boolean
   /**
    * Festpreise mit einer oder zwei Soundboxen, je nach Wochentag. Bewusst
-   * einzeln gespeichert statt aus dem Rabatt gerechnet: Louis' Preise folgen
-   * keiner einheitlichen Formel.
+   * einzeln gespeichert statt aus dem Rabatt gerechnet: so steht es in
+   * Louis' Preisliste, auf ,99 gerundet.
    */
   withSoundbox?: Record<1 | 2, Record<Weekpart, number>>
-  includes: string[]
   /** Lieferradius ohne Aufpreis, in Kilometern. */
   freeDeliveryKm: number
   highlight?: boolean
-  /** false = enthaelt noch nicht vorhandenes Inventar, "Coming soon". */
   available: boolean
-  image: string
 }
 
 export interface Addon {

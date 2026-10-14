@@ -54,7 +54,7 @@ useSeoMeta({
       <span aria-current="page" class="crumbs__here">{{ product.name }}</span>
     </nav>
 
-    <div class="pd">
+    <div class="pd" :class="{ 'pd--pakete': product.booking === 'paket' }">
       <div class="pd__gallery">
         <ProductGallery
           v-if="product.images.length" ref="gallery" :images="product.images" :alt="product.name"
@@ -68,9 +68,9 @@ useSeoMeta({
       <div class="pd__info">
         <p class="label pd__cat">{{ category?.label }}</p>
         <h1 class="display pd__name">{{ product.name }}</h1>
-        <p class="pd__summary">{{ product.summary }}</p>
+        <p v-if="product.summary" class="pd__summary">{{ product.summary }}</p>
 
-        <ul class="pd__features">
+        <ul v-if="product.features.length" class="pd__features">
           <li v-for="f in product.features" :key="f">
             <span class="pd__tick"><UiIcon name="check" :size="14" /></span>{{ f }}
           </li>
@@ -99,17 +99,17 @@ useSeoMeta({
           <UiButton to="/kontakt" variant="solid" size="sm" class="pd__ask-btn">Kontakt aufnehmen</UiButton>
         </div>
       </aside>
-    </div>
 
-    <section v-if="product.booking === 'paket'" class="pd__pakete" aria-labelledby="pakete-h">
-      <h2 id="pakete-h" class="display h-col">Unsere Fotobox-Pakete</h2>
-      <div class="pd__tiles">
-        <PackageTile
-          v-for="p in fotoboxPackages" :key="p.slug" :pkg="p"
-          :selected="paket === p.slug" @select="choose"
-        />
-      </div>
-    </section>
+      <!-- Unter der Galerie ist Platz: dort stehen die Pakete als Preisliste,
+           ein Klick waehlt das Paket im Buchungskasten. -->
+      <section v-if="product.booking === 'paket'" class="pd__pakete" aria-labelledby="pakete-h">
+        <div class="pd__pakete-head">
+          <h2 id="pakete-h" class="display pd__pakete-h">Pakete</h2>
+          <NuxtLink to="/pakete" class="label pd__pakete-more">Alle Preise</NuxtLink>
+        </div>
+        <PackageList :packages="fotoboxPackages" :selected="paket" @select="choose" />
+      </section>
+    </div>
   </div>
 </template>
 
@@ -126,11 +126,16 @@ useSeoMeta({
   grid-template-areas: 'gal' 'info' 'aside';
   align-items: start;
 }
+/* Mit Paketen: auf dem Handy erst die Pakete ansehen, dann buchen. */
+.pd--pakete { grid-template-areas: 'gal' 'info' 'pak' 'aside'; }
 @media (min-width: 760px) {
   .pd { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: 'gal info' 'gal aside'; }
+  .pd--pakete { grid-template-areas: 'gal info' 'pak aside'; }
 }
 @media (min-width: 1200px) {
   .pd { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) 360px; grid-template-areas: 'gal info aside'; gap: var(--s-7); }
+  /* Pakete unter Galerie und Text, der Buchungskasten steht daneben. */
+  .pd--pakete { grid-template-areas: 'gal info aside' 'pak pak aside'; grid-template-rows: auto 1fr; }
   .pd__aside { position: sticky; top: calc(var(--hdr-h, 78px) + var(--s-5)); }
 }
 .pd__gallery { grid-area: gal; }
@@ -181,6 +186,9 @@ useSeoMeta({
 .pd__ask-row:hover { color: var(--c-gold); }
 .pd__ask-btn { margin-top: var(--s-3); }
 
-.pd__pakete { margin-top: var(--section-y); display: grid; gap: var(--s-7); }
-.pd__tiles { display: grid; gap: var(--s-6) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.pd__pakete { grid-area: pak; display: grid; gap: var(--s-4); align-content: start; }
+.pd__pakete-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-4); }
+.pd__pakete-h { font-size: var(--t-h3); }
+.pd__pakete-more { color: var(--c-gold); }
+.pd__pakete-more:hover { color: var(--c-text); }
 </style>

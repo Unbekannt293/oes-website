@@ -18,6 +18,9 @@
 .bk__addons { list-style: none; padding: 0; display: grid; gap: var(--s-2); }
 .bk__addon { display: flex; justify-content: space-between; gap: var(--s-3); width: 100%; color: var(--c-text); }
 .bk__addon-price { color: var(--c-text-muted); white-space: nowrap; }
+.bk__addon-incl { color: var(--c-success); font-size: 0.8125rem; font-weight: 600; white-space: nowrap; }
+/* Das inklusive Layout ist gesperrt, soll aber nicht ausgegraut wirken. */
+.check.is-off:has(.bk__addon-incl) { opacity: 1; }
 .bk__addon-soon {
   font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--c-text-muted);

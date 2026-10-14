@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { allPackages, categories, products } from '~~/shared/catalog'
+import { categories, fotoboxPackages, products } from '~~/shared/catalog'
+import type { RentalPackage } from '~~/shared/types'
 import type { CategoryId } from '~~/shared/types'
 
 useSeoMeta({
@@ -26,11 +27,8 @@ const visible = computed(() =>
     .toSorted((a, b) => Number(b.available) - Number(a.available)),
 )
 
-// Buchbare Pakete, die in Louis' Mockup hervorgehobenen ("Am beliebtesten") zuerst.
-const popular = allPackages
-  .filter(p => p.available)
-  .toSorted((a, b) => Number(!!b.highlight) - Number(!!a.highlight))
-  .slice(0, 2)
+// Jede Paketzeile fuehrt direkt in die Buchung, mit vorausgewaehltem Paket.
+const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buchen`
 </script>
 
 <template>
@@ -78,14 +76,12 @@ const popular = allPackages
     <section class="section pakete" aria-labelledby="pakete-h">
       <div class="shell">
         <div class="pakete__head">
-          <h2 id="pakete-h" class="display h-col">Beliebte Pakete</h2>
+          <h2 id="pakete-h" class="display h-col">Fotobox-Pakete</h2>
           <UiButton to="/pakete" variant="ghost" size="sm">
-            Alle Pakete <UiIcon name="arrow" :size="14" />
+            Alle Preise <UiIcon name="arrow" :size="14" />
           </UiButton>
         </div>
-        <div class="pakete__grid">
-          <PackageCard v-for="p in popular" :key="p.slug" :pkg="p" />
-        </div>
+        <PackageList :packages="fotoboxPackages" :to="toBooking" />
       </div>
     </section>
   </div>
@@ -121,6 +117,5 @@ const popular = allPackages
   display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
   gap: var(--s-4); margin-bottom: var(--s-6);
 }
-.pakete__grid { display: grid; gap: var(--s-5); }
-@media (min-width: 960px) { .pakete__grid { grid-template-columns: 1fr 1fr; } }
+
 </style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { addons, fotoboxPackages, SOUNDBOX_DISCOUNT_PCT } from '~~/shared/catalog'
-import { depositCents, formatPrice, packagePriceCents, PRICE_PER_KM_CENTS } from '~~/shared/pricing'
+import { addons, fotoboxPackages, KOMBI_RABATT_PCT, LAYOUT_ADDON } from '~~/shared/catalog'
+import { depositCents, formatPrice, packagePriceCents } from '~~/shared/pricing'
 
 // Buchung einer Fotobox: Paket, Soundboxen, Veranstaltungstag, Zubehoer.
 // In den Warenkorb geht es erst, wenn Paket und Datum gewaehlt sind
@@ -33,7 +33,10 @@ const pkgPrice = computed(() => {
 })
 const priceIsFrom = computed(() => !!pkg.value && soundboxes.value > 0 && !date.value)
 
-const chosenAddons = computed(() => addons.filter(a => a.available && chosen.value.includes(a.slug)))
+// Ab Premium ist das eigene Foto-Layout inklusive: dann nicht berechnen.
+const layoutIncluded = computed(() => !!pkg.value?.designIncluded)
+const chosenAddons = computed(() => addons.filter(a =>
+  a.available && chosen.value.includes(a.slug) && !(a.slug === LAYOUT_ADDON && layoutIncluded.value)))
 const addonsTotal = computed(() => chosenAddons.value.reduce((s, a) => s + a.priceCents, 0))
 const total = computed(() => (pkgPrice.value ?? 0) + addonsTotal.value)
 const deposit = computed(() => depositCents(true, soundboxes.value))
@@ -71,7 +74,7 @@ function addToCart() {
       <select id="bk-paket" v-model="paket" class="control" :class="{ 'is-empty': !paket }">
         <option value="" disabled>Bitte auswählen</option>
         <option v-for="p in bookable" :key="p.slug" :value="p.slug">
-          {{ p.name }} · {{ formatPrice(p.priceCents) }}
+          {{ p.short }} · {{ p.prints ? `${p.prints} Ausdrucke` : 'digital' }} · {{ formatPrice(p.priceCents) }}
         </option>
       </select>
     </UiField>
@@ -85,11 +88,11 @@ function addToCart() {
         </label>
         <label>
           <input v-model="soundboxes" type="radio" name="bk-sb" :value="1">
-          <span>+1 Soundbox <small>−{{ SOUNDBOX_DISCOUNT_PCT[1] }} %</small></span>
+          <span>+1 Soundbox <small>Kombi −{{ KOMBI_RABATT_PCT }} %</small></span>
         </label>
         <label>
           <input v-model="soundboxes" type="radio" name="bk-sb" :value="2">
-          <span>+2 Soundboxen <small>−{{ SOUNDBOX_DISCOUNT_PCT[2] }} %</small></span>
+          <span>+2 Soundboxen <small>Kombi −{{ KOMBI_RABATT_PCT }} %</small></span>
         </label>
       </div>
     </fieldset>
@@ -102,7 +105,15 @@ function addToCart() {
       <legend class="label bk__legend">Zubehör <span class="bk__opt">(optional)</span></legend>
       <ul class="bk__addons">
         <li v-for="a in addons" :key="a.slug">
-          <label class="check" :class="{ 'is-off': !a.available }">
+          <!-- Inklusives Layout: angehakt und gesperrt, ohne Aufpreis. -->
+          <label v-if="a.slug === LAYOUT_ADDON && layoutIncluded" class="check is-off">
+            <input type="checkbox" checked disabled>
+            <span class="bk__addon">
+              <span>{{ a.name }}</span>
+              <span class="bk__addon-incl">inklusive</span>
+            </span>
+          </label>
+          <label v-else class="check" :class="{ 'is-off': !a.available }">
             <input v-model="chosen" type="checkbox" :value="a.slug" :disabled="!a.available">
             <span class="bk__addon">
               <span>{{ a.name }}</span>
@@ -121,7 +132,7 @@ function addToCart() {
       <div class="bk__total"><dt>Gesamt</dt><dd>{{ priceIsFrom ? 'ab ' : '' }}{{ formatPrice(total) }}</dd></div>
       <div class="bk__note"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
       <p class="bk__small muted">
-        Kostenlose Lieferung bis {{ pkg.freeDeliveryKm }} km, danach {{ formatPrice(PRICE_PER_KM_CENTS) }} pro km.
+        Lieferung bis {{ pkg.freeDeliveryKm }} km inklusive, weitere Entfernung nach Absprache.
         <template v-if="priceIsFrom">Freitag bis Sonntag etwas teurer.</template>
       </p>
     </dl>
