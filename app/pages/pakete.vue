@@ -45,7 +45,7 @@ const soundboxLines = [
           <h2 id="fotobox-h" class="display h-col">Fotobox-Pakete</h2>
           <p class="muted">Preise pro Veranstaltungstag.</p>
         </header>
-        <PackageList :packages="fotoboxPackages" :to="toBooking" />
+        <PackageCards :packages="fotoboxPackages" :to="toBooking" />
       </div>
     </section>
 

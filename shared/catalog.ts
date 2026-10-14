@@ -133,8 +133,3 @@ export function findProduct(slug: string) {
 export function findPackage(slug: string) {
   return fotoboxPackages.find(p => p.slug === slug)
 }
-
-/** "300 Ausdrucke" oder "Nur digital" */
-export function printsLabel(pkg: RentalPackage) {
-  return pkg.prints ? `${pkg.prints} Ausdrucke` : 'Nur digital, ohne Drucker'
-}

@@ -81,7 +81,7 @@ const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buche
             Alle Preise <UiIcon name="arrow" :size="14" />
           </UiButton>
         </div>
-        <PackageList :packages="fotoboxPackages" :to="toBooking" />
+        <PackageCards :packages="fotoboxPackages" :to="toBooking" />
       </div>
     </section>
   </div>
@@ -107,6 +107,9 @@ const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buche
 .grid {
   display: grid; gap: var(--s-5);
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  /* Alle Zeilen so hoch wie die hoechste: Coming-soon-Karten haben nur
+     einen Namen und waren sonst in ihrer eigenen Zeile niedriger. */
+  grid-auto-rows: 1fr;
 }
 .empty { text-align: center; padding-block: var(--s-8); }
 

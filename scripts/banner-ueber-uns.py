@@ -4,8 +4,10 @@ Gleiche Buehne wie der Produktbanner (scripts/buehne.py): dunkler Raum,
 Lichtkegel hinter dem Kopf, weicher Lichtschein um die Silhouette. Das
 Portraet steht rechts, links bleibt Platz fuer den Titel.
 
-Das Foto ist klein (678 px breit) und wird fast verdoppelt. Gegen den
-weichen Eindruck: leichtes Nachschaerfen und feines Korn.
+Quelle seit 14.10.2026: Louis-freigestellt.png (Oberkoerper, 631 x 902 px).
+Der Kopf ist darin nur gut 190 px breit, deshalb zeigt der Banner den
+Oberkoerper statt einer Nahaufnahme: so wird das Foto verkleinert statt
+hochgerechnet und bleibt scharf. Dazu leichtes Nachschaerfen und feines Korn.
 
     python3 scripts/banner-ueber-uns.py portrait.webp public/images/ueber-uns [lichter]
 
@@ -30,10 +32,13 @@ cut = bbox_crop(load_cutout(SRC, only_largest=True, erode=1))
 gray = cut.convert('L').filter(ImageFilter.UnsharpMask(radius=2.0, percent=80, threshold=2))
 gray = ImageEnhance.Contrast(gray).enhance(1.14)
 cut = Image.merge('RGBA', (gray, gray, gray, cut.getchannel('A')))
-FACE_X = 300 / cut.width        # Gesichtsmitte im Freisteller (Anteil der Breite)
+# Gesichtsmitte im Freisteller (Anteil der Breite), gemessen am obersten
+# Achtel: dort ist nur der Kopf.
+_head = np.asarray(cut.getchannel('A'))[: cut.height // 8] > 8
+FACE_X = np.where(_head)[1].mean() / cut.width
 
 
-def render(W, H, scale, face_at, top, spot_y, bottom_fade=None, lights=False):
+def render(W, H, scale, face_at, top, spot_y, bottom_fade=None, fade_depth=0.75, lights=False):
     figure = cut.resize((round(cut.width * scale), round(cut.height * scale)), Image.LANCZOS)
     x = round(face_at * W - FACE_X * figure.width)
     L, A = place((H, W), figure, x, top)
@@ -55,14 +60,16 @@ def render(W, H, scale, face_at, top, spot_y, bottom_fade=None, lights=False):
     if bottom_fade is not None:
         ys = np.linspace(0, 1, H, dtype=np.float32)
         t = np.clip((ys - bottom_fade) / (1 - bottom_fade), 0, 1)
-        img = img * (1 - 0.75 * t * t * (3 - 2 * t))[:, None, None]
+        img = img * (1 - fade_depth * t * t * (3 - 2 * t))[:, None, None]
     return grain(img)
 
 
-# Breit: Kopf gross, Schultern laufen unten aus dem Bild.
-wide = render(2400, round(2400 / 3.8), scale=1.75, face_at=0.76, top=30, spot_y=0.4, lights=LIGHTS)
+# Breit: Kopf bis Brust, der Rest laeuft unten aus dem Bild.
+wide = render(2400, round(2400 / 3.8), scale=1.12, face_at=0.76, top=34, spot_y=0.4, lights=LIGHTS)
 print(save(wide, OUT / 'banner.webp'))
 
-# Quadratisch fuer schmale Bildschirme: Gesicht oben, unten ins Dunkle fuer den Titel.
-square = render(900, 900, scale=1.6, face_at=0.5, top=52, spot_y=0.3, bottom_fade=0.38, lights=LIGHTS)
+# Quadratisch fuer schmale Bildschirme: Gesicht oben, unten ins Dunkle fuer den
+# Titel. Das helle Hemd liegt hinter dem Text, deshalb kraeftiger abgedunkelt.
+square = render(900, 900, scale=1.05, face_at=0.5, top=56, spot_y=0.3,
+                bottom_fade=0.34, fade_depth=0.93, lights=LIGHTS)
 print(save(square, OUT / 'banner-mobil.webp'))

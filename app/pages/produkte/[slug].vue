@@ -107,7 +107,7 @@ useSeoMeta({
           <h2 id="pakete-h" class="display pd__pakete-h">Pakete</h2>
           <NuxtLink to="/pakete" class="label pd__pakete-more">Alle Preise</NuxtLink>
         </div>
-        <PackageList :packages="fotoboxPackages" :selected="paket" @select="choose" />
+        <PackageCards :packages="fotoboxPackages" :selected="paket" @select="choose" />
       </section>
     </div>
   </div>

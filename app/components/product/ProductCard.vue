@@ -33,7 +33,7 @@ function open() {
       <h3 class="card__name">
         <NuxtLink :to="`/produkte/${product.slug}`" class="card__link">{{ product.name }}</NuxtLink>
       </h3>
-      <p class="card__summary muted">{{ product.summary }}</p>
+      <p v-if="product.summary" class="card__summary muted">{{ product.summary }}</p>
       <!-- Kein Preis fuer etwas, das man noch nicht mieten kann. -->
       <p v-if="product.available" class="card__price">
         <span class="muted">ab</span> {{ formatPrice(product.priceCents) }}
@@ -89,12 +89,16 @@ function open() {
 /* Mit Foto: Bild leicht entsaettigt, damit klar ist, dass es noch nicht geht. */
 .card--soon .card__media :deep(.gal__img) { filter: grayscale(0.6); opacity: 0.85; }
 
-.card__body { display: grid; gap: var(--s-2); padding: var(--s-4) var(--s-5) var(--s-5); }
+.card__body {
+  flex: 1; display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-4) var(--s-5) var(--s-5);
+}
 /* Lange deutsche Komposita ("Stimmungsbeleuchtung") passen sonst nicht
    in die Kartenbreite. hyphens braucht lang="de" am html-Element. */
 .card__name { font-size: var(--t-h3); font-weight: 500; hyphens: auto; overflow-wrap: break-word; }
 .card__summary { font-size: var(--t-small); }
-.card__price { color: var(--c-gold); font-weight: 600; margin-top: var(--s-1); }
+/* Preis unten an der Karte, auch wenn die Beschreibung kuerzer ist. */
+.card__price { color: var(--c-gold); font-weight: 600; margin-top: auto; padding-top: var(--s-1); }
 .card__price .muted { font-weight: 400; font-size: var(--t-small); }
 .card__unit { margin-left: 0.15rem; }
 </style>
