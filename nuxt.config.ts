@@ -52,6 +52,10 @@ export default defineNuxtConfig({
     smtpPass: '',
     mailTo: '',
     routingApiKey: '',
+    // Buchungsdatenbank. Der Secret Key umgeht alle Zugriffsregeln und
+    // darf deshalb nur hier stehen, nie unter public.
+    supabaseUrl: '',
+    supabaseSecretKey: '',
     public: {
       siteUrl: 'https://ottos-eventservice.de',
     },
