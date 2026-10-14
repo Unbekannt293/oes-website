@@ -105,6 +105,10 @@ create index if not exists belegungen_geraet_idx   on belegungen (geraet);
 create index if not exists belegungen_zeitraum_idx on belegungen using gist (zeitraum);
 
 -- ============================================================
+-- Beide Funktionen haben einen festen search_path: sonst koennte ein
+-- gleichnamiges Objekt in einem anderen Schema untergeschoben werden
+-- (Supabase Security Advisor: "Function Search Path Mutable").
+--
 -- Freie Geraete je Tag. Stornierte Buchungen zaehlen nicht, offene
 -- Anfragen schon: sonst koennte waehrend Louis' Pruefung jemand
 -- anders dasselbe Geraet buchen.
@@ -112,6 +116,7 @@ create index if not exists belegungen_zeitraum_idx on belegungen using gist (zei
 create or replace function freie_geraete(p_geraet text, p_von date, p_bis date)
 returns table (tag date, frei int)
 language sql stable
+set search_path = public
 as $$
   select d::date as tag,
          (i.bestand - coalesce(sum(b.anzahl), 0))::int as frei
@@ -142,6 +147,7 @@ $$;
 create or replace function buchung_anlegen(p_buchung jsonb, p_positionen jsonb, p_belegungen jsonb)
 returns table (id uuid, nummer text)
 language plpgsql
+set search_path = public
 as $$
 declare
   v_id      uuid;
