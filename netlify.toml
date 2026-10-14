@@ -2,6 +2,12 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  # Nur Commits mit [deploy] in der Nachricht werden veroeffentlicht.
+  # Jede Veroeffentlichung kostet 15 von 300 Gratis-Credits im Monat, also
+  # reichen sie fuer etwa 20. Alle anderen Pushes landen nur auf GitHub.
+  # Netlify-Regel: Exit 0 bricht den Build ab, jeder andere Code baut.
+  # Veroeffentlichen: git commit --allow-empty -m "Veroeffentlichen [deploy]"
+  ignore = "git log -1 --format=%B | grep -qF '[deploy]' && exit 1 || exit 0"
 
 [build.environment]
   # Nuxt 4 braucht Node 22. Ohne diese Zeile nimmt Netlify eine aeltere Version.
