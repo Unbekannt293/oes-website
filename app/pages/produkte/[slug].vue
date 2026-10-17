@@ -59,7 +59,7 @@ useSeoMeta({
       <span aria-current="page" class="crumbs__here">{{ product.name }}</span>
     </nav>
 
-    <div class="pd" :class="{ 'pd--pakete': product.booking === 'paket' }">
+    <div class="pd" :class="{ 'pd--pakete': product.available && product.booking }">
       <div class="pd__gallery">
         <ProductGallery
           v-if="product.images.length" ref="gallery" :images="product.images" :alt="product.name"
@@ -110,9 +110,26 @@ useSeoMeta({
 
       <!-- Unter der Galerie ist Platz: dort steht der Vergleich der
            Druckstufen, ein Klick auf eine Spalte waehlt sie im Buchungskasten. -->
-      <section v-if="product.booking === 'paket'" class="pd__pakete" aria-labelledby="pakete-h">
-        <h2 id="pakete-h" class="display pd__pakete-h">Was ist drin?</h2>
-        <PackageCompare :packages="fotoboxPackages" :selected="paket" selectable @select="choose" />
+      <section v-if="product.available && product.booking === 'paket'" class="pd__pakete" aria-labelledby="pakete-h">
+        <h2 id="pakete-h" class="display pd__pakete-h">Fotobox-Pakete</h2>
+        <PackageCompare :packages="fotoboxPackages" :selected="paket" @select="choose" />
+      </section>
+
+      <!-- Soundbox: Wer auch eine Fotobox will, bucht sie ueber die Fotobox
+           bzw. ein Kombi-Paket, nicht hier. Das soll man sofort sehen. -->
+      <section v-else-if="product.available && product.booking === 'zeitraum'" class="pd__pakete pd__kombi">
+        <NuxtImg
+          src="/images/produkte/set-fotobox-soundbox-drucker.webp" alt="" width="240" height="240"
+          class="pd__kombi-img" loading="lazy"
+        />
+        <div class="pd__kombi-text">
+          <h2 class="display pd__pakete-h">Fotobox dazu?</h2>
+          <p class="muted">Fotobox und Soundbox buchen Sie zusammen als Kombi-Paket, günstiger als einzeln.</p>
+          <div class="pd__kombi-links">
+            <UiButton to="/pakete" variant="solid" size="sm">Kombi-Pakete</UiButton>
+            <NuxtLink to="/produkte/fotobox" class="label pd__kombi-link">Zur Fotobox <UiIcon name="arrow" :size="12" /></NuxtLink>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -131,8 +148,9 @@ useSeoMeta({
   grid-template-areas: 'gal' 'info' 'aside';
   align-items: start;
 }
-/* Mit Paketen: auf dem Handy erst die Pakete ansehen, dann buchen. */
-.pd--pakete { grid-template-areas: 'gal' 'info' 'pak' 'aside'; }
+/* Mit Zusatzbereich (Paketvergleich bzw. Kombi-Hinweis): auf dem Handy erst
+   buchen, der Vergleich steht danach. Die Vorteile zeigt schon der Kasten. */
+.pd--pakete { grid-template-areas: 'gal' 'info' 'aside' 'pak'; }
 @media (min-width: 760px) {
   .pd { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: 'gal info' 'gal aside'; }
   .pd--pakete { grid-template-areas: 'gal info' 'pak aside'; }
@@ -192,4 +210,16 @@ useSeoMeta({
 
 .pd__pakete { grid-area: pak; display: grid; gap: var(--s-4); align-content: start; }
 .pd__pakete-h { font-size: var(--t-h3); }
+
+.pd__kombi {
+  display: flex; gap: var(--s-5); align-items: center;
+  padding: var(--s-4);
+  background: var(--c-paper-pure); border: var(--border-hair); border-radius: var(--r-md);
+}
+.pd__kombi-img { width: 7.5rem; height: 7.5rem; flex: none; object-fit: cover; border-radius: var(--r-sm); }
+.pd__kombi-text { display: grid; gap: var(--s-2); }
+.pd__kombi-text .muted { font-size: var(--t-small); }
+.pd__kombi-links { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); margin-top: var(--s-1); }
+.pd__kombi-link { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--c-gold); }
+.pd__kombi-link:hover { color: var(--c-text); }
 </style>

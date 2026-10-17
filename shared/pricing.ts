@@ -116,3 +116,25 @@ export function soundboxRentalCents(fromIso: string, toIso: string): number {
   if (days === 7 && start === 1) return Math.min(sum, soundboxRates.weekCents)
   return sum
 }
+
+/** Alle Tage von bis (ISO, beide eingeschlossen). */
+export function eachDay(fromIso: string, toIso: string): string[] {
+  const out: string[] = []
+  const d = new Date(`${fromIso}T12:00:00`)
+  for (let i = 0; i < rentalDays(fromIso, toIso); i++) {
+    out.push(d.toLocaleDateString('sv-SE'))
+    d.setDate(d.getDate() + 1)
+  }
+  return out
+}
+
+/**
+ * Fotobox-Paket ueber mehrere Tage.
+ *
+ * ANNAHME, mit Louis zu klaeren: Louis' Preisliste nennt Preise pro
+ * Veranstaltungstag. Bei mehreren Tagen wird jeder Tag einzeln berechnet
+ * (inkl. Kombi-Preis je Mo-Do/Fr-So), es gibt keinen Mehrtagesrabatt.
+ */
+export function packageRangeCents(pkg: RentalPackage, soundboxes: 0 | 1 | 2, fromIso: string, toIso: string): number {
+  return eachDay(fromIso, toIso).reduce((sum, day) => sum + packagePriceCents(pkg, soundboxes, day), 0)
+}

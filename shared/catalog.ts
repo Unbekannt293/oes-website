@@ -90,7 +90,7 @@ export const fotoboxPackages: RentalPackage[] = [
   },
   {
     slug: 'fotobox-premium', name: 'Fotobox Premium', short: 'Premium', tier: 'premium',
-    priceCents: 27999, prints: 300, designIncluded: true, freeDeliveryKm: 8, highlight: true, available: true,
+    priceCents: 27999, prints: 300, designIncluded: true, freeDeliveryKm: 8, available: true,
     withSoundbox: { 1: { moDo: 28999, frSo: 29499 }, 2: { moDo: 31399, frSo: 32299 } },
   },
   {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { RentalPackage } from '~~/shared/types'
 import { fotoboxPackages, kombis } from '~~/shared/catalog'
 
 useSeoMeta({
@@ -7,6 +8,9 @@ useSeoMeta({
     'Fotobox allein oder zusammen mit einer oder zwei Soundboxen, '
     + 'von digital bis 700 Ausdrucke. Für Ihr Event in Hamburg.',
 })
+
+// Ein Klick auf eine Stufe fuehrt in die Fotobox-Buchung, Stufe vorgewaehlt.
+const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buchen`
 </script>
 
 <template>
@@ -23,7 +27,7 @@ useSeoMeta({
          Buchung, die Soundbox-Zahl ist dort schon gewaehlt. -->
     <section class="section" aria-labelledby="kombi-h">
       <div class="shell">
-        <h2 id="kombi-h" class="display h-col pk-h">Unsere Pakete</h2>
+        <h2 id="kombi-h" class="display h-col pk-h">Kombi-Pakete</h2>
         <div class="grid">
           <ProductCard v-for="k in kombis" :key="k.slug" :product="k" :to="k.to" />
         </div>
@@ -32,8 +36,8 @@ useSeoMeta({
 
     <section class="section pk-sec" aria-labelledby="cmp-h">
       <div class="shell">
-        <h2 id="cmp-h" class="display h-col pk-h">Was ist drin?</h2>
-        <PackageCompare :packages="fotoboxPackages" />
+        <h2 id="cmp-h" class="display h-col pk-h">Fotobox-Pakete</h2>
+        <PackageCompare :packages="fotoboxPackages" :to="toBooking" />
       </div>
     </section>
 
@@ -43,7 +47,7 @@ useSeoMeta({
           <h2 class="display ask__h">Noch unsicher?</h2>
           <p class="muted">Schreiben Sie uns, wir finden das passende Paket für Ihre Feier.</p>
         </div>
-        <UiButton to="/kontakt" variant="ghost">
+        <UiButton to="/kontakt" variant="solid">
           Kontakt aufnehmen <UiIcon name="arrow" :size="14" />
         </UiButton>
       </div>

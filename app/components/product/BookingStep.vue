@@ -28,8 +28,10 @@ const isOpen = computed(() => state === 'active')
         @click="isOpen || emit('open')"
       >
         <span class="st__no">{{ n }}</span>
-        <span class="st__title">{{ title }}</span>
-        <span v-if="state === 'done' && summary" class="st__val">{{ summary }}</span>
+        <span class="st__text">
+          <span class="st__title">{{ title }}</span>
+          <span v-if="state === 'done' && summary" class="st__val">{{ summary }}</span>
+        </span>
         <UiIcon v-if="state === 'done'" name="check" :size="16" class="st__check" />
       </button>
     </h3>
@@ -58,20 +60,20 @@ const isOpen = computed(() => state === 'active')
 .st--active .st__head { color: var(--c-text); cursor: default; }
 
 .st__no {
+  align-self: flex-start; margin-top: 0.1rem;
   display: inline-grid; place-items: center; flex: none;
   width: 1.4rem; height: 1.4rem; border-radius: 50%;
   font-size: 0.75rem; font-weight: 600;
   border: 1px solid currentColor; opacity: 0.6;
 }
 .st--active .st__no { color: #FFFFFF; background: var(--c-text); border-color: var(--c-text); opacity: 1; }
-.st__title { flex: none; }
+.st__text { flex: 1; min-width: 0; display: grid; }
+/* Gewaehlter Wert unter dem Titel: so passt auch "23.10.–25.10. · 3 Tage". */
 .st__val {
-  flex: 1; min-width: 0; text-align: right;
-  font-size: 0.8125rem; font-weight: 400;
+  font-size: 0.8125rem; font-weight: 400; color: var(--c-text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.st__check { flex: none; margin-left: auto; color: var(--c-gold); }
-.st__val + .st__check { margin-left: 0; }
+.st__check { flex: none; color: var(--c-gold); }
 
 /* Weiches Auf- und Zuklappen ueber die Zeilenhoehe des Grids. */
 .st__body {

@@ -81,7 +81,7 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
           <ProductCard v-for="p in featured" :key="p.slug" :product="p" />
         </div>
         <p class="more">
-          <UiButton to="/produkte" variant="ghost">Alle Produkte ansehen</UiButton>
+          <UiButton to="/produkte" variant="solid">Alle Produkte ansehen</UiButton>
         </p>
       </div>
     </section>

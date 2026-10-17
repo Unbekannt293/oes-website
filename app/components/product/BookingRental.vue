@@ -92,7 +92,7 @@ function addToCart() {
     <h2 class="label bk__h">Soundbox mieten</h2>
 
     <div class="bk__steps">
-      <BookingStep :n="1" title="Zeitraum" :state="steps.state(1)" :summary="summaries[1]" @open="steps.open(1)">
+      <BookingStep :n="1" title="Wann ist Ihre Feier?" :state="steps.state(1)" :summary="summaries[1]" @open="steps.open(1)">
         <ClientOnly>
           <DateCalendar
             v-model="from" v-model:to="to" v-model:ok="rangeOk" range
@@ -106,7 +106,7 @@ function addToCart() {
         <div class="bk__row">
           <span v-if="days" class="bk__small">{{ rangeLabel }}</span>
           <UiButton
-            variant="outline" size="sm" class="bk__next"
+            variant="solid" size="sm" class="bk__next"
             :disabled="!days || !rangeOk" @click="steps.complete(1)"
           >
             Weiter <UiIcon name="arrow" :size="14" />
@@ -122,7 +122,7 @@ function addToCart() {
             <span class="opt__price">{{ formatPrice(perBox * n) }}</span>
           </label>
         </div>
-        <UiButton variant="outline" size="sm" class="bk__next" @click="steps.complete(2)">
+        <UiButton variant="solid" size="sm" class="bk__next" @click="steps.complete(2)">
           Weiter <UiIcon name="arrow" :size="14" />
         </UiButton>
       </BookingStep>
@@ -135,7 +135,7 @@ function addToCart() {
             <span class="bk__addon-price">+ {{ formatPrice(days * soundboxRates.extraBatteryPerDayCents) }}</span>
           </span>
         </label>
-        <UiButton variant="outline" size="sm" class="bk__next" @click="steps.complete(3)">
+        <UiButton variant="solid" size="sm" class="bk__next" @click="steps.complete(3)">
           Weiter <UiIcon name="arrow" :size="14" />
         </UiButton>
       </BookingStep>
