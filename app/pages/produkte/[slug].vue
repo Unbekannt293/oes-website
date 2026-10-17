@@ -17,9 +17,11 @@ const category = computed(() =>
 
 const contact = useContact()
 
-// Paketwahl: aus der Adresse (?paket=..., Link von der Pakete-Seite) oder
-// per Klick auf eine Paketkachel unten.
+// Vorwahl aus der Adresse: ?paket=fotobox-premium oder ?sb=1 (Kombi-Karten
+// der Pakete-Seite). Die Stufe laesst sich auch im Vergleich unten waehlen.
 const paket = ref(typeof route.query.paket === 'string' ? route.query.paket : '')
+const sb = Number(route.query.sb)
+const soundboxes = ref<0 | 1 | 2>(sb === 1 || sb === 2 ? sb : 0)
 const { lenis } = useLenis()
 
 // Auswahl im Buchungskasten -> passendes Foto (product.imageFor im Katalog).
@@ -33,6 +35,9 @@ function choose(slug: string) {
   paket.value = slug
   const box = document.getElementById('buchen')
   if (!box) return
+  // Nur scrollen, wenn der Buchungskasten gar nicht zu sehen ist (Handy).
+  const r = box.getBoundingClientRect()
+  if (r.bottom > 0 && r.top < innerHeight) return
   // Mit Lenis ueber Lenis scrollen, sonst arbeiten zwei Scroller gegeneinander.
   if (lenis.value) lenis.value.scrollTo(box, { offset: -110 })
   else box.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -83,7 +88,10 @@ useSeoMeta({
       </div>
 
       <aside id="buchen" class="pd__aside">
-        <BookingPackage v-if="product.available && product.booking === 'paket'" v-model:paket="paket" @focus="showImage" />
+        <BookingPackage
+          v-if="product.available && product.booking === 'paket'"
+          v-model:paket="paket" v-model:soundboxes="soundboxes" @focus="showImage"
+        />
         <BookingRental v-else-if="product.available && product.booking === 'zeitraum'" :product="product" @focus="showImage" />
         <div v-else class="pd__soon">
           <p class="label pd__soon-h">Coming soon</p>
@@ -100,14 +108,11 @@ useSeoMeta({
         </div>
       </aside>
 
-      <!-- Unter der Galerie ist Platz: dort stehen die Pakete als Preisliste,
-           ein Klick waehlt das Paket im Buchungskasten. -->
+      <!-- Unter der Galerie ist Platz: dort steht der Vergleich der
+           Druckstufen, ein Klick auf eine Spalte waehlt sie im Buchungskasten. -->
       <section v-if="product.booking === 'paket'" class="pd__pakete" aria-labelledby="pakete-h">
-        <div class="pd__pakete-head">
-          <h2 id="pakete-h" class="display pd__pakete-h">Pakete</h2>
-          <NuxtLink to="/pakete" class="label pd__pakete-more">Alle Preise</NuxtLink>
-        </div>
-        <PackageCards :packages="fotoboxPackages" :selected="paket" @select="choose" />
+        <h2 id="pakete-h" class="display pd__pakete-h">Was ist drin?</h2>
+        <PackageCompare :packages="fotoboxPackages" :selected="paket" selectable @select="choose" />
       </section>
     </div>
   </div>
@@ -136,7 +141,6 @@ useSeoMeta({
   .pd { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) 360px; grid-template-areas: 'gal info aside'; gap: var(--s-7); }
   /* Pakete unter Galerie und Text, der Buchungskasten steht daneben. */
   .pd--pakete { grid-template-areas: 'gal info aside' 'pak pak aside'; grid-template-rows: auto 1fr; }
-  .pd__aside { position: sticky; top: calc(var(--hdr-h, 78px) + var(--s-5)); }
 }
 .pd__gallery { grid-area: gal; }
 .pd__info { grid-area: info; display: grid; gap: var(--s-4); }
@@ -187,8 +191,5 @@ useSeoMeta({
 .pd__ask-btn { margin-top: var(--s-3); }
 
 .pd__pakete { grid-area: pak; display: grid; gap: var(--s-4); align-content: start; }
-.pd__pakete-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-4); }
 .pd__pakete-h { font-size: var(--t-h3); }
-.pd__pakete-more { color: var(--c-gold); }
-.pd__pakete-more:hover { color: var(--c-text); }
 </style>

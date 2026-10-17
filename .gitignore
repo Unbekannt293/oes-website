@@ -25,3 +25,4 @@ logs
 
 # Netlify build output
 .netlify
+.claude/

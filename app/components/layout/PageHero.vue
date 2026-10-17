@@ -80,8 +80,6 @@ const {
     linear-gradient(90deg, rgb(11 10 9 / 0.92) 0%, rgb(11 10 9 / 0.55) 50%, rgb(11 10 9 / 0.15) 100%),
     linear-gradient(0deg, rgb(11 10 9 / 0.7), transparent 55%);
 }
-.ph--plain .ph__sub,
-.ph--mono .ph__sub { color: var(--c-text-onink); }
 .ph--plain .ph__img { filter: none; }
 .ph--plain::before {
   background:

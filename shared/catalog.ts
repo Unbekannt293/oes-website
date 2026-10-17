@@ -77,8 +77,6 @@ export const products: Product[] = [
  * Mo-Do / Fr-So (der Miettag, nicht mehrere Tage). Zubehoer und Lieferung
  * sind nicht rabattiert.
  */
-export const KOMBI_RABATT_PCT = 5
-
 export const fotoboxPackages: RentalPackage[] = [
   {
     slug: 'fotobox-basic', name: 'Fotobox Basic', short: 'Basic', tier: 'basic',
@@ -104,6 +102,46 @@ export const fotoboxPackages: RentalPackage[] = [
     slug: 'fotobox-deluxe', name: 'Fotobox Deluxe', short: 'Deluxe', tier: 'deluxe',
     priceCents: 34999, prints: 700, designIncluded: true, freeDeliveryKm: 8, available: true,
     withSoundbox: { 1: { moDo: 35599, frSo: 36099 }, 2: { moDo: 37999, frSo: 38999 } },
+  },
+]
+
+/**
+ * Pakete-Seite: die Kombis aus Fotobox und Soundboxen, im Format der
+ * Produkte, damit sie dieselbe Karte nutzen. Die Druckstufe (Basic bis
+ * Deluxe) waehlt man erst im Buchungskasten. Preis = guenstigste Stufe
+ * an einem Tag Mo-Do.
+ */
+export type Kombi = Product & { soundboxes: 0 | 1 | 2, to: string }
+
+const kombiFrom = (n: 1 | 2) => Math.min(...fotoboxPackages.map(p => p.withSoundbox![n].moDo))
+
+export const kombis: Kombi[] = [
+  {
+    slug: 'kombi-fotobox', name: 'Fotobox', category: 'fotobox', soundboxes: 0,
+    to: '/produkte/fotobox#buchen',
+    priceCents: Math.min(...fotoboxPackages.map(p => p.priceCents)),
+    summary: 'Mit Sofortdruck oder rein digital.',
+    features: [], images: ['/images/produkte/fotobox-oes.webp', '/images/produkte/fotobox-mit-drucker.webp'],
+    available: true, stock: 1,
+  },
+  {
+    slug: 'kombi-fotobox-soundbox', name: 'Fotobox + Soundbox', category: 'fotobox', soundboxes: 1,
+    to: '/produkte/fotobox?sb=1#buchen',
+    priceCents: kombiFrom(1),
+    summary: 'Fotos und Musik aus einer Hand, günstiger als einzeln.',
+    features: [], images: ['/images/produkte/set-fotobox-soundbox-drucker.webp'],
+    available: true, stock: 1,
+  },
+  {
+    slug: 'kombi-fotobox-2-soundboxen', name: 'Fotobox + 2 Soundboxen', category: 'fotobox', soundboxes: 2,
+    to: '/produkte/fotobox?sb=2#buchen',
+    priceCents: kombiFrom(2),
+    summary: 'Zwei Soundboxen für größere Feiern.',
+    features: [], images: [
+      '/images/produkte/set-fotobox-zwei-soundboxen-drucker.webp',
+      '/images/produkte/set-fotobox-zwei-soundboxen-drucker-oben.webp',
+    ],
+    available: true, stock: 1,
   },
 ]
 

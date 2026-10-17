@@ -2,13 +2,16 @@
 import type { Product } from '~~/shared/types'
 import { formatPrice } from '~~/shared/pricing'
 
-const { product } = defineProps<{ product: Product }>()
+// `to` ersetzt das Ziel, z. B. fuer die Kombis auf der Pakete-Seite
+// (Fotobox-Buchung mit vorgewaehlter Soundbox).
+const { product, to } = defineProps<{ product: Product, to?: string }>()
+const href = computed(() => to ?? `/produkte/${product.slug}`)
 
 // Der Bildbereich liegt ueber der Klickflaeche, damit man auf dem Handy
 // durch die Bilder wischen kann. Ein Klick aufs Bild fuehrt trotzdem zum
 // Produkt (Tastatur nimmt den Link am Namen, die Pfeile stoppen den Klick).
 function open() {
-  navigateTo(`/produkte/${product.slug}`)
+  navigateTo(href.value)
 }
 </script>
 
@@ -31,7 +34,7 @@ function open() {
 
     <div class="card__body">
       <h3 class="card__name">
-        <NuxtLink :to="`/produkte/${product.slug}`" class="card__link">{{ product.name }}</NuxtLink>
+        <NuxtLink :to="href" class="card__link">{{ product.name }}</NuxtLink>
       </h3>
       <p v-if="product.summary" class="card__summary muted">{{ product.summary }}</p>
       <!-- Kein Preis fuer etwas, das man noch nicht mieten kann. -->

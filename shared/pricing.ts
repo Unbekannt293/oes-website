@@ -75,9 +75,18 @@ export function packagePriceCents(pkg: RentalPackage, soundboxes: 0 | 1 | 2, iso
   return pkg.withSoundbox[soundboxes][weekpartOf(isoDate)]
 }
 
-/** Guenstigster Preis mit Soundbox, fuer "mit Soundbox ab ..." in der Anzeige. */
-export function cheapestWithSoundboxCents(pkg: RentalPackage): number | null {
-  return pkg.withSoundbox ? pkg.withSoundbox[1].moDo : null
+/**
+ * Aufpreis fuer 1 oder 2 Soundboxen im Kombi gegenueber dem Paket allein.
+ * Der Buchungskasten zeigt ihn statt der Kombi-Gesamtpreise: "+ 15,00 €".
+ */
+export function kombiAddCents(pkg: RentalPackage, soundboxes: 0 | 1 | 2, part: Weekpart): number {
+  if (soundboxes === 0 || !pkg.withSoundbox) return 0
+  return pkg.withSoundbox[soundboxes][part] - pkg.priceCents
+}
+
+/** Was dieselben Soundboxen einzeln fuer einen Tag kosten wuerden (zum Durchstreichen). */
+export function soundboxDayCents(soundboxes: number, part: Weekpart): number {
+  return soundboxes * soundboxRates.perDayCents[part]
 }
 
 /** Anzahl Miettage, beide Tage eingeschlossen. 0, wenn das Ende vor dem Anfang liegt. */

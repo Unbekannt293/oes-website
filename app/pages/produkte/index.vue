@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { categories, fotoboxPackages, products } from '~~/shared/catalog'
-import type { RentalPackage } from '~~/shared/types'
+import { categories, kombis, products } from '~~/shared/catalog'
 import type { CategoryId } from '~~/shared/types'
 
 useSeoMeta({
@@ -27,8 +26,8 @@ const visible = computed(() =>
     .toSorted((a, b) => Number(b.available) - Number(a.available)),
 )
 
-// Jede Paketzeile fuehrt direkt in die Buchung, mit vorausgewaehltem Paket.
-const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buchen`
+// Die Fotobox allein steht schon im Raster oben, hier nur die Kombis.
+const withSoundbox = kombis.filter(k => k.soundboxes > 0)
 </script>
 
 <template>
@@ -76,12 +75,14 @@ const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buche
     <section class="section pakete" aria-labelledby="pakete-h">
       <div class="shell">
         <div class="pakete__head">
-          <h2 id="pakete-h" class="display h-col">Fotobox-Pakete</h2>
+          <h2 id="pakete-h" class="display h-col">Im Paket</h2>
           <UiButton to="/pakete" variant="ghost" size="sm">
-            Alle Preise <UiIcon name="arrow" :size="14" />
+            Alle Pakete <UiIcon name="arrow" :size="14" />
           </UiButton>
         </div>
-        <PackageCards :packages="fotoboxPackages" :to="toBooking" />
+        <div class="grid">
+          <ProductCard v-for="k in withSoundbox" :key="k.slug" :product="k" :to="k.to" />
+        </div>
       </div>
     </section>
   </div>
