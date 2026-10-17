@@ -51,14 +51,11 @@ const sbOptions = [
   { n: 1 as const, label: '1 Soundbox' },
   { n: 2 as const, label: '2 Soundboxen' },
 ]
-/** Was die Stufe ausser den Ausdrucken bringt, fuer die Auswahlzeile. */
-const perks = (p: RentalPackage) =>
-  [p.short, p.designIncluded ? 'Fotodesign inkl.' : '', `${p.freeDeliveryKm} km frei`].filter(Boolean).join(' · ')
-
 // Ab Premium ist das eigene Foto-Layout inklusive: dann nicht berechnen.
-// Zubehoer, das es noch nicht gibt, steht hier gar nicht erst.
+// Zubehoer, das es noch nicht gibt, steht ausgegraut mit "bald" da.
 const layoutIncluded = computed(() => !!pkg.value?.designIncluded)
 const shopAddons = addons.filter(a => a.available)
+const soonAddons = addons.filter(a => !a.available)
 const chosenAddons = computed(() => shopAddons.filter(a =>
   chosen.value.includes(a.slug) && !(a.slug === LAYOUT_ADDON && layoutIncluded.value)))
 // Zusatzakku nur mit Soundbox, wie bei der Soundbox-Miete: pro Tag.
@@ -174,19 +171,8 @@ function addToCart() {
       </BookingStep>
 
       <BookingStep :n="2" title="Ausdrucke" :state="steps.state(2)" :summary="summaries[2]" @open="steps.open(2)">
-        <div class="opts" role="radiogroup" aria-label="Ausdrucke">
-          <label v-for="p in bookable" :key="p.slug" class="opt" :class="{ 'is-sel': paket === p.slug }">
-            <input v-model="paket" type="radio" name="bk-paket" :value="p.slug">
-            <span class="opt__main">
-              <span class="opt__name">{{ p.prints ? `${p.prints} Ausdrucke` : 'Nur digital' }}</span>
-              <span class="opt__sub">{{ perks(p) }}</span>
-            </span>
-            <span class="opt__price">
-              <span>{{ formatPrice(p.priceCents * n) }}</span>
-              <span v-if="n > 1" class="opt__was">{{ n }} × {{ formatPrice(p.priceCents) }}</span>
-            </span>
-          </label>
-        </div>
+        <!-- Karussell mit allen Vorteilen je Stufe, Pfeile zum Blaettern. -->
+        <PackageCompare :packages="bookable" :selected="paket" :days="n" @select="paket = $event" />
       </BookingStep>
 
       <BookingStep :n="3" title="Soundbox dazu" :state="steps.state(3)" :summary="summaries[3]" @open="steps.open(3)">
@@ -234,6 +220,15 @@ function addToCart() {
               <span class="bk__addon">
                 <span>Zusatzakku für die Soundbox</span>
                 <span class="bk__addon-price">+ {{ formatPrice(n * soundboxRates.extraBatteryPerDayCents) }}</span>
+              </span>
+            </label>
+          </li>
+          <li v-for="a in soonAddons" :key="a.slug">
+            <label class="check is-off">
+              <input type="checkbox" disabled>
+              <span class="bk__addon">
+                <span>{{ a.name }}</span>
+                <span class="bk__addon-soon">bald</span>
               </span>
             </label>
           </li>
