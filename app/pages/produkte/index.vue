@@ -75,7 +75,7 @@ const withSoundbox = kombis.filter(k => k.soundboxes > 0)
     <section class="section pakete" aria-labelledby="pakete-h">
       <div class="shell">
         <div class="pakete__head">
-          <h2 id="pakete-h" class="display h-col">Kombi-Pakete</h2>
+          <h2 id="pakete-h" class="display h-col">Event-Komplettpakete</h2>
           <UiButton to="/pakete" variant="solid" size="sm">
             Alle Pakete <UiIcon name="arrow" :size="14" />
           </UiButton>

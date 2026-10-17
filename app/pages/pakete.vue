@@ -27,7 +27,7 @@ const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buche
          Buchung, die Soundbox-Zahl ist dort schon gewaehlt. -->
     <section class="section" aria-labelledby="kombi-h">
       <div class="shell">
-        <h2 id="kombi-h" class="display h-col pk-h">Kombi-Pakete</h2>
+        <h2 id="kombi-h" class="display h-col pk-h">Event-Komplettpakete</h2>
         <div class="grid">
           <ProductCard v-for="k in kombis" :key="k.slug" :product="k" :to="k.to" />
         </div>

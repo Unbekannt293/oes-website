@@ -124,9 +124,9 @@ useSeoMeta({
         />
         <div class="pd__kombi-text">
           <h2 class="display pd__pakete-h">Fotobox dazu?</h2>
-          <p class="muted">Fotobox und Soundbox buchen Sie zusammen als Kombi-Paket, günstiger als einzeln.</p>
+          <p class="muted">Fotobox und Soundbox buchen Sie zusammen als Event-Komplettpaket, günstiger als einzeln.</p>
           <div class="pd__kombi-links">
-            <UiButton to="/pakete" variant="solid" size="sm">Kombi-Pakete</UiButton>
+            <UiButton to="/pakete" variant="solid" size="sm">Event-Komplettpakete</UiButton>
             <NuxtLink to="/produkte/fotobox" class="label pd__kombi-link">Zur Fotobox <UiIcon name="arrow" :size="12" /></NuxtLink>
           </div>
         </div>

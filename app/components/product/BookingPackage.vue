@@ -172,7 +172,10 @@ function addToCart() {
 
       <BookingStep :n="2" title="Ausdrucke" :state="steps.state(2)" :summary="summaries[2]" @open="steps.open(2)">
         <!-- Karussell mit allen Vorteilen je Stufe, Pfeile zum Blaettern. -->
-        <PackageCompare :packages="bookable" :selected="paket" :days="n" @select="paket = $event" />
+        <PackageCompare
+          :packages="bookable" :selected="paket" :days="n"
+          style="--cmp-bg: var(--c-paper-pure)" @select="paket = $event"
+        />
       </BookingStep>
 
       <BookingStep :n="3" title="Soundbox dazu" :state="steps.state(3)" :summary="summaries[3]" @open="steps.open(3)">
