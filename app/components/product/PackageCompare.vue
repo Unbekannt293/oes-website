@@ -37,19 +37,23 @@ const aria = (p: RentalPackage) => [
 // ---- Karussell (nur schmal sichtbar, breit sind die Pfeile ausgeblendet) ----
 const track = ref<HTMLElement | null>(null)
 const labels = ref<HTMLElement | null>(null)
+// Es ist genau eine Paketspalte sichtbar: ihr Index steuert Punkte und Pfeile.
 const current = ref(0)
-const atStart = ref(true)
-const atEnd = ref(false)
 
 function cols() {
   return track.value ? [...track.value.querySelectorAll<HTMLElement>('.cmp__col')] : []
 }
-/** Spalte i direkt rechts neben die stehenden Zeilennamen schieben. */
+/**
+ * Spalte i direkt rechts neben die stehenden Zeilennamen schieben. Gerechnet
+ * wird ab der ersten Spalte: die Position der Zeilennamen selbst taugt nicht,
+ * sie wandert als sticky-Element beim Scrollen mit.
+ */
 function go(i: number, behavior: ScrollBehavior = 'smooth') {
   const list = cols()
   const col = list[Math.max(0, Math.min(i, list.length - 1))]
-  if (!col || !track.value || !labels.value) return
-  track.value.scrollTo({ left: col.offsetLeft - labels.value.offsetLeft - labels.value.offsetWidth - 8, behavior })
+  if (!col || !list[0] || !track.value) return
+  current.value = list.indexOf(col)
+  track.value.scrollTo({ left: col.offsetLeft - list[0].offsetLeft, behavior })
 }
 function onScroll() {
   const t = track.value, l = labels.value
@@ -61,8 +65,6 @@ function onScroll() {
     if (d < dist) { dist = d; best = i }
   })
   current.value = best
-  atStart.value = t.scrollLeft < 4
-  atEnd.value = t.scrollLeft > t.scrollWidth - t.clientWidth - 4
 }
 // Gewaehlte Stufe beim Laden zeigen (z. B. ?paket=fotobox-premium).
 onMounted(() => {
@@ -74,6 +76,7 @@ onMounted(() => {
 
 <template>
   <div class="cmp-wrap">
+    <div class="cmp-stage">
     <div ref="track" class="cmp" :style="{ '--n': packages.length }" @scroll.passive="onScroll">
       <div ref="labels" class="cmp__labels" aria-hidden="true">
         <span class="cmp__cell cmp__cell--head" />
@@ -123,20 +126,21 @@ onMounted(() => {
       </component>
     </div>
 
-    <div class="cmp__nav">
-      <button type="button" class="cmp__arrow" :disabled="atStart" aria-label="Vorheriges Paket" @click="go(current - 1)">
-        <UiIcon name="arrow" :size="16" class="cmp__back" />
+      <!-- Pfeile liegen auf der sichtbaren Paketkarte, links und rechts vom Namen. -->
+      <button type="button" class="cmp__arrow cmp__arrow--prev" :disabled="current === 0" aria-label="Vorheriges Paket" @click="go(current - 1)">
+        <UiIcon name="arrow" :size="14" class="cmp__back" />
       </button>
-      <div class="cmp__dots">
-        <button
-          v-for="(p, i) in packages" :key="p.slug" type="button"
-          class="cmp__dot" :class="{ 'is-on': i === current }"
-          :aria-label="`Paket ${p.short}`" :aria-current="i === current" @click="go(i)"
-        />
-      </div>
-      <button type="button" class="cmp__arrow" :disabled="atEnd" aria-label="Nächstes Paket" @click="go(current + 1)">
-        <UiIcon name="arrow" :size="16" />
+      <button type="button" class="cmp__arrow cmp__arrow--next" :disabled="current === packages.length - 1" aria-label="Nächstes Paket" @click="go(current + 1)">
+        <UiIcon name="arrow" :size="14" />
       </button>
+    </div>
+
+    <div class="cmp__dots">
+      <button
+        v-for="(p, i) in packages" :key="p.slug" type="button"
+        class="cmp__dot" :class="{ 'is-on': i === current }"
+        :aria-label="`Paket ${p.short}`" :aria-current="i === current" @click="go(i)"
+      />
     </div>
   </div>
 </template>
@@ -197,24 +201,33 @@ onMounted(() => {
 .cmp__per { font-size: 0.75rem; font-weight: 400; color: var(--c-text-muted); }
 .cmp__cell--act { color: var(--c-gold); gap: 0.3rem; min-height: 2.5rem; font-size: 0.6875rem; }
 
-.cmp__nav { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin-top: var(--s-3); }
+.cmp-stage { position: relative; }
 .cmp__arrow {
-  display: grid; place-items: center; width: 2.25rem; height: 2.25rem; flex: none;
-  border: 1px solid var(--c-gold-hair); border-radius: 50%; color: var(--c-text);
+  position: absolute; z-index: 3; top: 1.6rem;
+  display: grid; place-items: center; width: 2rem; height: 2rem;
+  border: 1px solid var(--c-gold-hair); border-radius: 50%;
+  color: var(--c-text); background: var(--c-paper-pure);
   transition: background var(--d-fast) var(--e-out), opacity var(--d-fast) var(--e-out);
 }
+/* Erster Pfeil am linken Rand der Karte, also hinter den Zeilennamen. */
+.cmp__arrow--prev { left: calc(var(--cmp-label-w) + var(--s-2) + var(--s-2)); }
+.cmp__arrow--next { right: var(--s-2); }
 .cmp__arrow:hover:not(:disabled) { background: rgb(195 139 55 / 0.12); }
-.cmp__arrow:disabled { opacity: 0.3; cursor: default; }
+.cmp__arrow:disabled { opacity: 0.25; cursor: default; }
 .cmp__back { transform: scaleX(-1); }
-.cmp__dots { display: flex; gap: 0.4rem; }
+/* Punkte mittig unter der Karte, nicht unter der ganzen Breite. */
+.cmp__dots {
+  display: flex; justify-content: center; gap: 0.4rem;
+  margin: var(--s-3) 0 0 calc(var(--cmp-label-w) + var(--s-2));
+}
 .cmp__dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; background: var(--c-gold-hair); transition: width var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out); }
 .cmp__dot.is-on { width: 1.25rem; background: var(--c-gold); }
 
 /* ---- Schmal: Karussell, Zeilennamen bleiben links stehen ---- */
 @container (max-width: 39.99rem) {
   .cmp {
-    /* Gut zwei Spalten sichtbar, die dritte schaut hervor. */
-    grid-template-columns: var(--cmp-label-w) repeat(var(--n), calc((100cqw - var(--cmp-label-w) - var(--s-2)) / 2.3));
+    /* Genau eine Paketspalte sichtbar, sie fuellt den Platz neben den Zeilennamen. */
+    grid-template-columns: var(--cmp-label-w) repeat(var(--n), calc(100cqw - var(--cmp-label-w) - var(--s-2)));
     overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
     scroll-padding-left: calc(var(--cmp-label-w) + var(--s-2));
     padding-bottom: 4px;
@@ -228,7 +241,14 @@ onMounted(() => {
     box-shadow: var(--s-2) 0 0 var(--cmp-bg, var(--c-paper));
     font-size: 0.8125rem;
   }
-  .cmp__col { scroll-snap-align: start; padding: 0 var(--s-1); }
+  /* Die sichtbare Spalte ist immer als Karte gerahmt: das ist der Teil, der blaettert. */
+  .cmp__col {
+    scroll-snap-align: start; padding: 0 var(--s-3);
+    background: var(--c-paper-pure); border-color: var(--c-gold-hair);
+  }
+  .cmp__col.is-sel { border-color: var(--c-gold); }
+  /* Platz fuer die Pfeile links und rechts vom Namen. */
+  .cmp__col .cmp__cell--head { padding-inline: 2.4rem; }
   .cmp__cell--price { display: none; }
   .cmp__labels .cmp__cell { font-size: 0.8125rem; }
 }
@@ -236,7 +256,7 @@ onMounted(() => {
 /* ---- Breit: alle Spalten nebeneinander ---- */
 @container (min-width: 40rem) {
   .cmp { grid-template-columns: minmax(8.5rem, auto) repeat(var(--n), minmax(0, 1fr)); }
-  .cmp__nav, .cmp__cell--act, .cmp__hprice { display: none; }
+  .cmp__arrow, .cmp__dots, .cmp__cell--act, .cmp__hprice { display: none; }
   .cmp__col:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
 }
 </style>
