@@ -53,19 +53,14 @@
 }
 .bk__ok a { margin-left: auto; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; color: var(--c-text); }
 
-/* Schritte im Buchungskasten: kleine Nummer, kurze Frage. */
-.bk__step { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: var(--s-3); }
-.bk__step + .bk__step { padding-top: var(--s-4); border-top: 1px solid var(--c-gold-hair); }
-.bk__step-h {
-  display: flex; align-items: center; gap: var(--s-2);
-  padding: 0; font-size: 0.9375rem; font-weight: 600; color: var(--c-text);
-}
-.bk__no {
-  display: inline-grid; place-items: center; flex: none;
-  width: 1.4rem; height: 1.4rem; border-radius: 50%;
-  font-size: 0.75rem; font-weight: 600;
-  color: var(--c-gold); border: 1px solid var(--c-gold-hair);
-}
+/* Schritte als Akkordeon (BookingStep), oben und unten eine Haarlinie. */
+.bk__steps { border-block: 1px solid var(--c-gold-hair); }
+.bk__next { display: flex; width: fit-content; margin: var(--s-4) 0 0 auto; }
+.bk__addons + .bk__next { margin-top: var(--s-4); }
+/* Gewaehlter Zeitraum links, Weiter rechts. */
+.bk__row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin-top: var(--s-4); }
+.bk__row .bk__next { margin: 0 0 0 auto; }
+.bk__tip { margin-top: var(--s-2); }
 /* Platzhalter, bis der Kalender im Browser steht: gleiche Hoehe, kein Springen. */
 .bk__cal-ph { min-height: 21rem; }
 

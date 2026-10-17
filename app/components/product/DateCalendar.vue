@@ -1,18 +1,34 @@
 <script setup lang="ts">
-// Monatskalender fuer den Veranstaltungstag.
+// Monatskalender fuer den Veranstaltungstag oder einen Mietzeitraum.
 //  - Fr bis So sind golden getoent: dort gilt der Wochenendpreis. So sieht
 //    man den Unterschied, ohne dass ein Satz ihn erklaeren muss.
 //  - Belegte Tage (zu wenig freie Geraete laut /api/verfuegbarkeit) sind
 //    durchgestrichen und nicht waehlbar.
+//  - range: Der erste Klick waehlt einen Tag (eintaegige Miete), ein Klick
+//    auf einen spaeteren Tag macht daraus einen Zeitraum, jeder weitere
+//    Klick beginnt neu.
 // Nur im Browser rendern (ClientOnly): "heute" haengt von der Uhr ab.
 const model = defineModel<string>({ default: '' })
-/** false, wenn der gewaehlte Tag (nach einer Aenderung der Soundbox-Zahl) belegt ist. */
+/** Letzter Tag des Zeitraums (nur mit range). */
+const to = defineModel<string>('to', { default: '' })
+/** false, wenn im gewaehlten Tag/Zeitraum nicht genug Geraete frei sind. */
 const ok = defineModel<boolean>('ok', { default: true })
-const { min = '', soundboxes = 0 } = defineProps<{ min?: string, soundboxes?: number }>()
+const { min = '', fotobox = true, soundboxes = 0, range = false } = defineProps<{
+  min?: string
+  /** Wird die Fotobox gebraucht? (Soundbox-Miete: nein) */
+  fotobox?: boolean
+  soundboxes?: number
+  range?: boolean
+}>()
 
 const iso = (d: Date) => d.toLocaleDateString('sv-SE')
 const at = (s: string) => new Date(`${s}T12:00:00`) // mittags: keine Zeitzonen-Kippe
 const firstOf = (s: string) => `${s.slice(0, 7)}-01`
+function daysBetween(a: string, b: string) {
+  const out: string[] = []
+  for (const d = at(a); iso(d) <= b; d.setDate(d.getDate() + 1)) out.push(iso(d))
+  return out
+}
 
 const today = iso(new Date())
 const view = ref(firstOf(model.value || min || today))
@@ -50,7 +66,7 @@ async function load() {
   const von = view.value
   const s = at(von)
   const bis = iso(new Date(s.getFullYear(), s.getMonth() + 1, 0, 12))
-  const geraete = soundboxes ? ['fotobox', 'soundbox'] : ['fotobox']
+  const geraete = [...(fotobox ? ['fotobox'] : []), ...(soundboxes ? ['soundbox'] : [])]
   await Promise.all(geraete.map(async (geraet) => {
     try {
       const r = await $fetch<{ tage: { tag: string, frei: number }[] }>('/api/verfuegbarkeit', { query: { geraet, von, bis } })
@@ -62,12 +78,29 @@ async function load() {
 watch([view, () => soundboxes], load, { immediate: true })
 
 function busy(day: string) {
-  if ((frei.value.fotobox?.[day] ?? 1) < 1) return true
+  if (fotobox && (frei.value.fotobox?.[day] ?? 1) < 1) return true
   return soundboxes > 0 && (frei.value.soundbox?.[day] ?? soundboxes) < soundboxes
 }
 const past = (day: string) => day < (min || today)
 
-watchEffect(() => { ok.value = !model.value || !busy(model.value) })
+function pick(day: string) {
+  if (!range) { model.value = day; return }
+  // Eintaegig gewaehlt und spaeterer Tag geklickt: Zeitraum bis dorthin,
+  // sofern kein belegter Tag dazwischen liegt. Sonst neu beginnen.
+  if (model.value && model.value === to.value && day > model.value
+    && !daysBetween(model.value, day).some(busy)) {
+    to.value = day
+    return
+  }
+  model.value = day
+  to.value = day
+}
+
+const end = computed(() => (range ? to.value : model.value))
+const inRange = (day: string) => range && !!model.value && day > model.value && day < to.value
+watchEffect(() => {
+  ok.value = !model.value || !daysBetween(model.value, end.value || model.value).some(busy)
+})
 </script>
 
 <template>
@@ -88,17 +121,20 @@ watchEffect(() => { ok.value = !model.value || !busy(model.value) })
         <span v-if="!c" />
         <button
           v-else type="button" class="cal__day"
-          :class="{ 'is-we': c.weekend, 'is-sel': model === c.iso, 'is-busy': busy(c.iso), 'is-today': c.iso === today }"
+          :class="{
+            'is-we': c.weekend, 'is-busy': busy(c.iso), 'is-today': c.iso === today,
+            'is-sel': c.iso === model || c.iso === end, 'is-range': inRange(c.iso),
+          }"
           :disabled="past(c.iso) || busy(c.iso)"
-          :aria-pressed="model === c.iso"
+          :aria-pressed="c.iso === model || c.iso === end || inRange(c.iso)"
           :aria-label="`${longDate.format(at(c.iso))}${busy(c.iso) ? ', belegt' : ''}`"
-          @click="model = c.iso"
+          @click="pick(c.iso)"
         >{{ c.day }}</button>
       </template>
     </div>
 
     <p v-if="model && !ok" class="cal__warn" role="alert">
-      An diesem Tag ist nicht alles frei. Bitte einen anderen Tag wählen.
+      {{ range ? 'In diesem Zeitraum' : 'An diesem Tag' }} ist nicht alles frei. Bitte einen anderen Tag wählen.
     </p>
     <ul class="cal__legend" aria-hidden="true">
       <li><span class="cal__sw" /> Mo–Do</li>
@@ -138,6 +174,7 @@ watchEffect(() => { ok.value = !model.value || !busy(model.value) })
 .cal__day.is-we { background: rgb(195 139 55 / 0.12); }
 .cal__day:hover:not(:disabled) { background: rgb(195 139 55 / 0.28); }
 .cal__day.is-today { box-shadow: inset 0 0 0 1px var(--c-gold-hair); }
+.cal__day.is-range { background: rgb(195 139 55 / 0.35); }
 .cal__day.is-sel, .cal__day.is-sel:hover { background: var(--c-gold); color: #FFFFFF; font-weight: 600; }
 .cal__day:disabled { color: var(--c-text-muted); opacity: 0.4; cursor: default; }
 .cal__day.is-busy { text-decoration: line-through; background: transparent; }
