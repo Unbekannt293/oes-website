@@ -61,6 +61,9 @@ export default defineNuxtConfig({
     supabaseSecretKey: '',
     public: {
       siteUrl: 'https://ottos-eventservice.de',
+      // Online-Zahlung (Stripe) an der Kasse. Bis ein Konto eingerichtet ist,
+      // nur Ueberweisung. Einschalten mit NUXT_PUBLIC_ONLINE_PAYMENT=true.
+      onlinePayment: false,
     },
   },
 

@@ -142,11 +142,7 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
           Lieferkosten berechnen wir an der Kasse anhand Ihrer Adresse.
           Die Kaution erhalten Sie nach der Veranstaltung zurück.
         </p>
-        <UiButton variant="solid" size="lg" class="wk__btn" disabled>Zur Kasse</UiButton>
-        <p class="wk__note wk__note--plain muted">
-          Die Online-Kasse folgt in Kürze. Bis dahin
-          <NuxtLink to="/kontakt">fragen Sie Ihre Auswahl gern direkt an</NuxtLink>.
-        </p>
+        <UiButton to="/kasse" variant="solid" size="lg" class="wk__btn">Zur Kasse</UiButton>
       </aside>
     </div>
   </div>
