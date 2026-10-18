@@ -109,15 +109,15 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
                   <span>+ {{ a.name }}</span>
                   <span class="wk__addon-price">{{ formatPrice(a.unitPriceCents * a.quantity) }}</span>
                   <button type="button" class="wk__del wk__del--sm" @click="remove(a.id)">
-                    <UiIcon name="trash" :size="15" />
+                    <UiIcon name="minus" :size="16" />
                     <span class="visually-hidden">{{ a.name }} entfernen</span>
                   </button>
                 </li>
               </ul>
 
-              <button type="button" class="wk__del" @click="remove(b.main.id)">
-                <UiIcon name="trash" :size="18" />
-                <span class="visually-hidden">{{ b.main.name }} entfernen</span>
+              <button type="button" class="label wk__remove" @click="remove(b.main.id)">
+                <UiIcon name="trash" :size="16" /> Entfernen
+                <span class="visually-hidden">: {{ b.main.name }}</span>
               </button>
             </div>
 
@@ -199,7 +199,16 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
 .wk__addons li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: var(--s-2); }
 .wk__addon-price { font-variant-numeric: tabular-nums; }
 
-/* Loeschen: Papierkorb, rot beim Ueberfahren. */
+/* Buchung entfernen: Papierkorb mit Wort, rot. */
+.wk__remove {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  margin-top: var(--s-2); padding: 0.3rem 0;
+  font-size: 0.6875rem; color: var(--c-danger);
+  transition: opacity var(--d-fast) var(--e-out);
+}
+.wk__remove:hover { opacity: 0.7; }
+
+/* Zubehoer entfernen: Minus, rot beim Ueberfahren. */
 .wk__del {
   display: grid; place-items: center; width: 2.25rem; height: 2.25rem;
   margin-top: var(--s-2); margin-left: -0.5rem;
