@@ -2,6 +2,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  // Keine Telemetrie-Rueckfrage beim Start: sie haelt "npm run dev" an, bis
+  // jemand im Terminal antwortet, und der Server liefert solange nichts aus.
+  telemetry: false,
 
   modules: ['@nuxt/image', '@nuxt/fonts', '@vueuse/nuxt'],
 
