@@ -57,13 +57,9 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
 </script>
 
 <template>
-  <div class="section shell">
-    <nav class="crumbs label" aria-label="Brotkrumen">
-      <NuxtLink to="/">Startseite</NuxtLink>
-      <span aria-hidden="true">/</span>
-      <span aria-current="page" class="crumbs__here">Warenkorb</span>
-    </nav>
-    <h1 class="display h-col wk__title">Ihr Warenkorb</h1>
+  <div>
+  <PageHero crumb="Warenkorb" title="Ihr Warenkorb" slim />
+  <div class="section shell wk__page">
 
     <!-- Bis der gespeicherte Korb geladen ist, nichts zeigen statt kurz "leer". -->
     <div v-if="!loaded" class="wk__wait" aria-hidden="true" />
@@ -146,13 +142,11 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
       </aside>
     </div>
   </div>
+  </div>
 </template>
 
 <style scoped>
-.crumbs { display: flex; gap: var(--s-2); margin-bottom: var(--s-5); color: var(--c-text-muted); }
-.crumbs a:hover { color: var(--c-gold); }
-.crumbs__here { color: var(--c-gold); }
-.wk__title { margin-bottom: var(--s-7); }
+.wk__page { padding-top: var(--s-7); }
 .wk__wait { min-height: 40vh; }
 
 .wk { display: grid; gap: var(--s-7); align-items: start; }

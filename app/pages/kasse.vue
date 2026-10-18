@@ -124,15 +124,9 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 </script>
 
 <template>
-  <div class="section shell">
-    <nav class="crumbs label" aria-label="Brotkrumen">
-      <NuxtLink to="/">Startseite</NuxtLink>
-      <span aria-hidden="true">/</span>
-      <NuxtLink to="/warenkorb">Warenkorb</NuxtLink>
-      <span aria-hidden="true">/</span>
-      <span aria-current="page" class="crumbs__here">Kasse</span>
-    </nav>
-    <h1 class="display h-col ks__title">Kasse</h1>
+  <div>
+  <PageHero crumb="Kasse" title="Kasse" :trail="[{ to: '/warenkorb', label: 'Warenkorb' }]" slim />
+  <div class="section shell ks__page">
 
     <div v-if="!loaded" class="ks__wait" aria-hidden="true" />
 
@@ -273,15 +267,13 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <style scoped>
 @import '~/components/product/booking.css';
 
-.crumbs { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-5); color: var(--c-text-muted); }
-.crumbs a:hover { color: var(--c-gold); }
-.crumbs__here { color: var(--c-gold); }
-.ks__title { margin-bottom: var(--s-7); }
+.ks__page { padding-top: var(--s-7); }
 .ks__wait { min-height: 40vh; }
 
 .ks { display: grid; gap: var(--s-7); align-items: start; }

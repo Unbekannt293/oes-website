@@ -7,7 +7,7 @@
 // fuer Fotoboxen). Bis Louis eigene Eventfotos hat, steht das Konzertfoto.
 const {
   crumb, title, sub, image = '/images/hero/party-konzert.webp', imageMobile,
-  focus = '50% 45%', tone = 'warm', layout = 'split',
+  focus = '50% 45%', tone = 'warm', layout = 'split', slim = false, trail = [],
 } = defineProps<{
   /** Seitenname fuer die Brotkrumen, z. B. "Kontakt". */
   crumb: string
@@ -31,12 +31,19 @@ const {
    * stack: Unterzeile unter dem Titel. Gebraucht, wenn rechts ein Motiv steht.
    */
   layout?: 'split' | 'stack'
+  /**
+   * Schmaler Streifen ohne Foto (Warenkorb, Kasse): gleiche Brotkrumen,
+   * gleicher Titel, aber der Inhalt rutscht nicht unter den sichtbaren Bereich.
+   */
+  slim?: boolean
+  /** Zwischenstufen der Brotkrumen, z. B. Warenkorb auf dem Weg zur Kasse. */
+  trail?: { to: string, label: string }[]
 }>()
 </script>
 
 <template>
-  <header class="ph on-ink" :class="[`ph--${tone}`, `ph--${layout}`, { 'ph--has-mobile': imageMobile }]">
-    <picture>
+  <header class="ph on-ink" :class="[`ph--${tone}`, `ph--${layout}`, { 'ph--has-mobile': imageMobile, 'ph--slim': slim }]">
+    <picture v-if="!slim">
       <source v-if="imageMobile" media="(max-width: 640px)" :srcset="imageMobile">
       <img
         :src="image" alt="" class="ph__img" :style="{ objectPosition: focus }"
@@ -47,6 +54,10 @@ const {
       <nav class="ph__crumbs" aria-label="Brotkrumen">
         <NuxtLink to="/">Startseite</NuxtLink>
         <span aria-hidden="true">/</span>
+        <template v-for="t in trail" :key="t.to">
+          <NuxtLink :to="t.to">{{ t.label }}</NuxtLink>
+          <span aria-hidden="true">/</span>
+        </template>
         <span aria-current="page" class="ph__here">{{ crumb }}</span>
       </nav>
       <div class="ph__grid">
@@ -58,6 +69,17 @@ const {
 </template>
 
 <style scoped>
+/* Schmaler Streifen: nur Schwarz, ein Hauch Gold von rechts, wenig Hoehe. */
+.ph.ph--slim::before {
+  background: radial-gradient(60% 140% at 100% 0%, rgb(195 139 55 / 0.12), transparent 70%);
+}
+.ph--slim .ph__inner {
+  min-height: 0;
+  padding-block: clamp(1.75rem, 1.2rem + 2vw, 2.75rem) clamp(1.5rem, 1rem + 1.6vw, 2.25rem);
+}
+.ph--slim .ph__crumbs { margin-bottom: var(--s-4); }
+.ph--slim .ph__title { font-size: clamp(2rem, 1.4rem + 2.2vw, 3rem); max-width: none; }
+
 .ph {
   position: relative;
   isolation: isolate;
