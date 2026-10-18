@@ -30,7 +30,7 @@ function dates(from: string, to: string) {
       <p class="muted">Stellen Sie sich Ihr Event aus Fotobox, Soundbox und Paketen zusammen.</p>
       <div class="wk__empty-btns">
         <UiButton to="/pakete" variant="solid">Pakete ansehen</UiButton>
-        <UiButton to="/produkte" variant="ghost">Produkte ansehen</UiButton>
+        <UiButton to="/produkte" variant="light">Produkte ansehen</UiButton>
       </div>
     </div>
 

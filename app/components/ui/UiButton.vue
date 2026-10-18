@@ -1,6 +1,7 @@
 <script setup lang="ts">
 interface Props {
-  variant?: 'solid' | 'outline' | 'ghost'
+  /** light: weiss gefuellt mit Haarlinie, wie die Social-Knoepfe auf Kontakt */
+  variant?: 'solid' | 'outline' | 'ghost' | 'light'
   size?: 'sm' | 'md' | 'lg' | 'xl'
   to?: string
 }
@@ -44,6 +45,10 @@ const tag = computed(() => (to ? resolveComponent('NuxtLink') : 'button'))
 
 .btn--ghost   { color: var(--c-text); border: 1px solid var(--c-gold-hair); }
 .btn--ghost:hover   { border-color: var(--c-gold); color: var(--c-gold); }
+
+.btn--light { background: var(--c-paper-pure); color: #17171A; border: 1px solid var(--c-gold-hair); }
+.btn--light :deep(svg) { color: var(--c-gold); }
+.btn--light:hover { border-color: var(--c-gold); color: var(--c-gold); }
 
 .btn:disabled { opacity: 0.65; cursor: progress; }
 </style>

@@ -49,7 +49,7 @@ const { count } = useCart()
       </nav>
 
       <div class="hdr__actions">
-        <UiButton to="/warenkorb" variant="solid" size="sm" class="hdr__cart">
+        <UiButton to="/warenkorb" variant="outline" size="sm" class="hdr__cart">
           <UiIcon name="cart" :size="17" />
           <span class="hdr__cart-label">Warenkorb</span>
           <span v-if="count" class="hdr__badge" aria-hidden="true">{{ count }}</span>
@@ -100,12 +100,15 @@ const { count } = useCart()
 .hdr__link.is-active::after { transform: scaleX(1); }
 
 .hdr__cart { position: relative; }
+/* Anzahl als kleiner Kreis an der Ecke: der Knopf bleibt gleich breit,
+   egal ob leer oder voll. */
 .hdr__badge {
+  position: absolute; top: -0.5rem; right: -0.5rem;
   display: grid; place-items: center;
-  min-width: 1.25rem; height: 1.25rem; padding-inline: 0.3rem;
-  margin-left: 0.1rem;
+  min-width: 1.2rem; height: 1.2rem; padding-inline: 0.3rem;
   font-size: 0.6875rem; font-weight: 700; letter-spacing: 0;
-  color: var(--c-gold); background: #FFFFFF;
+  color: var(--c-ink); background: var(--c-gold);
+  border: 2px solid var(--c-ink);
   border-radius: 999px;
 }
 

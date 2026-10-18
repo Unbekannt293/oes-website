@@ -63,7 +63,7 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
         <p class="display cta__text">Sie planen ein Event? Wir beraten Sie gern.</p>
         <div class="cta__btns">
           <UiButton to="/kontakt" variant="solid" size="lg">Beratung anfragen</UiButton>
-          <UiButton to="/produkte" variant="ghost" size="lg">Produkte ansehen</UiButton>
+          <UiButton to="/produkte" variant="light" size="lg">Produkte ansehen</UiButton>
         </div>
       </div>
     </section>
