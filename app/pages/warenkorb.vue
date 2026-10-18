@@ -79,51 +79,61 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
     </div>
 
     <div v-else class="wk">
-      <ul class="wk__list">
-        <li v-for="b in bookings" :key="b.main.group" class="wk__card">
-          <NuxtLink :to="linkFor(b.main)" class="wk__media" tabindex="-1" aria-hidden="true">
-            <NuxtImg :src="photo(b.main)" alt="" width="320" height="320" class="wk__img" />
-          </NuxtLink>
+      <!-- Eine grosse Karte wie bei Amazon: Kopfzeile, die Buchungen als
+           Zeilen mit Trennlinien, unten rechts die Zwischensumme. -->
+      <section class="wk__box" aria-label="Positionen">
+        <div class="wk__boxhead label">
+          <span>{{ bookings.length }} {{ bookings.length === 1 ? 'Buchung' : 'Buchungen' }}</span>
+          <span>Preis</span>
+        </div>
 
-          <div class="wk__body">
-            <div class="wk__head">
-              <div>
-                <h2 class="wk__name">
-                  <NuxtLink :to="linkFor(b.main)">{{ b.main.name }}</NuxtLink>
-                </h2>
-                <p class="wk__spec">{{ spec(b.main) }}</p>
-              </div>
-              <p class="wk__price">{{ formatPrice(b.totalCents) }}</p>
+        <ul class="wk__list">
+          <li v-for="b in bookings" :key="b.main.group" class="wk__item">
+            <NuxtLink :to="linkFor(b.main)" class="wk__media" tabindex="-1" aria-hidden="true">
+              <NuxtImg :src="photo(b.main)" alt="" width="320" height="320" class="wk__img" />
+            </NuxtLink>
+
+            <div class="wk__body">
+              <h2 class="wk__name">
+                <NuxtLink :to="linkFor(b.main)">{{ b.main.name }}</NuxtLink>
+              </h2>
+              <!-- Handy: Preis direkt unter dem Namen (breit steht er rechts). -->
+              <p class="wk__price wk__price--inline">{{ formatPrice(b.totalCents) }}</p>
+              <p class="wk__spec">{{ spec(b.main) }}</p>
+              <p class="wk__date">
+                <UiIcon name="calendar" :size="15" /> {{ dates(b.main) }}
+              </p>
+
+              <ul v-if="b.addons.length" class="wk__addons">
+                <li v-for="a in b.addons" :key="a.id">
+                  <span>+ {{ a.name }}</span>
+                  <span class="wk__addon-price">{{ formatPrice(a.unitPriceCents * a.quantity) }}</span>
+                  <button type="button" class="wk__del wk__del--sm" @click="remove(a.id)">
+                    <UiIcon name="trash" :size="15" />
+                    <span class="visually-hidden">{{ a.name }} entfernen</span>
+                  </button>
+                </li>
+              </ul>
+
+              <button type="button" class="wk__del" @click="remove(b.main.id)">
+                <UiIcon name="trash" :size="18" />
+                <span class="visually-hidden">{{ b.main.name }} entfernen</span>
+              </button>
             </div>
 
-            <p class="wk__date">
-              <UiIcon name="calendar" :size="15" /> {{ dates(b.main) }}
-            </p>
+            <p class="wk__price wk__price--side">{{ formatPrice(b.totalCents) }}</p>
+          </li>
+        </ul>
 
-            <ul v-if="b.addons.length" class="wk__addons">
-              <li v-for="a in b.addons" :key="a.id">
-                <span>+ {{ a.name }}</span>
-                <span class="wk__addon-price">{{ formatPrice(a.unitPriceCents * a.quantity) }}</span>
-                <button type="button" class="wk__x" @click="remove(a.id)">
-                  <UiIcon name="close" :size="14" />
-                  <span class="visually-hidden">{{ a.name }} entfernen</span>
-                </button>
-              </li>
-            </ul>
-
-            <button type="button" class="label wk__remove" @click="remove(b.main.id)">
-              <UiIcon name="close" :size="13" /> Entfernen
-            </button>
-          </div>
-        </li>
-      </ul>
+        <p class="wk__boxfoot">
+          Zwischensumme ({{ bookings.length }} {{ bookings.length === 1 ? 'Buchung' : 'Buchungen' }}):
+          <strong>{{ formatPrice(subtotal) }}</strong>
+        </p>
+      </section>
 
       <aside class="wk__sum">
         <p class="label wk__sum-h">Bestellübersicht</p>
         <dl>
-          <div v-for="b in bookings" :key="b.main.group" class="muted">
-            <dt>{{ b.main.name }}</dt><dd>{{ formatPrice(b.totalCents) }}</dd>
-          </div>
           <div class="wk__total"><dt>Zwischensumme</dt><dd>{{ formatPrice(subtotal) }}</dd></div>
           <div class="muted"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
         </dl>
@@ -152,54 +162,67 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
 .wk { display: grid; gap: var(--s-7); align-items: start; }
 @media (min-width: 960px) { .wk { grid-template-columns: minmax(0, 1fr) 360px; } }
 
-/* ---- Karten: Foto links, Angaben rechts (wie die Produktkarten, quer) ---- */
-.wk__list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-4); }
-.wk__card {
-  display: grid; grid-template-columns: 7.5rem minmax(0, 1fr);
+/* ---- Eine grosse Karte, Buchungen als Zeilen ---- */
+.wk__box {
+  padding: var(--s-4) var(--s-5) var(--s-5);
   background: var(--c-paper-pure);
   border: var(--border-hair); border-radius: var(--r-md);
-  overflow: hidden;
 }
-@media (min-width: 640px) { .wk__card { grid-template-columns: 11rem minmax(0, 1fr); } }
-.wk__media { display: block; background: #0B0A09; }
-.wk__img { width: 100%; height: 100%; min-height: 100%; object-fit: cover; aspect-ratio: 1; }
+.wk__boxhead {
+  display: flex; justify-content: space-between;
+  padding-bottom: var(--s-3);
+  color: var(--c-text-muted); border-bottom: 1px solid var(--c-gold-hair);
+}
+.wk__list { list-style: none; padding: 0; margin: 0; }
+.wk__item {
+  display: grid; grid-template-columns: 9rem minmax(0, 1fr) auto; gap: var(--s-5);
+  padding: var(--s-5) 0;
+  border-bottom: 1px solid var(--c-gold-hair);
+}
+.wk__media { display: block; align-self: start; border-radius: var(--r-sm); overflow: hidden; background: #0B0A09; }
+.wk__img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
 
-.wk__body { display: grid; align-content: start; gap: var(--s-2); padding: var(--s-4) var(--s-4) var(--s-3); }
-@media (min-width: 640px) { .wk__body { padding: var(--s-5) var(--s-5) var(--s-4); } }
-.wk__head { display: flex; justify-content: space-between; align-items: start; gap: var(--s-3); }
-.wk__name { font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+.wk__body { display: grid; align-content: start; justify-items: start; gap: var(--s-1); min-width: 0; }
+.wk__name { font-size: 1.1rem; font-weight: 600; line-height: 1.3; }
 .wk__name a:hover { color: var(--c-gold); }
 .wk__spec { font-size: var(--t-small); color: var(--c-text-muted); }
-.wk__price { font-weight: 600; white-space: nowrap; color: var(--c-gold); font-variant-numeric: tabular-nums; }
-.wk__date { display: flex; align-items: center; gap: 0.4rem; font-size: var(--t-small); }
+.wk__date { display: flex; align-items: center; gap: 0.4rem; margin-top: var(--s-1); font-size: var(--t-small); }
 .wk__date svg { color: var(--c-gold); flex: none; }
+.wk__price { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
 
-.wk__addons { list-style: none; padding: var(--s-2) 0 0; margin: 0; display: grid; gap: 0.15rem; border-top: 1px solid var(--c-gold-hair); font-size: 0.8125rem; color: var(--c-text-muted); }
+.wk__addons {
+  list-style: none; padding: var(--s-2) 0 0; margin: var(--s-2) 0 0; width: 100%; max-width: 26rem;
+  display: grid; gap: 0.1rem;
+  border-top: 1px dashed var(--c-gold-hair);
+  font-size: 0.8125rem; color: var(--c-text-muted);
+}
 .wk__addons li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: var(--s-2); }
 .wk__addon-price { font-variant-numeric: tabular-nums; }
-.wk__x {
-  display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%;
-  color: var(--c-text-muted);
+
+/* Loeschen: Papierkorb, rot beim Ueberfahren. */
+.wk__del {
+  display: grid; place-items: center; width: 2.25rem; height: 2.25rem;
+  margin-top: var(--s-2); margin-left: -0.5rem;
+  border-radius: 50%; color: var(--c-text-muted);
   transition: color var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out);
 }
-.wk__x:hover { color: var(--c-danger); background: rgb(192 57 43 / 0.08); }
+.wk__del--sm { width: 1.75rem; height: 1.75rem; margin: 0; }
+.wk__del:hover { color: var(--c-danger); background: rgb(192 57 43 / 0.08); }
 
-.wk__remove {
-  justify-self: start; display: inline-flex; align-items: center; gap: 0.3rem;
-  margin-top: var(--s-1); padding: 0.25rem 0;
-  font-size: 0.6875rem; color: var(--c-text-muted);
-  transition: color var(--d-fast) var(--e-out);
-}
-.wk__remove:hover { color: var(--c-danger); }
+.wk__boxfoot { padding-top: var(--s-4); text-align: right; font-size: 1.05rem; }
+.wk__boxfoot strong { font-variant-numeric: tabular-nums; }
 
-/* Handy: kleines Vorschaubild statt Foto ueber die ganze Kartenhoehe,
-   Preis unter dem Namen, damit der Text Platz hat. */
+/* Handy: kleineres Bild, Preis unter den Angaben. */
+.wk__price--inline { display: none; }
 @media (max-width: 639px) {
-  .wk__card { grid-template-columns: 5.5rem minmax(0, 1fr); gap: var(--s-3); padding: var(--s-3); }
-  .wk__media { align-self: start; border-radius: var(--r-sm); overflow: hidden; }
-  .wk__body { padding: 0; }
-  .wk__head { flex-direction: column; gap: 0.1rem; }
-  .wk__price { order: 3; margin-top: var(--s-1); }
+  .wk__box { padding: var(--s-3) var(--s-4) var(--s-4); }
+  .wk__boxhead span:last-child { display: none; }
+  .wk__item { grid-template-columns: 5.5rem minmax(0, 1fr); gap: var(--s-3); padding: var(--s-4) 0; }
+  .wk__price--side { display: none; }
+  .wk__price--inline { display: block; text-align: left; color: var(--c-gold); }
+  .wk__name { font-size: 1rem; }
+  .wk__addons { grid-template-columns: none; }
+  .wk__boxfoot { font-size: 0.9375rem; }
 }
 
 /* ---- Uebersicht ---- */

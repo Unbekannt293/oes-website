@@ -4,7 +4,7 @@
 export type IconName =
   | 'phone' | 'mail' | 'pin' | 'instagram' | 'tiktok'
   | 'calendar' | 'check' | 'arrow' | 'alert'
-  | 'cart' | 'star' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close'
+  | 'cart' | 'star' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close' | 'trash'
 
 const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
 </script>
@@ -76,6 +76,9 @@ const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
     </template>
     <template v-else-if="name === 'close'">
       <path d="M6 6l12 12M18 6 6 18" />
+    </template>
+    <template v-else-if="name === 'trash'">
+      <path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7M10 11v5.5M14 11v5.5" />
     </template>
     <template v-else-if="name === 'alert'">
       <circle cx="12" cy="12" r="9" />
