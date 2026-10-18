@@ -39,10 +39,18 @@ export function quoteDelivery(distanceKm: number, lines: CartLine[]): DeliveryQu
     return { distanceKm, freeKm: 0, billableKm: distanceKm, feeCents: 0 }
   }
 
-  // TODO(human): freeKm aus den Positionen bestimmen und daraus
-  // billableKm sowie feeCents berechnen. Rückgabe: DeliveryQuote.
+  let freeKm = 0
+  for (const line of lines) {
+    if (line.freeDeliveryKm > freeKm) {
+      freeKm = line.freeDeliveryKm
+    }
+  }
 
-  return { distanceKm, freeKm: 0, billableKm: distanceKm, feeCents: 0 }
+  const billableKm = Math.max(0, distanceKm * 4 - freeKm * 4);
+
+  const feeCents = Math.round(billableKm * PRICE_PER_KM_CENTS);
+
+  return { distanceKm, freeKm: freeKm, billableKm: Math.round(billableKm * 10) / 10, feeCents: feeCents }
 }
 
 export function totalCents(lines: CartLine[], delivery: DeliveryQuote): number {
