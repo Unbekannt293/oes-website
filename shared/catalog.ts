@@ -155,11 +155,12 @@ export const soundboxRates: SoundboxRates = {
 
 /**
  * Fotobox-Zubehoer aus Louis' Preisliste. Das eigene Foto-Layout ist bei
- * Premium, Premium Plus und Deluxe inklusive (designIncluded).
+ * Premium, Premium Plus und Deluxe inklusive (designIncluded), sonst 9,99 €
+ * (am 18.10.2026 von 14,99 € gesenkt).
  */
 export const LAYOUT_ADDON = 'eigenes-layout'
 export const addons: Addon[] = [
-  { slug: LAYOUT_ADDON, name: 'Eigenes Foto-Layout / Branding', priceCents: 1499, available: true },
+  { slug: LAYOUT_ADDON, name: 'Eigenes Foto-Layout / Branding', priceCents: 999, available: true },
   { slug: 'premium-requisiten', name: 'Premium-Requisiten', priceCents: 999, available: false },
   { slug: 'hintergrund', name: 'Hintergrund / Leinwand', priceCents: 2999, available: false },
   { slug: 'gaestebuch', name: 'Gästebuch', priceCents: 1999, available: false },
