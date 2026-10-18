@@ -160,7 +160,7 @@ export const soundboxRates: SoundboxRates = {
  */
 export const LAYOUT_ADDON = 'eigenes-layout'
 export const addons: Addon[] = [
-  { slug: LAYOUT_ADDON, name: 'Eigenes Foto-Layout / Branding', priceCents: 999, available: true },
+  { slug: LAYOUT_ADDON, name: 'Eigenes Foto-Layout / Branding', priceCents: 999, available: true, image: '/images/produkte/layout-beispiele.webp' },
   { slug: 'premium-requisiten', name: 'Premium-Requisiten', priceCents: 999, available: false },
   { slug: 'hintergrund', name: 'Hintergrund / Leinwand', priceCents: 2999, available: false },
   { slug: 'gaestebuch', name: 'Gästebuch', priceCents: 1999, available: false },

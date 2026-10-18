@@ -117,6 +117,14 @@ const ready = computed(() => steps.allDone.value && !!pkg.value && days.value > 
 // Auswahl geaendert: Bestaetigung ausblenden, sonst wirkt sie wie ein Fehler.
 watch([paket, soundboxes, from, to, chosen, battery], () => { added.value = false }, { deep: true })
 
+// ---- Beispielbild (z. B. Layouts) ----
+const dlg = ref<HTMLDialogElement | null>(null)
+const beispiel = ref<{ src: string, alt: string } | null>(null)
+function beispielZeigen(src: string, name: string) {
+  beispiel.value = { src, alt: `Beispiele: ${name}` }
+  dlg.value?.showModal()
+}
+
 const { add } = useCart()
 
 function addToCart() {
@@ -216,6 +224,9 @@ function addToCart() {
                 <span class="bk__addon-price">+ {{ formatPrice(a.priceCents) }}</span>
               </span>
             </label>
+            <button v-if="a.image" type="button" class="label bk__peek" @click="beispielZeigen(a.image, a.name)">
+              Layout-Beispiele ansehen <UiIcon name="arrow" :size="12" />
+            </button>
           </li>
           <li v-if="soundboxes">
             <label class="check">
@@ -241,6 +252,15 @@ function addToCart() {
         </UiButton>
       </BookingStep>
     </div>
+
+    <!-- Beispielbild zum Zubehoer gross ansehen. Natives <dialog>: Esc schliesst,
+         der Fokus bleibt im Fenster; Klick auf den dunklen Rand schliesst auch. -->
+    <dialog ref="dlg" class="bk__dlg" :aria-label="beispiel?.alt" @click="(e) => e.target === dlg && dlg?.close()">
+      <img v-if="beispiel" :src="beispiel.src" :alt="beispiel.alt" class="bk__dlg-img">
+      <button type="button" class="bk__dlg-x" aria-label="Schließen" @click="dlg?.close()">
+        <UiIcon name="close" :size="18" />
+      </button>
+    </dialog>
 
     <dl v-if="pkg" class="bk__sum">
       <div>

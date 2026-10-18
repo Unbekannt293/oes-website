@@ -85,3 +85,26 @@
 .opt__sub { font-size: 0.75rem; color: var(--c-text-muted); }
 .opt__price { display: grid; justify-items: end; font-size: 0.875rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .opt__was { font-size: 0.75rem; font-weight: 400; color: var(--c-text-muted); }
+
+/* Link unter einem Zubehoer zum Beispielbild, eingerueckt unter den Namen. */
+.bk__peek {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  margin: 0.15rem 0 0 1.85rem; padding: 0.2rem 0;
+  font-size: 0.6875rem; color: var(--c-gold);
+}
+.bk__peek:hover { color: var(--c-text); }
+
+.bk__dlg {
+  width: min(92vw, 44rem); max-height: 92vh; padding: 0;
+  margin: auto; /* der Reset setzt margin: 0, damit waere der Dialog nicht mittig */
+  border: 0; border-radius: var(--r-md); background: #0B0A09;
+  overflow: hidden;
+}
+.bk__dlg::backdrop { background: rgb(0 0 0 / 0.7); }
+.bk__dlg-img { display: block; width: 100%; height: auto; }
+.bk__dlg-x {
+  position: absolute; top: var(--s-3); right: var(--s-3);
+  display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%;
+  color: #FFFFFF; background: rgb(0 0 0 / 0.55);
+}
+.bk__dlg-x:hover { background: rgb(0 0 0 / 0.8); }
