@@ -16,7 +16,7 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
       crumb="Über uns"
       title="Ihr Partner für erfolgreiche Events."
       image="/images/ueber-uns/banner.webp"
-      image-mobile="/images/ueber-uns/banner-mobil.webp" tone="plain" focus="76% 40%"
+      image-mobile="/images/ueber-uns/banner-mobil.webp" tone="plain" focus="80% 0%"
     />
 
     <section class="section">

@@ -37,7 +37,7 @@ const withSoundbox = kombis.filter(k => k.soundboxes > 0)
       title="Alles für Ihr Event, aus einer Hand."
       sub="Fotobox und Soundbox mieten Sie schon heute. Zelte und Lichttechnik folgen bald."
       image="/images/produkte/banner.webp" image-mobile="/images/produkte/banner-mobil.webp"
-      tone="plain" layout="stack" focus="100% 40%"
+      tone="plain" layout="stack" focus="50% 0%"
     />
 
     <section class="section">

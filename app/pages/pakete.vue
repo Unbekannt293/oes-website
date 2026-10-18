@@ -20,7 +20,7 @@ const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buche
       title="Pakete für Ihr Event."
       sub="Fotobox allein oder zusammen mit Soundbox. Wie viele Ausdrucke es sein sollen, wählen Sie bei der Buchung."
       image="/images/pakete/banner.webp" image-mobile="/images/pakete/banner-mobil.webp"
-      tone="plain" layout="stack" focus="100% 40%"
+      tone="plain" layout="stack" focus="50% 0%"
     />
 
     <!-- Dieselben Karten wie auf der Produktseite. Jede fuehrt zur Fotobox-
