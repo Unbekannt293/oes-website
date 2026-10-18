@@ -34,25 +34,27 @@ interface RouteAntwort { routes: { summary: { distance: number } }[] }
 interface MatrixAntwort { distances: (number | null)[][] }
 
 /**
- * Strassenkilometer Lager -> Ziel. Erst die normale Route; haengt sie (das
- * kam bei openrouteservice schon vor, die Matrix lief dabei weiter), dann
- * dieselbe Strecke ueber die Matrix-Schnittstelle.
+ * Strassenkilometer Lager -> Ziel, beides ueber openrouteservice. Zuerst die
+ * Matrix-Schnittstelle (eine Zahl, genau was wir brauchen). Die Routen-
+ * Schnittstelle hing am 18.10.2026 ueber Stunden, die Matrix lief weiter;
+ * die Route bleibt deshalb nur als Ersatz.
  */
 async function strassenKm(key: string, ziel: [number, number]): Promise<number | undefined> {
   try {
-    const r = await ors<RouteAntwort>(key, '/v2/directions/driving-car', {
-      body: { coordinates: [LAGER, ziel], units: 'km' }, timeout: 8_000,
+    const m = await ors<MatrixAntwort>(key, '/v2/matrix/driving-car', {
+      body: { locations: [LAGER, ziel], sources: [0], destinations: [1], metrics: ['distance'], units: 'km' },
+      timeout: 15_000,
     })
-    return r.routes[0]?.summary.distance
+    const km = m.distances[0]?.[0]
+    if (typeof km === 'number') return km
   }
   catch (err) {
-    console.warn('[routing] Route nicht erreichbar, nehme Matrix:', (err as Error).message)
+    console.warn('[routing] Matrix nicht erreichbar, nehme Route:', (err as Error).message)
   }
-  const m = await ors<MatrixAntwort>(key, '/v2/matrix/driving-car', {
-    body: { locations: [LAGER, ziel], sources: [0], destinations: [1], metrics: ['distance'], units: 'km' },
-    timeout: 25_000,
+  const r = await ors<RouteAntwort>(key, '/v2/directions/driving-car', {
+    body: { coordinates: [LAGER, ziel], units: 'km' }, timeout: 10_000,
   })
-  return m.distances[0]?.[0] ?? undefined
+  return r.routes[0]?.summary.distance
 }
 
 /**

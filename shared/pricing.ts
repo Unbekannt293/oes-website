@@ -30,8 +30,8 @@ export function subtotalCents(lines: CartLine[]): number {
  * PRICE_PER_KM_CENTS. Beispiel: 10 km Entfernung, 4 km frei
  * → 40 km − 16 km = 24 km × 0,25 € = 6,00 €.
  *
- * @param distanceKm  Entfernung vom Lager zum Veranstaltungsort,
- *                    kommt aus der Routing-API in server/api/distanz.get.ts
+ * @param distanceKm  Einfache Strecke vom Lager zum Veranstaltungsort in km
+ *                    (Kommazahl, z. B. 9.6), kommt aus server/utils/routing.ts
  * @param lines       Alle Positionen im Warenkorb
  */
 export function quoteDelivery(distanceKm: number, lines: CartLine[]): DeliveryQuote {
