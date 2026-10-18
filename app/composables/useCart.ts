@@ -2,6 +2,14 @@ import type { CartLine } from '~~/shared/types'
 import { depositCents, subtotalCents } from '~~/shared/pricing'
 
 export const CART_STORAGE_KEY = 'oes-warenkorb'
+export const KAUTION_STORAGE_KEY = 'oes-kaution'
+
+/**
+ * Wie die Kaution gezahlt wird. Bewusst nie online: Kartenzahlung kostet
+ * Gebuehren, die Louis bei der Erstattung nicht zurueckbekommt, und ein
+ * Aufschlag fuer Kartenzahlung waere bei Privatkunden unwirksam (§ 270a BGB).
+ */
+export type KautionZahlung = 'bar' | 'ueberweisung'
 
 /**
  * Warenkorb fuer die ganze Seite. Der Zustand lebt in useState, damit Header,
@@ -14,6 +22,8 @@ export function useCart() {
   const lines = useState<CartLine[]>('cart', () => [])
   /** Erst true, wenn der gespeicherte Korb geladen ist. Vorher nicht "leer" anzeigen. */
   const loaded = useState('cart-loaded', () => false)
+  /** Wahl im Warenkorb, gilt fuer die ganze Bestellung. */
+  const kaution = useState<KautionZahlung>('cart-kaution', () => 'bar')
 
   /** Gebuchte Positionen (Zubehoer zaehlt nicht extra). */
   const count = computed(() =>
@@ -46,5 +56,5 @@ export function useCart() {
     lines.value = []
   }
 
-  return { lines, loaded, count, subtotal, deposit, add, remove, clear }
+  return { lines, loaded, kaution, count, subtotal, deposit, add, remove, clear }
 }

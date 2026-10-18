@@ -59,6 +59,8 @@ export const bestellungSchema = z.object({
   adresse: lieferadresseSchema,
   kontakt: kontaktSchema,
   zahlungsart: z.enum(['ueberweisung', 'online']),
+  /** Kaution nie online, nur bar bei Uebergabe oder per Ueberweisung vorab. */
+  kaution: z.enum(['bar', 'ueberweisung']).default('bar'),
   zeilen: z.array(korbzeileSchema).min(1).max(30),
   mietvertrag: z.literal(true, { message: 'Bitte dem Mietvertrag zustimmen' }),
 })

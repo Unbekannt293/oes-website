@@ -8,7 +8,7 @@ import { formatPrice, rentalDays } from '~~/shared/pricing'
 // berechnet erst die Kasse anhand der Adresse.
 useSeoMeta({ title: 'Warenkorb', robots: 'noindex, follow' })
 
-const { lines, loaded, subtotal, deposit, remove } = useCart()
+const { lines, loaded, kaution, subtotal, deposit, remove } = useCart()
 
 interface Booking { main: CartLine, addons: CartLine[], totalCents: number }
 /** Zeilen nach Buchung buendeln, Reihenfolge wie hinzugefuegt. */
@@ -133,10 +133,24 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
           <div class="wk__total"><dt>Zwischensumme</dt><dd>{{ formatPrice(subtotal) }}</dd></div>
           <div class="muted"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
         </dl>
+
+        <!-- Kaution nie online: Kartengebuehren bekaeme Louis nicht zurueck. -->
+        <div v-if="deposit" class="wk__kaution" role="radiogroup" aria-labelledby="kaution-h">
+          <p id="kaution-h" class="label wk__kaution-h">Kaution zahlen</p>
+          <label class="wk__kopt" :class="{ 'is-sel': kaution === 'bar' }">
+            <input v-model="kaution" type="radio" name="kaution" value="bar">
+            <span>Bar bei der Übergabe</span>
+          </label>
+          <label class="wk__kopt" :class="{ 'is-sel': kaution === 'ueberweisung' }">
+            <input v-model="kaution" type="radio" name="kaution" value="ueberweisung">
+            <span>Per Überweisung vorab</span>
+          </label>
+        </div>
+
         <p class="wk__note muted">
           <UiIcon name="info" :size="14" />
           Lieferkosten berechnen wir an der Kasse anhand Ihrer Adresse.
-          Die Kaution erhalten Sie nach der Veranstaltung zurück.
+          Die Kaution erhalten Sie nach der Rückgabe zurück.
         </p>
         <UiButton to="/kasse" variant="solid" size="lg" class="wk__btn">Zur Kasse</UiButton>
       </aside>
@@ -243,6 +257,19 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
 .wk__note { display: flex; gap: 0.4rem; align-items: start; font-size: 0.8125rem; line-height: 1.5; }
 .wk__note svg { flex: none; margin-top: 0.15rem; }
 .wk__note--plain { display: block; }
+
+.wk__kaution { display: grid; gap: var(--s-2); }
+.wk__kaution-h { color: var(--c-text); font-size: 0.6875rem; }
+.wk__kopt {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-2) var(--s-3); font-size: var(--t-small);
+  border: 1px solid var(--c-gold-hair); border-radius: var(--r-sm); cursor: pointer;
+  transition: border-color var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out);
+}
+.wk__kopt input { accent-color: var(--c-gold); }
+.wk__kopt:hover { border-color: var(--c-gold); }
+.wk__kopt.is-sel { border-color: var(--c-gold); background: rgb(195 139 55 / 0.08); }
+
 .wk__note a { color: var(--c-text); text-decoration: underline; text-underline-offset: 2px; }
 .wk__btn { width: 100%; }
 

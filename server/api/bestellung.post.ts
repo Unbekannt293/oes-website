@@ -36,6 +36,7 @@ export default defineEventHandler(async (event) => {
       summe_cent: korb.summeCent + lieferung.feeCents,
       fahrtkosten_cent: lieferung.feeCents,
       kaution_cent: korb.kautionCent,
+      kaution_zahlart: b.kaution,
       entfernung_km: strecke?.distanceKm ?? null,
       notiz: strecke ? null : 'Fahrtkosten offen: Entfernungsdienst war nicht erreichbar, bitte nachberechnen',
       zahlungsart: b.zahlungsart,

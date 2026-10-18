@@ -64,6 +64,8 @@ create table if not exists buchungen (
   summe_cent        int not null check (summe_cent >= 0),
   fahrtkosten_cent  int not null default 0 check (fahrtkosten_cent >= 0),
   kaution_cent      int not null default 0 check (kaution_cent >= 0),
+  -- Kaution nie online (Kartengebuehren), nur bar oder per Ueberweisung.
+  kaution_zahlart   text not null default 'bar' check (kaution_zahlart in ('bar', 'ueberweisung')),
   entfernung_km     numeric(6, 1),
 
   zahlungsart          text not null default 'ueberweisung',
@@ -164,15 +166,16 @@ begin
    for update;
 
   insert into buchungen as b (vorname, nachname, email, telefon, strasse, plz, ort, adresszusatz,
-                              von, bis, summe_cent, fahrtkosten_cent, kaution_cent, entfernung_km,
-                              zahlungsart, notiz)
+                              von, bis, summe_cent, fahrtkosten_cent, kaution_cent, kaution_zahlart,
+                              entfernung_km, zahlungsart, notiz)
   select x.vorname, x.nachname, x.email, x.telefon, x.strasse, x.plz, x.ort, x.adresszusatz,
          x.von, x.bis, x.summe_cent, coalesce(x.fahrtkosten_cent, 0), coalesce(x.kaution_cent, 0),
+         coalesce(x.kaution_zahlart, 'bar'),
          x.entfernung_km, coalesce(x.zahlungsart, 'ueberweisung'), x.notiz
     from jsonb_to_record(p_buchung) as x(
            vorname text, nachname text, email text, telefon text, strasse text, plz text, ort text,
            adresszusatz text, von date, bis date, summe_cent int, fahrtkosten_cent int,
-           kaution_cent int, entfernung_km numeric, zahlungsart text, notiz text)
+           kaution_cent int, kaution_zahlart text, entfernung_km numeric, zahlungsart text, notiz text)
   returning b.id, b.nummer into v_id, v_nummer;
 
   insert into positionen (buchung_id, art, slug, name, detail, menge, einzelpreis_cent)

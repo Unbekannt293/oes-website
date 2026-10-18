@@ -13,6 +13,8 @@ interface BuchungMitPositionen {
   strasse: string, plz: string, ort: string, adresszusatz: string | null
   von: string, bis: string, summe_cent: number, fahrtkosten_cent: number, kaution_cent: number
   entfernung_km: number | null, zahlungsart: string, bezahlt_am: string | null
+  /** Erst nach der Migration vorhanden (supabase/schema.sql), sonst undefined. */
+  kaution_zahlart?: 'bar' | 'ueberweisung'
   positionen: { name: string, detail: string | null, menge: number, einzelpreis_cent: number }[]
 }
 
@@ -23,7 +25,8 @@ export async function bestellMailsSenden(event: H3Event, buchungId: string) {
   try {
     const { data, error } = await useSupabase()
       .from('buchungen')
-      .select('nummer, vorname, nachname, email, telefon, strasse, plz, ort, adresszusatz, von, bis, summe_cent, fahrtkosten_cent, kaution_cent, entfernung_km, zahlungsart, bezahlt_am, positionen(name, detail, menge, einzelpreis_cent)')
+      // "*" statt Spaltenliste: kaution_zahlart gibt es erst nach der Migration.
+      .select('*, positionen(name, detail, menge, einzelpreis_cent)')
       .eq('id', buchungId)
       .single<BuchungMitPositionen>()
     if (error || !data) throw new Error(error?.message ?? 'Buchung nicht gefunden')
@@ -37,7 +40,7 @@ export async function bestellMailsSenden(event: H3Event, buchungId: string) {
         ? 'Fahrtkosten: nach Absprache (wir melden uns)'
         : `Fahrtkosten (${String(b.entfernung_km).replace('.', ',')} km): ${formatPrice(b.fahrtkosten_cent)}`,
       `Gesamt: ${formatPrice(b.summe_cent)}${b.entfernung_km === null ? ' zzgl. Fahrtkosten' : ''}`,
-      `Kaution: ${formatPrice(b.kaution_cent)}`,
+      `Kaution: ${formatPrice(b.kaution_cent)}${b.kaution_zahlart === 'ueberweisung' ? ' (per Überweisung vorab)' : ' (bar bei der Übergabe)'}`,
     ].join('\n')
     const zahlung = b.zahlungsart === 'online'
       ? (b.bezahlt_am ? 'online, bezahlt' : 'online, noch offen')

@@ -11,7 +11,7 @@ import { formatPrice, PRICE_PER_KM_CENTS } from '~~/shared/pricing'
 // Preise und Fahrtkosten rechnet der Server; was hier steht, ist Anzeige.
 useSeoMeta({ title: 'Kasse', robots: 'noindex, follow' })
 
-const { lines, loaded, subtotal, deposit, clear } = useCart()
+const { lines, loaded, kaution, subtotal, deposit, clear } = useCart()
 const config = useRuntimeConfig()
 const contact = useContact()
 
@@ -120,7 +120,7 @@ async function bestellen() {
   try {
     const r = await $fetch<{ nummer: string, url?: string }>('/api/bestellung', {
       method: 'POST',
-      body: { adresse, kontakt, zahlungsart: zahlungsart.value, zeilen: zeilen.value, mietvertrag: true },
+      body: { adresse, kontakt, zahlungsart: zahlungsart.value, kaution: kaution.value, zeilen: zeilen.value, mietvertrag: true },
     })
     if (r.url) {
       // Online: weiter zur Bezahlseite von Stripe. Korb bleibt bis zur Zahlung,
@@ -282,7 +282,10 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
             <dd>{{ !lieferung ? 'nach Adresse' : lieferung.offen ? 'nach Absprache' : formatPrice(fahrtkosten) }}</dd>
           </div>
           <div class="ks__total"><dt>Gesamt<template v-if="fahrtkostenOffen"> zzgl. Fahrtkosten</template></dt><dd>{{ formatPrice(gesamt) }}</dd></div>
-          <div class="muted"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
+          <div class="muted">
+            <dt>zzgl. Kaution <small>({{ kaution === 'ueberweisung' ? 'per Überweisung' : 'bar bei Übergabe' }})</small></dt>
+            <dd>{{ formatPrice(deposit) }}</dd>
+          </div>
         </dl>
         <p v-if="fahrtkostenOffen" class="ks__note ks__note--offen">
           <UiIcon name="info" :size="14" />
