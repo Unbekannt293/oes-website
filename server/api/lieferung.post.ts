@@ -13,6 +13,8 @@ export default defineEventHandler(async (event) => {
   }
   const { zeilen, ...adresse } = parsed.data
   const korb = korbBerechnen(zeilen)
-  const strecke = await streckeZu(event, adresse)
-  return { ...strecke, quote: quoteDelivery(strecke.distanceKm, korb.lines) }
+  const strecke = await streckeOderOffen(event, adresse)
+  // Dienst nicht erreichbar: Kasse zeigt "Fahrtkosten nach Absprache".
+  if (!strecke) return { offen: true as const }
+  return { offen: false as const, ...strecke, quote: quoteDelivery(strecke.distanceKm, korb.lines) }
 })

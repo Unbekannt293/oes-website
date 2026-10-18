@@ -197,6 +197,10 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
   transition: opacity var(--d-fast) var(--e-out);
 }
 .wk__remove:hover { opacity: 0.7; }
+/* Optischer Ausgleich: der Papierkorb hat seine Masse unten (Korpus), der
+   Text sitzt rechnerisch mittig, wirkt aber zu hoch. Icon 1px anheben. */
+.wk__remove { line-height: 1; }
+.wk__remove svg { transform: translateY(-1px); }
 
 /* Zubehoer entfernen: Minus, rot beim Ueberfahren. */
 .wk__del {

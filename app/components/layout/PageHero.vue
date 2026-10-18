@@ -69,9 +69,12 @@ const {
 </template>
 
 <style scoped>
-/* Schmaler Streifen: nur Schwarz, ein Hauch Gold von rechts, wenig Hoehe. */
+/* Schmaler Streifen: Schwarz mit warmem Licht von links und rechts oben,
+   wie zwei Scheinwerfer, wenig Hoehe. */
 .ph.ph--slim::before {
-  background: radial-gradient(60% 140% at 100% 0%, rgb(195 139 55 / 0.12), transparent 70%);
+  background:
+    radial-gradient(45% 150% at 0% 0%, rgb(195 139 55 / 0.16), transparent 70%),
+    radial-gradient(45% 150% at 100% 0%, rgb(195 139 55 / 0.16), transparent 70%);
 }
 .ph--slim .ph__inner {
   min-height: 0;

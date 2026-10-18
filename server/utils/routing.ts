@@ -90,3 +90,21 @@ export async function streckeZu(event: H3Event, a: Lieferadresse): Promise<Strec
   if (km === undefined) throw createError({ statusCode: 422, statusMessage: 'Keine Route gefunden' })
   return { distanceKm: Math.round(km * 10) / 10, label: treffer.properties.label }
 }
+
+/**
+ * Notloesung fuer die Kasse: Ist openrouteservice nicht erreichbar (kam am
+ * 18.10.2026 vor, auch die Adresssuche gab 502), soll niemand am Bestellen
+ * gehindert werden. Dann gibt es null und die Fahrtkosten werden "nach
+ * Absprache" berechnet. Eine unbekannte Adresse (422) bleibt ein Fehler,
+ * die soll der Kunde korrigieren.
+ */
+export async function streckeOderOffen(event: H3Event, a: Lieferadresse): Promise<Strecke | null> {
+  try {
+    return await streckeZu(event, a)
+  }
+  catch (err) {
+    if ((err as { statusCode?: number }).statusCode === 422) throw err
+    console.warn('[routing] Entfernung offen, Fahrtkosten nach Absprache:', (err as Error).message)
+    return null
+  }
+}

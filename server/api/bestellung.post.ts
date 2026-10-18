@@ -21,8 +21,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const korb = korbBerechnen(b.zeilen)
-  const strecke = await streckeZu(event, b.adresse)
-  const lieferung = quoteDelivery(strecke.distanceKm, korb.lines)
+  // Entfernungsdienst weg: trotzdem bestellen lassen, Fahrtkosten klaert
+  // Louis danach (steht in der Notiz und in den Mails).
+  const strecke = await streckeOderOffen(event, b.adresse)
+  const lieferung = strecke
+    ? quoteDelivery(strecke.distanceKm, korb.lines)
+    : { distanceKm: 0, freeKm: 0, billableKm: 0, feeCents: 0 }
 
   const { data, error } = await useSupabase().rpc('buchung_anlegen', {
     p_buchung: {
@@ -32,7 +36,8 @@ export default defineEventHandler(async (event) => {
       summe_cent: korb.summeCent + lieferung.feeCents,
       fahrtkosten_cent: lieferung.feeCents,
       kaution_cent: korb.kautionCent,
-      entfernung_km: strecke.distanceKm,
+      entfernung_km: strecke?.distanceKm ?? null,
+      notiz: strecke ? null : 'Fahrtkosten offen: Entfernungsdienst war nicht erreichbar, bitte nachberechnen',
       zahlungsart: b.zahlungsart,
     },
     p_positionen: korb.positionen,

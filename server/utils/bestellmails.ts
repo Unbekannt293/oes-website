@@ -33,8 +33,10 @@ export async function bestellMailsSenden(event: H3Event, buchungId: string) {
     const zeitraum = b.von === b.bis ? tag(b.von) : `${tag(b.von)} bis ${tag(b.bis)}`
     const uebersicht = [
       ...b.positionen.map(p => `${p.menge > 1 ? `${p.menge} × ` : ''}${p.name}${p.detail ? ` (${p.detail})` : ''}: ${formatPrice(p.einzelpreis_cent * p.menge)}`),
-      `Fahrtkosten${b.entfernung_km ? ` (${String(b.entfernung_km).replace('.', ',')} km)` : ''}: ${formatPrice(b.fahrtkosten_cent)}`,
-      `Gesamt: ${formatPrice(b.summe_cent)}`,
+      b.entfernung_km === null
+        ? 'Fahrtkosten: nach Absprache (wir melden uns)'
+        : `Fahrtkosten (${String(b.entfernung_km).replace('.', ',')} km): ${formatPrice(b.fahrtkosten_cent)}`,
+      `Gesamt: ${formatPrice(b.summe_cent)}${b.entfernung_km === null ? ' zzgl. Fahrtkosten' : ''}`,
       `Kaution: ${formatPrice(b.kaution_cent)}`,
     ].join('\n')
     const zahlung = b.zahlungsart === 'online'

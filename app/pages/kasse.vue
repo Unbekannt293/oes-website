@@ -34,7 +34,9 @@ const steps = useSteps(4)
 // ---- 1 Lieferadresse ----
 const adresse = reactive({ strasse: '', plz: '', ort: 'Hamburg', zusatz: '' })
 const adresseFehler = reactive<Record<string, string | undefined>>({})
-const lieferung = ref<{ distanceKm: number, label: string, quote: DeliveryQuote } | null>(null)
+// offen: Entfernungsdienst nicht erreichbar, Fahrtkosten nach Absprache.
+type Lieferung = { offen: true } | { offen: false, distanceKm: number, label: string, quote: DeliveryQuote }
+const lieferung = ref<Lieferung | null>(null)
 const lieferungStatus = ref<'idle' | 'laedt' | 'fehler'>('idle')
 const lieferungMeldung = ref('')
 
@@ -108,7 +110,8 @@ watch(mietvertrag, (v) => { if (v) vertragFehlt.value = false })
 const status = ref<'idle' | 'sendet' | 'fehler'>('idle')
 const fehlerText = ref('')
 
-const fahrtkosten = computed(() => lieferung.value?.quote.feeCents ?? 0)
+const fahrtkosten = computed(() => (lieferung.value && !lieferung.value.offen ? lieferung.value.quote.feeCents : 0))
+const fahrtkostenOffen = computed(() => !!lieferung.value?.offen)
 const gesamt = computed(() => subtotal.value + fahrtkosten.value)
 
 async function bestellen() {
@@ -141,7 +144,7 @@ async function bestellen() {
 }
 
 const summaries = computed(() => ({
-  1: lieferung.value ? `${adresse.strasse}, ${adresse.plz} ${adresse.ort}` : '',
+  1: lieferung.value ? `${adresse.strasse}, ${adresse.plz} ${adresse.ort}${lieferung.value.offen ? ' · Fahrtkosten nach Absprache' : ''}` : '',
   2: `${kontakt.vorname} ${kontakt.nachname}`,
   3: zahlungsLabel.value,
 }))
@@ -275,12 +278,17 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
         <dl>
           <div><dt>Zwischensumme</dt><dd>{{ formatPrice(subtotal) }}</dd></div>
           <div>
-            <dt>Fahrtkosten<template v-if="lieferung"> ({{ lieferung.distanceKm.toLocaleString('de-DE') }} km)</template></dt>
-            <dd>{{ lieferung ? formatPrice(fahrtkosten) : 'nach Adresse' }}</dd>
+            <dt>Fahrtkosten<template v-if="lieferung && !lieferung.offen"> ({{ lieferung.distanceKm.toLocaleString('de-DE') }} km)</template></dt>
+            <dd>{{ !lieferung ? 'nach Adresse' : lieferung.offen ? 'nach Absprache' : formatPrice(fahrtkosten) }}</dd>
           </div>
-          <div class="ks__total"><dt>Gesamt</dt><dd>{{ formatPrice(gesamt) }}</dd></div>
+          <div class="ks__total"><dt>Gesamt<template v-if="fahrtkostenOffen"> zzgl. Fahrtkosten</template></dt><dd>{{ formatPrice(gesamt) }}</dd></div>
           <div class="muted"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
         </dl>
+        <p v-if="fahrtkostenOffen" class="ks__note ks__note--offen">
+          <UiIcon name="info" :size="14" />
+          <span>Die Fahrtkosten konnten gerade nicht automatisch berechnet werden. Sie können
+            trotzdem bestellen, wir teilen Ihnen die Fahrtkosten danach mit.</span>
+        </p>
         <p class="ks__note muted">
           Lieferung im Freiradius kostenlos, danach {{ formatPrice(PRICE_PER_KM_CENTS) }} pro km.
         </p>
@@ -357,6 +365,8 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 .ks__total { font-size: 1.1rem; font-weight: 600; padding-top: var(--s-2); border-top: 1px solid var(--c-gold-hair); }
 .ks__total dd { color: var(--c-gold); }
 .ks__note { font-size: 0.8125rem; }
+.ks__note--offen { display: flex; gap: 0.4rem; align-items: start; padding: var(--s-3); background: rgb(195 139 55 / 0.08); border-left: 2px solid var(--c-gold); }
+.ks__note--offen svg { flex: none; margin-top: 0.15rem; color: var(--c-gold); }
 
 .ks__done-bg {
   position: fixed; inset: 0; z-index: 100;
