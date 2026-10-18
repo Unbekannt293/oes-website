@@ -59,6 +59,10 @@ export default defineNuxtConfig({
     // darf deshalb nur hier stehen, nie unter public.
     supabaseUrl: '',
     supabaseSecretKey: '',
+    // Online-Zahlung. Test-Schluessel (sk_test_) lokal, Louis' Live-Schluessel
+    // nur in Netlify. Das Webhook-Secret kommt aus dem Stripe-Dashboard.
+    stripeSecretKey: '',
+    stripeWebhookSecret: '',
     public: {
       siteUrl: 'https://ottos-eventservice.de',
       // Online-Zahlung (Stripe) an der Kasse. Bis ein Konto eingerichtet ist,

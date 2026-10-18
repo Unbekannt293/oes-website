@@ -81,6 +81,26 @@ function kontaktWeiter() {
 const zahlungsart = ref<'ueberweisung' | 'online'>(config.public.onlinePayment ? 'online' : 'ueberweisung')
 const zahlungsLabel = computed(() => (zahlungsart.value === 'online' ? 'Online bezahlen' : 'Überweisung'))
 
+// ---- Zurueck von der Bezahlseite ("abgebrochen") ----
+const KASSE_KEY = 'oes-kasse'
+const route = useRoute()
+const abgebrochen = ref(false)
+onMounted(async () => {
+  const id = route.query.abgebrochen
+  if (typeof id !== 'string') return
+  abgebrochen.value = true
+  // Angaben wieder einsetzen, Reservierung freigeben (sonst blockiert der
+  // offene Bezahlvorgang den Tag noch 30 Minuten).
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(KASSE_KEY) ?? 'null')
+    if (saved) { Object.assign(adresse, saved.adresse); Object.assign(kontakt, saved.kontakt) }
+  }
+  catch { /* leer lassen */ }
+  try { await $fetch('/api/zahlung/abbrechen', { method: 'POST', body: { buchungId: id } }) }
+  catch { /* laeuft sonst nach 30 Min. von selbst ab */ }
+  navigateTo({ query: {} }, { replace: true })
+})
+
 // ---- 4 Pruefen und bestellen ----
 const mietvertrag = ref(false)
 const vertragFehlt = ref(false)
@@ -95,10 +115,18 @@ async function bestellen() {
   if (!mietvertrag.value) { vertragFehlt.value = true; return }
   status.value = 'sendet'
   try {
-    const r = await $fetch<{ nummer: string }>('/api/bestellung', {
+    const r = await $fetch<{ nummer: string, url?: string }>('/api/bestellung', {
       method: 'POST',
       body: { adresse, kontakt, zahlungsart: zahlungsart.value, zeilen: zeilen.value, mietvertrag: true },
     })
+    if (r.url) {
+      // Online: weiter zur Bezahlseite von Stripe. Korb bleibt bis zur Zahlung,
+      // die Angaben merken wir uns fuer den Fall, dass jemand zurueckkommt.
+      try { sessionStorage.setItem(KASSE_KEY, JSON.stringify({ adresse, kontakt })) }
+      catch { /* dann eben neu eintippen */ }
+      window.location.href = r.url
+      return
+    }
     bestellt.value = r.nummer
     status.value = 'idle'
     clear()
@@ -127,6 +155,12 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
   <div>
   <PageHero crumb="Kasse" title="Kasse" :trail="[{ to: '/warenkorb', label: 'Warenkorb' }]" slim />
   <div class="section shell ks__page">
+
+    <p v-if="abgebrochen && lines.length" class="ks__info" role="status">
+      <UiIcon name="info" :size="16" />
+      Die Zahlung wurde abgebrochen, es wurde nichts berechnet. Ihre Angaben sind noch da,
+      Sie können es einfach noch einmal versuchen.
+    </p>
 
     <div v-if="!loaded" class="ks__wait" aria-hidden="true" />
 
@@ -274,6 +308,12 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 @import '~/components/product/booking.css';
 
 .ks__page { padding-top: var(--s-7); }
+.ks__info {
+  display: flex; align-items: start; gap: 0.5rem; margin-bottom: var(--s-5);
+  padding: var(--s-3) var(--s-4); font-size: var(--t-small);
+  background: rgb(195 139 55 / 0.08); border-left: 2px solid var(--c-gold);
+}
+.ks__info svg { flex: none; margin-top: 0.15rem; color: var(--c-gold); }
 .ks__wait { min-height: 40vh; }
 
 .ks { display: grid; gap: var(--s-7); align-items: start; }
