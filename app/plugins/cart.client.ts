@@ -4,10 +4,13 @@ import { CART_STORAGE_KEY } from '~/composables/useCart'
 // Warenkorb aus dem localStorage laden, aber erst nach dem Hydrieren, damit
 // Server- und Browser-HTML gleich sind. Danach jede Aenderung zurueckschreiben.
 // localStorage kann fehlen oder werfen (privates Fenster): dann leer starten.
-export default defineNuxtPlugin((nuxtApp) => {
+// onNuxtReady statt 'app:mounted': die Seiten hydrieren in <Suspense> erst
+// nach app:mounted und saehen sonst schon den geladenen Korb (Hydrierungsfehler,
+// z. B. blieb im Warenkorb die Klasse des Ladezustands haengen).
+export default defineNuxtPlugin(() => {
   const { lines, loaded } = useCart()
 
-  nuxtApp.hook('app:mounted', () => {
+  onNuxtReady(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) ?? '[]')
       if (Array.isArray(saved)) lines.value = saved as CartLine[]
