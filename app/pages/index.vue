@@ -80,6 +80,12 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
         <div ref="gridEl" class="grid reveal">
           <ProductCard v-for="p in featured" :key="p.slug" :product="p" />
         </div>
+        <!-- Unter den Produkten, zusammen so breit wie die Kartenreihe:
+             Bewertungen und "Haben Sie Fragen?" (Louis' Entwurf). -->
+        <div class="extra">
+          <ReviewTeaser />
+          <AskBox />
+        </div>
         <p class="more">
           <UiButton to="/produkte" variant="solid">Alle Produkte ansehen</UiButton>
         </p>
@@ -183,6 +189,12 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
   display: grid;
   align-content: center;
   padding-block: var(--s-7);
+}
+
+/* ---- Bewertungen und Fragen unter den Karten, je zwei Karten breit ---- */
+.extra { display: grid; gap: var(--s-5); margin-top: var(--s-5); }
+@media (min-width: 760px) {
+  .extra { grid-template-columns: 1fr 1fr; }
 }
 
 /* ---- Produktraster ---- */

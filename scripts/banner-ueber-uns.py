@@ -1,20 +1,12 @@
 """Banner fuer die Ueber-uns-Seite aus Louis' freigestelltem Portraet.
 
-Gleiche Buehne wie der Produktbanner (scripts/buehne.py): dunkler Raum,
-Lichtkegel hinter dem Kopf, weicher Lichtschein um die Silhouette. Das
-Portraet steht rechts, links bleibt Platz fuer den Titel.
+Quelle: Louis-freigestellt.png (Oberkoerper, 631 x 902 px). Der Kopf ist darin
+nur gut 190 px breit. Damit Louis scharf bleibt, wird das Foto hoechstens 1:1
+uebernommen, nie hochgerechnet (Lukas, 18.10.2026: "Louis besser aufloesen").
+Wie beim Produktbanner ohne Lichtkegel und Schein, nur Schwarzweiss auf dunklem
+Grund; das Licht aus den oberen Ecken kommt per CSS.
 
-Quelle seit 14.10.2026: Louis-freigestellt.png (Oberkoerper, 631 x 902 px).
-Der Kopf ist darin nur gut 190 px breit, deshalb zeigt der Banner den
-Oberkoerper statt einer Nahaufnahme: so wird das Foto verkleinert statt
-hochgerechnet und bleibt scharf. Dazu leichtes Nachschaerfen und feines Korn.
-
-    python3 scripts/banner-ueber-uns.py portrait.webp public/images/ueber-uns [lichter]
-
-Mit dem Zusatz "lichter" kommen Lichterkette und Funkelsterne dazu, passend
-zum Produktbanner Variante c. Neben dem breiten Banner entsteht
-banner-mobil.webp (quadratisch): auf dem Handy waere der breite Ausschnitt so
-beschnitten, dass der Titel das Gesicht ueberdeckt.
+    python3 scripts/banner-ueber-uns.py ~/Downloads/Louis-freigestellt.png public/images/ueber-uns
 """
 import sys
 from pathlib import Path
@@ -22,54 +14,24 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter
 
-from buehne import (GOLD, bbox_crop, composite, festoon, grain, load_cutout, place,
-                    save, sparkles, stage, vignette)
+from buehne import bbox_crop, freisteller_banner, load_cutout, save
 
 SRC, OUT = Path(sys.argv[1]).expanduser(), Path(sys.argv[2])
-LIGHTS = len(sys.argv) > 3 and sys.argv[3] == 'lichter'
 
 cut = bbox_crop(load_cutout(SRC, only_largest=True, erode=1))
-gray = cut.convert('L').filter(ImageFilter.UnsharpMask(radius=2.0, percent=80, threshold=2))
-gray = ImageEnhance.Contrast(gray).enhance(1.14)
+gray = cut.convert('L').filter(ImageFilter.UnsharpMask(radius=1.2, percent=60, threshold=2))
+gray = ImageEnhance.Contrast(gray).enhance(1.12)
 cut = Image.merge('RGBA', (gray, gray, gray, cut.getchannel('A')))
 # Gesichtsmitte im Freisteller (Anteil der Breite), gemessen am obersten
 # Achtel: dort ist nur der Kopf.
 _head = np.asarray(cut.getchannel('A'))[: cut.height // 8] > 8
 FACE_X = np.where(_head)[1].mean() / cut.width
 
-
-def render(W, H, scale, face_at, top, spot_y, bottom_fade=None, fade_depth=0.75, lights=False):
-    figure = cut.resize((round(cut.width * scale), round(cut.height * scale)), Image.LANCZOS)
-    x = round(face_at * W - FACE_X * figure.width)
-    L, A = place((H, W), figure, x, top)
-    bg = stage(W, H, face_at * W, spot_y * H, W * 0.2, H * 0.85, level=82)
-    s = W / 1440
-    if lights:
-        chains = [
-            (H * 0.10, H * 0.07, 70 * s, 5 * s, 0.55),
-            (H * 0.18, H * 0.11, 110 * s, 11 * s, 0.6),
-            (H * 0.30, H * 0.16, 170 * s, 24 * s, 0.5),
-        ]
-        bg = bg + festoon(W, H, chains)[..., None] * GOLD * 0.62
-    img = composite(bg, L, A, rim=0.22)
-    if lights:
-        stars = sparkles(W, H, [(0.07 * W, 0.22 * H, 11 * s), (0.31 * W, 0.12 * H, 8 * s),
-                                (0.58 * W, 0.2 * H, 14 * s), (0.62 * W, 0.7 * H, 9 * s)])
-        img = img + stars[..., None] * GOLD * 0.8
-    img = vignette(img)
-    if bottom_fade is not None:
-        ys = np.linspace(0, 1, H, dtype=np.float32)
-        t = np.clip((ys - bottom_fade) / (1 - bottom_fade), 0, 1)
-        img = img * (1 - fade_depth * t * t * (3 - 2 * t))[:, None, None]
-    return grain(img)
-
-
-# Breit: Kopf bis Brust, der Rest laeuft unten aus dem Bild.
-wide = render(2400, round(2400 / 3.8), scale=1.12, face_at=0.76, top=34, spot_y=0.4, lights=LIGHTS)
-print(save(wide, OUT / 'banner.webp'))
-
-# Quadratisch fuer schmale Bildschirme: Gesicht oben, unten ins Dunkle fuer den
-# Titel. Das helle Hemd liegt hinter dem Text, deshalb kraeftiger abgedunkelt.
-square = render(900, 900, scale=1.05, face_at=0.5, top=56, spot_y=0.3,
-                bottom_fade=0.34, fade_depth=0.93, lights=LIGHTS)
-print(save(square, OUT / 'banner-mobil.webp'))
+# Breit: Kopf bis Brust, 1:1, der Rest laeuft unten aus dem Bild.
+W = 2400
+H = round(W / 3.8)
+print(save(freisteller_banner(cut, W, H, scale=1.0, cx=0.76, top=40, anchor=FACE_X), OUT / 'banner.webp'))
+# Quadratisch fuer schmale Bildschirme: Gesicht oben, unten dunkel fuer den
+# Titel. Bild 900 px breit, Louis 1:1, also ebenfalls nicht hochgerechnet.
+print(save(freisteller_banner(cut, 900, 900, scale=1.0, cx=0.5, top=50, anchor=FACE_X,
+                              bottom_fade=0.36, fade_depth=0.93), OUT / 'banner-mobil.webp'))

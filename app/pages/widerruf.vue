@@ -3,10 +3,16 @@ useSeoMeta({ title: 'Widerrufsbelehrung' })
 </script>
 
 <template>
-  <div class="section shell">
-    <SectionHeading title="Widerrufsbelehrung" align="start" />
-    <p class="prose muted">
-      Diese Seite ist noch nicht gebaut.
-    </p>
+  <div>
+    <PageHero
+      crumb="Widerrufsbelehrung"
+      title="Widerrufsbelehrung"
+      sub="Ihre Rechte als Verbraucher und wie Sie einen Vertrag widerrufen können."
+    />
+    <div class="section shell">
+      <p class="prose muted">
+        Dieser Text folgt in Kürze.
+      </p>
+    </div>
   </div>
 </template>

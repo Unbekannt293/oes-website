@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BEZUG_KEYS } from './bewertungen'
 
 /**
  * Dasselbe Schema validiert im Browser und auf dem Server.
@@ -67,3 +68,22 @@ export const bestellungSchema = z.object({
 
 export type Bestellung = z.infer<typeof bestellungSchema>
 export type Korbzeile = z.infer<typeof korbzeileSchema>
+
+/** Neue Bewertung. Grenzen wie die Checks in der Datenbank (bewertungen). */
+export const bewertungSchema = z.object({
+  name: z.string().trim().min(2, 'Bitte Ihren Namen angeben').max(60),
+  sterne: z.number({ message: 'Bitte Sterne vergeben' }).int().min(1, 'Bitte Sterne vergeben').max(5),
+  text: z.string().trim().min(10, 'Bitte ein paar Worte mehr').max(1000, 'Bitte höchstens 1000 Zeichen'),
+  bezug: z.enum(BEZUG_KEYS).nullable(),
+  /** Honeypot. Ausgefuellt = Bot, der Server antwortet dann "ok" und speichert nichts. */
+  website: z.string().max(200).optional(),
+  einwilligung: z.literal(true, { message: 'Bitte der Veröffentlichung zustimmen' }),
+})
+
+export type BewertungInput = z.infer<typeof bewertungSchema>
+
+/** Freigabe-Link aus Louis' Mail. */
+export const freigabeSchema = z.object({
+  id: z.uuid(),
+  t: z.uuid(),
+})

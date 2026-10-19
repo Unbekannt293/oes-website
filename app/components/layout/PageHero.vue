@@ -1,18 +1,19 @@
 <script setup lang="ts">
-// Kopf jeder Unterseite: echtes Eventfoto, warm entsaettigt, darueber
-// linksbuendig am Inhaltsraster Brotkrumen, eine Aussage als Titel und
-// die Unterzeile daneben.
+// Kopf jeder Unterseite: Schwarz mit warmem Licht aus den oberen Ecken,
+// darueber linksbuendig am Inhaltsraster Brotkrumen, eine Aussage als Titel
+// und die Unterzeile daneben.
 //
-// Jede Seite kann ihr eigenes Motiv mitgeben (Zelt fuer Zelte, Fotobox
-// fuer Fotoboxen). Bis Louis eigene Eventfotos hat, steht das Konzertfoto.
+// Seit 18.10.2026 ohne Foto (Lukas). Ein Motiv laesst sich weiter per
+// image mitgeben, falls spaeter wieder eins gewuenscht ist.
 const {
-  crumb, title, sub, image = '/images/hero/party-konzert.webp', imageMobile,
+  crumb, title, sub, image, imageMobile,
   focus = '50% 45%', tone = 'warm', layout = 'split', slim = false, trail = [],
 } = defineProps<{
   /** Seitenname fuer die Brotkrumen, z. B. "Kontakt". */
   crumb: string
   title: string
   sub?: string
+  /** Optionales Motiv. Ohne: schwarzer Kopf mit Ecklicht. */
   image?: string
   /** Eigener Ausschnitt fuer schmale Bildschirme, wenn der breite dort schlecht passt. */
   imageMobile?: string
@@ -42,8 +43,8 @@ const {
 </script>
 
 <template>
-  <header class="ph on-ink" :class="[`ph--${tone}`, `ph--${layout}`, { 'ph--has-mobile': imageMobile, 'ph--slim': slim }]">
-    <picture v-if="!slim">
+  <header class="ph on-ink" :class="[`ph--${tone}`, `ph--${layout}`, { 'ph--has-mobile': imageMobile, 'ph--slim': slim, 'ph--bare': !image && !slim }]">
+    <picture v-if="image && !slim">
       <source v-if="imageMobile" media="(max-width: 640px)" :srcset="imageMobile">
       <img
         :src="image" alt="" class="ph__img" :style="{ objectPosition: focus }"
@@ -69,12 +70,19 @@ const {
 </template>
 
 <style scoped>
-/* Schmaler Streifen: Schwarz mit warmem Licht von links und rechts oben,
-   wie zwei Scheinwerfer, wenig Hoehe. */
-.ph.ph--slim::before {
-  background:
+/* Warmes Licht von links und rechts oben, wie zwei Scheinwerfer. Liegt auf
+   jedem Banner (Lukas, 18.10.2026), beim schmalen Streifen ist es das einzige. */
+.ph {
+  --ph-licht:
     radial-gradient(45% 150% at 0% 0%, rgb(195 139 55 / 0.16), transparent 70%),
     radial-gradient(45% 150% at 100% 0%, rgb(195 139 55 / 0.16), transparent 70%);
+}
+.ph.ph--slim::before,
+.ph.ph--bare::before { background: var(--ph-licht); }
+/* Ohne Foto: nur Text, deshalb weniger Hoehe als mit Motiv. */
+.ph--bare .ph__inner {
+  min-height: 0;
+  padding-block: clamp(2.75rem, 1.8rem + 3.5vw, 4.5rem) clamp(2.5rem, 1.6rem + 3vw, 4rem);
 }
 .ph--slim .ph__inner {
   min-height: 0;
@@ -102,12 +110,14 @@ const {
 .ph::before {
   content: ''; position: absolute; inset: 0; z-index: -1;
   background:
+    var(--ph-licht),
     linear-gradient(90deg, rgb(11 10 9 / 0.92) 0%, rgb(11 10 9 / 0.55) 50%, rgb(11 10 9 / 0.15) 100%),
     linear-gradient(0deg, rgb(11 10 9 / 0.7), transparent 55%);
 }
 .ph--plain .ph__img { filter: none; }
 .ph--plain::before {
   background:
+    var(--ph-licht),
     linear-gradient(90deg, rgb(11 10 9 / 0.4) 0%, rgb(11 10 9 / 0.12) 50%, transparent 75%),
     linear-gradient(0deg, rgb(11 10 9 / 0.35), transparent 30%);
 }
@@ -120,9 +130,12 @@ const {
 }
 .ph--stack .ph__grid { grid-template-columns: minmax(0, 1fr); }
 .ph--stack .ph__sub { padding: 0; border: 0; }
+/* Untertitel steht darunter, der Titel hat die ganze Breite. */
+.ph--stack .ph__title { max-width: 20ch; }
 .ph--mono .ph__img { filter: grayscale(1) contrast(1.05) brightness(0.9); }
 .ph--mono::before {
   background:
+    var(--ph-licht),
     linear-gradient(90deg, rgb(11 10 9 / 0.7) 0%, rgb(11 10 9 / 0.3) 45%, rgb(11 10 9 / 0.2) 100%),
     linear-gradient(0deg, rgb(11 10 9 / 0.45), transparent 35%);
 }

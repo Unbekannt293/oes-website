@@ -19,8 +19,7 @@ const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buche
       crumb="Pakete"
       title="Pakete für Ihr Event."
       sub="Fotobox allein oder zusammen mit Soundbox. Wie viele Ausdrucke es sein sollen, wählen Sie bei der Buchung."
-      image="/images/pakete/banner.webp" image-mobile="/images/pakete/banner-mobil.webp"
-      tone="plain" layout="stack" focus="50% 0%"
+      layout="stack"
     />
 
     <!-- Dieselben Karten wie auf der Produktseite. Jede fuehrt zur Fotobox-
@@ -50,6 +49,13 @@ const toBooking = (p: RentalPackage) => `/produkte/fotobox?paket=${p.slug}#buche
         <UiButton to="/kontakt" variant="solid">
           Kontakt aufnehmen <UiIcon name="arrow" :size="14" />
         </UiButton>
+      </div>
+    </section>
+
+    <section class="section pk-sec">
+      <div class="shell">
+        <!-- Jedes Komplettpaket mit eigenen Bewertungen, umschaltbar. -->
+        <ReviewSection :bezuege="['fotobox', 'kombi-fotobox-soundbox', 'kombi-fotobox-2-soundboxen']" />
       </div>
     </section>
   </div>

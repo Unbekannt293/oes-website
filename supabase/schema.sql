@@ -204,6 +204,28 @@ begin
 end;
 $$;
 
+-- ---------- Bewertungen ----------
+-- Neue Bewertungen sind unsichtbar, bis Louis sie freischaltet (Link in
+-- der Benachrichtigungsmail oder freigegeben = true im Table Editor).
+create table if not exists bewertungen (
+  id             uuid primary key default gen_random_uuid(),
+  erstellt_am    timestamptz not null default now(),
+  name           text not null check (char_length(name) between 2 and 60),
+  sterne         smallint not null check (sterne between 1 and 5),
+  text           text not null check (char_length(text) between 10 and 1000),
+  -- null = allgemein, sonst Produkt bzw. Komplettpaket (Slug aus dem Katalog)
+  bezug          text,
+  freigegeben    boolean not null default false,
+  freigegeben_am timestamptz,
+  freigabe_token uuid not null default gen_random_uuid()
+);
+create index if not exists bewertungen_sichtbar on bewertungen (erstellt_am desc) where freigegeben;
+
+-- Erlaubte Bezuege als eigene Regel, damit sie sich spaeter austauschen laesst.
+alter table bewertungen drop constraint if exists bewertungen_bezug_check;
+alter table bewertungen add constraint bewertungen_bezug_check
+  check (bezug in ('fotobox', 'soundbox', 'kombi-fotobox-soundbox', 'kombi-fotobox-2-soundboxen'));
+
 -- ============================================================
 -- Zugriff: nur der Server (Secret Key) darf lesen und schreiben.
 -- RLS an und keine Policies heisst: der oeffentliche Schluessel
@@ -213,6 +235,7 @@ alter table inventar   enable row level security;
 alter table buchungen  enable row level security;
 alter table positionen enable row level security;
 alter table belegungen enable row level security;
+alter table bewertungen enable row level security;
 
 revoke execute on function freie_geraete(text, date, date)          from public, anon, authenticated;
 revoke execute on function buchung_anlegen(jsonb, jsonb, jsonb)     from public, anon, authenticated;

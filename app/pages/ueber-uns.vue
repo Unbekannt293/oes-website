@@ -15,12 +15,24 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
     <PageHero
       crumb="Über uns"
       title="Ihr Partner für erfolgreiche Events."
-      image="/images/ueber-uns/banner.webp"
-      image-mobile="/images/ueber-uns/banner-mobil.webp" tone="plain" focus="80% 0%"
+      sub="Zwei Brüder aus Hamburg, die Ihre Feier mit Fotobox, Sound und persönlicher Betreuung zum Erlebnis machen."
+      layout="stack"
     />
 
     <section class="section">
       <div class="shell ab">
+        <!-- Louis in Farbe statt im Banner (Lukas, 18.10.2026). Quadratisch
+             von Kopf bis Brust, das Foto wird nur verkleinert (631 px breit). -->
+        <figure class="ab__louis">
+          <div class="ab__louis-bg on-ink">
+            <img src="/images/ueber-uns/louis.webp" alt="Louis Otto" width="631" height="902" decoding="async">
+          </div>
+          <figcaption>
+            <span class="display ab__louis-name">Louis Otto</span>
+            <span class="muted">Mitgründer und Ihr Ansprechpartner</span>
+          </figcaption>
+        </figure>
+
         <div class="ab__col">
           <h2 class="display h-col">Wer wir sind</h2>
           <p class="prose">
@@ -72,11 +84,36 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
 
 <style scoped>
 .ab { display: grid; gap: var(--s-8); }
-@media (min-width: 900px) {
-  .ab { grid-template-columns: 1fr 1fr; gap: clamp(3rem, 6vw, 6rem); }
+@media (min-width: 700px) {
+  .ab { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); gap: var(--s-7) clamp(2.5rem, 5vw, 5rem); }
+  .ab__louis { grid-row: span 2; }
 }
+@media (min-width: 1100px) {
+  .ab { grid-template-columns: minmax(0, 0.75fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .ab__louis { grid-row: auto; }
+}
+
+.ab__louis { margin: 0; display: grid; gap: var(--s-4); align-content: start; max-width: 24rem; }
+/* Dunkle Karte mit warmem Licht aus den oberen Ecken, wie die Kopfzeilen. */
+.ab__louis-bg {
+  aspect-ratio: 1; overflow: hidden; border-radius: var(--r-md);
+  background:
+    radial-gradient(60% 80% at 0% 0%, rgb(195 139 55 / 0.22), transparent 70%),
+    radial-gradient(60% 80% at 100% 0%, rgb(195 139 55 / 0.22), transparent 70%),
+    #0B0A09;
+}
+.ab__louis-bg img {
+  display: block; width: 100%; height: auto;
+  /* Etwas Luft ueber dem Kopf, Arme und Glas laufen unten aus der Karte. */
+  margin-top: 6%;
+}
+.ab__louis figcaption { display: grid; gap: 0.15rem; }
+.ab__louis-name { font-size: var(--t-h3); }
 .ab__col { display: grid; gap: var(--s-5); align-content: start; }
 .ab__col .h-col { margin-bottom: var(--s-1); }
+/* Leerraum ueber den Grossbuchstaben abschneiden: so liegt die Oberkante
+   von "Wer wir sind" genau auf der Oberkante von Louis' Foto. */
+.ab .h-col { text-box: trim-start cap alphabetic; }
 .prose { font-size: 1.0625rem; line-height: 1.75; color: var(--c-text); }
 
 /* ---- Werte: schmaler Streifen zwischen Haarlinien ---- */

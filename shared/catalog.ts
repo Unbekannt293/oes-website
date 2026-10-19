@@ -31,6 +31,7 @@ export const products: Product[] = [
     features: ['Hochwertige Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder in der Online-Galerie'],
     images: [
       '/images/produkte/fotobox-oes.webp',
+      '/images/produkte/fotobox-links.webp',
       '/images/produkte/fotobox-front.webp',
       '/images/produkte/fotobox-mit-drucker.webp',
       '/images/produkte/drucker-dnp.webp',
@@ -38,7 +39,7 @@ export const products: Product[] = [
       '/images/produkte/set-fotobox-zwei-soundboxen-drucker.webp',
     ],
     // Galerie springt mit der Soundbox-Wahl im Buchungskasten mit.
-    imageFor: { sb0: 0, sb1: 4, sb2: 5 },
+    imageFor: { sb0: 0, sb1: 5, sb2: 6 },
     available: true, stock: 1,
     booking: 'paket',
   },

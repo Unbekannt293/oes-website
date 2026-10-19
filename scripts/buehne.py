@@ -127,3 +127,22 @@ def save(img, path, quality=80):
     arr = np.clip(img, 0, 255).astype(np.uint8)
     Image.fromarray(arr, 'RGB').save(path, 'WEBP', quality=quality, method=6)
     return f'{path.name} {arr.shape[1]}x{arr.shape[0]} {path.stat().st_size // 1024} KB'
+
+
+def freisteller_banner(cut, W, H, scale, cx, top, anchor=0.5, bottom_fade=None, fade_depth=0.8,
+                       vignette_bottom=0.28, base=10):
+    """Freisteller schwarzweiss auf fast schwarzen Grund, ohne Lichtkegel und
+    ohne Schein (Lukas, 18.10.2026). anchor: welche Stelle des Motivs (Anteil
+    der Breite) bei cx steht, z. B. die Gesichtsmitte. Nie hochrechnen:
+    scale > 1 wird auf 1 begrenzt, damit das Bild scharf bleibt."""
+    scale = min(scale, 1.0)
+    fig = cut.resize((round(cut.width * scale), round(cut.height * scale)), Image.LANCZOS) if scale < 1 else cut
+    L, A = place((H, W), fig, round(cx * W - anchor * fig.width), top)
+    bg = np.full((H, W, 3), float(base), np.float32)
+    img = composite(bg, L, A, rim=0)
+    img = vignette(img, bottom=vignette_bottom)
+    if bottom_fade is not None:
+        ys = np.linspace(0, 1, H, dtype=np.float32)
+        t = np.clip((ys - bottom_fade) / (1 - bottom_fade), 0, 1)
+        img = base + (img - base) * (1 - fade_depth * t * t * (3 - 2 * t))[:, None, None]
+    return grain(img, sigma=2.0)

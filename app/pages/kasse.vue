@@ -294,6 +294,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
         </p>
         <p class="ks__note muted">
           Lieferung im Freiradius kostenlos, danach {{ formatPrice(PRICE_PER_KM_CENTS) }} pro km.
+          Die Kaution erhalten Sie nach der Rückgabe zurück, wenn alles vollständig und unbeschädigt ist.
         </p>
       </aside>
     </div>

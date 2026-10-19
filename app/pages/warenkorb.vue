@@ -150,7 +150,8 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
         <p class="wk__note muted">
           <UiIcon name="info" :size="14" />
           Lieferkosten berechnen wir an der Kasse anhand Ihrer Adresse.
-          Die Kaution erhalten Sie nach der Rückgabe zurück.
+          Die Kaution erhalten Sie nach der Rückgabe zurück, wenn alles vollständig
+          und unbeschädigt ist.
         </p>
         <UiButton to="/kasse" variant="solid" size="lg" class="wk__btn">Zur Kasse</UiButton>
       </aside>
@@ -266,7 +267,22 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
   border: 1px solid var(--c-gold-hair); border-radius: var(--r-sm); cursor: pointer;
   transition: border-color var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out);
 }
-.wk__kopt input { accent-color: var(--c-gold); }
+/* Eigener Radio-Punkt: gewaehlt = voll gold gefuellt mit weissem Kern,
+   wie die Haekchen-Kaestchen der Seite. */
+.wk__kopt input {
+  appearance: none; flex: none; margin: 0;
+  width: 1.05rem; height: 1.05rem; border-radius: 50%;
+  border: 1.5px solid var(--c-gold-hair); background: var(--c-paper-pure);
+  display: grid; place-items: center; cursor: pointer;
+  transition: border-color var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out);
+}
+.wk__kopt input::after {
+  content: ''; width: 0.4rem; height: 0.4rem; border-radius: 50%;
+  background: #FFFFFF; transform: scale(0); transition: transform var(--d-fast) var(--e-out);
+}
+.wk__kopt input:checked { background: var(--c-gold); border-color: var(--c-gold); }
+.wk__kopt input:checked::after { transform: scale(1); }
+.wk__kopt input:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
 .wk__kopt:hover { border-color: var(--c-gold); }
 .wk__kopt.is-sel { border-color: var(--c-gold); background: rgb(195 139 55 / 0.08); }
 

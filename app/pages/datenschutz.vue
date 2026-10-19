@@ -3,10 +3,16 @@ useSeoMeta({ title: 'Datenschutz' })
 </script>
 
 <template>
-  <div class="section shell">
-    <SectionHeading title="Datenschutz" align="start" />
-    <p class="prose muted">
-      Diese Seite ist noch nicht gebaut.
-    </p>
+  <div>
+    <PageHero
+      crumb="Datenschutz"
+      title="Datenschutzerklärung"
+      sub="Wie wir mit Ihren Daten umgehen, wenn Sie unsere Seite nutzen, anfragen oder buchen."
+    />
+    <div class="section shell">
+      <p class="prose muted">
+        Dieser Text folgt in Kürze.
+      </p>
+    </div>
   </div>
 </template>

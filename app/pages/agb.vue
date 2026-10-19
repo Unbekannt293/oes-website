@@ -3,10 +3,16 @@ useSeoMeta({ title: 'AGB' })
 </script>
 
 <template>
-  <div class="section shell">
-    <SectionHeading title="AGB" align="start" />
-    <p class="prose muted">
-      Diese Seite ist noch nicht gebaut.
-    </p>
+  <div>
+    <PageHero
+      crumb="AGB"
+      title="Allgemeine Geschäftsbedingungen"
+      sub="Die Bedingungen für Miete, Lieferung und Rückgabe unserer Eventausstattung."
+    />
+    <div class="section shell">
+      <p class="prose muted">
+        Dieser Text folgt in Kürze.
+      </p>
+    </div>
   </div>
 </template>

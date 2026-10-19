@@ -36,8 +36,7 @@ const withSoundbox = kombis.filter(k => k.soundboxes > 0)
       crumb="Produkte"
       title="Alles für Ihr Event, aus einer Hand."
       sub="Fotobox und Soundbox mieten Sie schon heute. Zelte und Lichttechnik folgen bald."
-      image="/images/produkte/banner.webp" image-mobile="/images/produkte/banner-mobil.webp"
-      tone="plain" layout="stack" focus="50% 0%"
+      layout="stack"
     />
 
     <section class="section">
@@ -83,6 +82,12 @@ const withSoundbox = kombis.filter(k => k.soundboxes > 0)
         <div class="grid">
           <ProductCard v-for="k in withSoundbox" :key="k.slug" :product="k" :to="k.to" />
         </div>
+      </div>
+    </section>
+
+    <section class="section pakete">
+      <div class="shell">
+        <ReviewSection :bezuege="['fotobox', 'soundbox']" />
       </div>
     </section>
   </div>

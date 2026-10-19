@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { categories, findProduct, fotoboxPackages } from '~~/shared/catalog'
+import { BEZUG_NACH_SOUNDBOXEN, type Bezug } from '~~/shared/bewertungen'
 import { formatPrice } from '~~/shared/pricing'
 
 const route = useRoute()
@@ -15,7 +16,9 @@ const category = computed(() =>
   categories.find(c => c.id === product.value!.category),
 )
 
-const contact = useContact()
+// Bewertungen gibt es fuer die buchbaren Produkte. Auf der Fotobox-Seite
+// gehoeren sie zur gewaehlten Soundbox-Zahl: Fotobox allein oder eines der
+// Komplettpakete, jedes mit eigenen Bewertungen.
 
 // Vorwahl aus der Adresse: ?paket=fotobox-premium oder ?sb=1 (Kombi-Karten
 // der Pakete-Seite). Die Stufe laesst sich auch im Vergleich unten waehlen.
@@ -23,6 +26,12 @@ const paket = ref(typeof route.query.paket === 'string' ? route.query.paket : ''
 const sb = Number(route.query.sb)
 const soundboxes = ref<0 | 1 | 2>(sb === 1 || sb === 2 ? sb : 0)
 const { lenis } = useLenis()
+
+const reviewBezug = computed<Bezug | null>(() => {
+  const slug = product.value!.slug
+  if (slug === 'fotobox') return BEZUG_NACH_SOUNDBOXEN[soundboxes.value]
+  return slug === 'soundbox' ? 'soundbox' : null
+})
 
 // Auswahl im Buchungskasten -> passendes Foto (product.imageFor im Katalog).
 const gallery = ref<{ go: (i: number) => void } | null>(null)
@@ -99,13 +108,8 @@ useSeoMeta({
           <UiButton to="/kontakt" variant="solid">Vormerken lassen</UiButton>
         </div>
 
-        <div class="pd__ask on-ink">
-          <p class="display pd__ask-h">Haben Sie Fragen?</p>
-          <p class="pd__ask-sub">Wir beraten Sie gern persönlich.</p>
-          <a :href="`tel:${contact.phoneRaw}`" class="pd__ask-row"><UiIcon name="phone" :size="16" /> {{ contact.phone }}</a>
-          <a :href="`mailto:${contact.email}`" class="pd__ask-row"><UiIcon name="mail" :size="16" /> {{ contact.email }}</a>
-          <UiButton to="/kontakt" variant="solid" size="sm" class="pd__ask-btn">Kontakt aufnehmen</UiButton>
-        </div>
+        <ReviewSummary />
+        <AskBox />
       </aside>
 
       <!-- Unter der Galerie ist Platz: dort steht der Vergleich der
@@ -131,6 +135,9 @@ useSeoMeta({
           </div>
         </div>
       </section>
+
+      <!-- Bewertungen in der freien Flaeche neben dem Buchungskasten. -->
+      <ReviewSection v-if="product.available && reviewBezug" :bezuege="[reviewBezug]" kompakt class="pd__reviews" />
     </div>
   </div>
 </template>
@@ -150,15 +157,15 @@ useSeoMeta({
 }
 /* Mit Zusatzbereich (Paketvergleich bzw. Kombi-Hinweis): auf dem Handy erst
    buchen, der Vergleich steht danach. Die Vorteile zeigt schon der Kasten. */
-.pd--pakete { grid-template-areas: 'gal' 'info' 'aside' 'pak'; }
+.pd--pakete { grid-template-areas: 'gal' 'info' 'aside' 'pak' 'rev'; }
 @media (min-width: 760px) {
   .pd { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: 'gal info' 'gal aside'; }
-  .pd--pakete { grid-template-areas: 'gal info' 'pak aside'; }
+  .pd--pakete { grid-template-areas: 'gal info' 'pak aside' 'rev rev'; }
 }
 @media (min-width: 1200px) {
   .pd { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) 360px; grid-template-areas: 'gal info aside'; gap: var(--s-7); }
   /* Pakete unter Galerie und Text, der Buchungskasten steht daneben. */
-  .pd--pakete { grid-template-areas: 'gal info aside' 'pak pak aside'; grid-template-rows: auto 1fr; }
+  .pd--pakete { grid-template-areas: 'gal info aside' 'pak pak aside' 'rev rev aside'; grid-template-rows: auto auto 1fr; }
 }
 .pd__gallery { grid-area: gal; }
 .pd__info { grid-area: info; display: grid; gap: var(--s-4); }
@@ -196,18 +203,6 @@ useSeoMeta({
 }
 .pd__soon-h { color: var(--c-gold); }
 
-.pd__ask {
-  display: grid; gap: var(--s-2); justify-items: start;
-  padding: var(--s-6) var(--s-5);
-  border-radius: var(--r-md);
-}
-.pd__ask-h { font-size: var(--t-h3); }
-.pd__ask-sub { color: var(--c-text-muted); font-size: var(--t-small); margin-bottom: var(--s-2); }
-.pd__ask-row { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); }
-.pd__ask-row svg { color: var(--c-gold); }
-.pd__ask-row:hover { color: var(--c-gold); }
-.pd__ask-btn { margin-top: var(--s-3); }
-
 .pd__pakete { grid-area: pak; display: grid; gap: var(--s-4); align-content: start; }
 .pd__pakete-h { font-size: var(--t-h3); }
 
@@ -222,4 +217,6 @@ useSeoMeta({
 .pd__kombi-links { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); margin-top: var(--s-1); }
 .pd__kombi-link { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--c-gold); }
 .pd__kombi-link:hover { color: var(--c-text); }
+
+.pd__reviews { grid-area: rev; align-self: start; padding-top: var(--s-6); border-top: var(--border-hair); }
 </style>
