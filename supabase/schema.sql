@@ -78,10 +78,16 @@ create table if not exists buchungen (
   -- Rechnung (supabase/migrationen/2026-11-04-rechnungen.sql)
   rechnungsnummer          text unique,
   rechnung_am              date,
-  bestaetigung_gesendet_am timestamptz
+  bestaetigung_gesendet_am timestamptz,
+  -- Zahlungsfrist Ueberweisung (supabase/migrationen/2026-11-04-zahlungsfrist.sql)
+  zahlung_bis              date,
+  zahlungserinnerung_am    timestamptz,
+  vorgewarnt_am            timestamptz   -- Louis morgens vorgewarnt, Kunden-Mails 4 h spaeter
 );
 
 create index if not exists buchungen_von_idx on buchungen (von);
+create index if not exists buchungen_offen_idx on buchungen (zahlungsart, status)
+  where bezahlt_am is null;
 
 -- ---------- Positionen ----------
 create table if not exists positionen (

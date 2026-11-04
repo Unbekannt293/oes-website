@@ -2,6 +2,7 @@ import type { H3Event } from 'h3'
 import { FIRMA } from '~~/shared/firma'
 import { formatPrice } from '~~/shared/pricing'
 import { AGB } from '~~/shared/rechtstexte/agb'
+import { fristText, fristVon } from '~~/shared/zahlungsfrist'
 
 /**
  * Mails zu einer Bestellung. Liest alles aus der Datenbank, damit
@@ -18,8 +19,8 @@ import { AGB } from '~~/shared/rechtstexte/agb'
  * Scheitert der Versand, wird das nur protokolliert: die Bestellung ist
  * gespeichert, Louis sieht sie in der Verwaltung und kann neu senden.
  */
-interface BuchungMitPositionen {
-  id: string, nummer: string, status: string
+export interface BuchungMitPositionen {
+  id: string, nummer: string, status: string, erstellt_am: string
   vorname: string, nachname: string, email: string, telefon: string
   strasse: string, plz: string, ort: string, adresszusatz: string | null
   von: string, bis: string, summe_cent: number, fahrtkosten_cent: number, kaution_cent: number
@@ -28,13 +29,15 @@ interface BuchungMitPositionen {
   kaution_zahlart?: 'bar' | 'ueberweisung'
   rechnungsnummer?: string | null, rechnung_am?: string | null
   uebergabe?: 'lieferung' | 'abholung'
+  /** Nach Migration 2026-11-04-zahlungsfrist.sql. */
+  zahlung_bis?: string | null, zahlungserinnerung_am?: string | null
   positionen: { name: string, detail: string | null, menge: number, einzelpreis_cent: number }[]
 }
 
 const tag = (iso: string) => new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })
   .format(new Date(`${iso}T12:00:00`))
 
-async function buchungLaden(id: string) {
+export async function buchungLaden(id: string) {
   const { data, error } = await useSupabase()
     .from('buchungen')
     // "*" statt Spaltenliste: neuere Spalten gibt es erst nach den Migrationen.
@@ -44,6 +47,10 @@ async function buchungLaden(id: string) {
   if (error || !data) throw new Error(error?.message ?? 'Buchung nicht gefunden')
   return data
 }
+
+const bankdaten = (b: BuchungMitPositionen) =>
+  `Empfänger: ${FIRMA.name}\nBank: ${FIRMA.bank}\nIBAN: ${FIRMA.iban}\n`
+  + `Betrag: ${formatPrice(b.summe_cent)}\nVerwendungszweck: ${b.nummer}\n`
 
 function zeitraumText(b: BuchungMitPositionen) {
   return b.von === b.bis ? tag(b.von) : `${tag(b.von)} bis ${tag(b.bis)}`
@@ -100,7 +107,8 @@ export async function bestellMailsSenden(event: H3Event, buchungId: string) {
         + `${b.vorname} ${b.nachname}\n${b.email}\n${b.telefon}\n\n`
         + (b.bezahlt_am
           ? 'Der Kunde hat die Buchungsbestätigung mit Rechnung automatisch bekommen.\n\n'
-          : 'Sobald die Überweisung da ist: in der Verwaltung "Zahlung erhalten" tippen, dann geht die Buchungsbestätigung mit Rechnung raus.\n\n')
+          : `Zahlungsfrist: ${fristText(fristVon(b))}. Danach erinnert die Website den Kunden und storniert, wenn nichts eingeht.\n`
+            + 'Sobald die Überweisung da ist: in der Verwaltung "Zahlung erhalten" tippen, dann geht die Buchungsbestätigung mit Rechnung raus.\n\n')
         + `Verwaltung: ${getRequestURL(event).origin}/admin/buchungen\n`,
     })
   }
@@ -119,11 +127,11 @@ export async function bestellMailsSenden(event: H3Event, buchungId: string) {
       subject: `Ihre Buchungsanfrage ${b.nummer} bei Otto’s Event Service`,
       text: `Guten Tag ${b.vorname} ${b.nachname},\n\n`
         + `vielen Dank für Ihre Buchung. Ihre Bestellung ist bei uns eingegangen.\n\n${uebersicht(b)}\n\n`
-        + 'Bitte überweisen Sie den Gesamtbetrag auf folgendes Konto:\n'
-        + `Empfänger: ${FIRMA.name}\nBank: ${FIRMA.bank}\nIBAN: ${FIRMA.iban}\n`
-        + `Betrag: ${formatPrice(b.summe_cent)}\nVerwendungszweck: ${b.nummer}\n\n`
+        + `Bitte überweisen Sie den Gesamtbetrag bis spätestens ${fristText(fristVon(b))} auf folgendes Konto:\n`
+        + `${bankdaten(b)}\n`
         + 'Verbindlich wird die Buchung mit unserer Buchungsbestätigung, die Sie nach Eingang der Zahlung '
-        + 'zusammen mit der Rechnung per E-Mail erhalten. Bis dahin halten wir den Termin für Sie frei.\n\n'
+        + 'zusammen mit der Rechnung per E-Mail erhalten. Bis zum Ablauf der Zahlungsfrist halten wir den Termin für Sie frei. '
+        + 'Geht bis dahin keine Zahlung ein, wird die Reservierung automatisch aufgehoben, es entstehen Ihnen dadurch keine Kosten.\n\n'
         + signatur,
     })
   }
@@ -182,4 +190,39 @@ export async function buchungBestaetigen(event: H3Event, buchungId: string) {
   // Spalte fehlt ohne Migration: dann wenigstens den Status setzen.
   if (error) await db.from('buchungen').update({ status: 'bestaetigt' }).eq('id', buchungId)
   return { ohneRechnung }
+}
+
+/** Erinnerung am Tag vor Ablauf der Zahlungsfrist (taegliche Pruefung). */
+export async function zahlungErinnern(event: H3Event, b: BuchungMitPositionen) {
+  const { transport, from, to } = useMailer(event)
+  await transport.sendMail({
+    from, to: b.email, replyTo: from,
+    bcc: to, // Louis sieht genau, was der Kunde bekommen hat
+    subject: `Erinnerung: Zahlung für Ihre Buchung ${b.nummer}`,
+    text: `Guten Tag ${b.vorname} ${b.nachname},\n\n`
+      + `für Ihre Buchung ${b.nummer} (${zeitraumText(b)}) ist bei uns noch keine Zahlung eingegangen. `
+      + `Wir halten den Termin noch bis ${fristText(fristVon(b))} für Sie frei.\n\n`
+      + `Bitte überweisen Sie bis dahin:\n${bankdaten(b)}\n`
+      + 'Haben Sie schon überwiesen? Dann ist diese E-Mail hinfällig, die Buchungsbestätigung kommt, sobald die Zahlung da ist. '
+      + 'Möchten Sie den Termin nicht mehr, müssen Sie nichts tun: die Reservierung wird nach Ablauf der Frist kostenfrei aufgehoben.\n\n'
+      + signatur,
+  })
+}
+
+/** Reservierung nach Fristablauf aufgehoben: Bescheid an den Kunden. */
+export async function fristStornoMelden(event: H3Event, b: BuchungMitPositionen) {
+  const { transport, from, to } = useMailer(event)
+  await transport.sendMail({
+    from, to: b.email, replyTo: from,
+    bcc: to, // Louis sieht genau, was der Kunde bekommen hat
+    subject: `Ihre Reservierung ${b.nummer} wurde aufgehoben`,
+    text: `Guten Tag ${b.vorname} ${b.nachname},\n\n`
+      + `für Ihre Buchung ${b.nummer} (${zeitraumText(b)}) ist bis zum Ablauf der Zahlungsfrist am ${fristText(fristVon(b))} `
+      + 'keine Zahlung bei uns eingegangen. Wir haben die Reservierung deshalb aufgehoben, der Termin ist wieder frei. '
+      + 'Kosten entstehen Ihnen dadurch keine.\n\n'
+      + 'Haben Sie doch schon überwiesen oder möchten Sie den Termin weiterhin? Antworten Sie einfach auf diese E-Mail '
+      + `oder rufen Sie uns an (${FIRMA.telefon}). Ist der Termin noch frei, nehmen wir Ihre Buchung gern wieder auf, `
+      + 'andernfalls erstatten wir eine bereits geleistete Zahlung umgehend.\n\n'
+      + signatur,
+  })
 }

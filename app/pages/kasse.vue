@@ -4,6 +4,7 @@ import type { CartLine, DeliveryQuote } from '~~/shared/types'
 import type { Korbzeile } from '~~/shared/schemas'
 import { kontaktSchema, lieferadresseSchema } from '~~/shared/schemas'
 import { formatPrice, tarif } from '~~/shared/pricing'
+import { FRIST, fristText } from '~~/shared/zahlungsfrist'
 
 // Kasse nach Louis' Brief: Adresse (daraus die Fahrtkosten), Kontakt,
 // Zahlungsart, dann Mietvertrag bestaetigen und "Zahlungspflichtig bestellen".
@@ -17,6 +18,7 @@ const contact = useContact()
 
 /** Bestellnummer nach erfolgreicher Bestellung, oeffnet das Danke-Fenster. */
 const bestellt = ref<string | null>(null)
+const zahlungBis = ref<string | null>(null)
 
 // Leerer Korb (z. B. direkt aufgerufen): zurueck zum Warenkorb.
 // Leerer Warenkorb oder ein Termin, der schon begonnen hat: zurueck in den
@@ -139,7 +141,7 @@ async function bestellen() {
   if (!mietvertrag.value) { vertragFehlt.value = true; return }
   status.value = 'sendet'
   try {
-    const r = await $fetch<{ nummer: string, url?: string }>('/api/bestellung', {
+    const r = await $fetch<{ nummer: string, url?: string, zahlungBis?: string }>('/api/bestellung', {
       method: 'POST',
       body: { adresse, kontakt, uebergabe: uebergabe.value, zahlungsart: zahlungsart.value, kaution: kaution.value, zeilen: zeilen.value, mietvertrag: true },
     })
@@ -152,6 +154,7 @@ async function bestellen() {
       return
     }
     bestellt.value = r.nummer
+    zahlungBis.value = r.zahlungBis ?? null
     status.value = 'idle'
     clear()
   }
@@ -272,7 +275,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
               <input v-model="zahlungsart" type="radio" name="zahlung" value="ueberweisung">
               <span class="opt__main">
                 <span class="opt__name">Überweisung</span>
-                <span class="opt__sub">Die Bankverbindung kommt per E-Mail. Verbindlich wird die Buchung mit unserer Bestätigung nach Zahlungseingang, bis dahin halten wir den Termin frei.</span>
+                <span class="opt__sub">Die Bankverbindung kommt per E-Mail. Zahlungsfrist {{ FRIST.tage }} Tage (bei Terminen in unter zwei Wochen {{ FRIST.tageKurzfristig }} Tage), so lange halten wir den Termin frei. Verbindlich wird die Buchung mit unserer Bestätigung nach Zahlungseingang.</span>
               </span>
             </label>
           </div>
@@ -352,9 +355,10 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
         <h2 id="danke-h" class="display ks__done-h">Danke für Ihre Bestellung!</h2>
         <p class="muted">Bestellnummer <strong>{{ bestellt }}</strong></p>
         <p>
-          Sie erhalten gleich eine E-Mail mit den Zahlungsinformationen. Sobald Ihre
-          Überweisung da ist, bekommen Sie die Buchungsbestätigung mit Rechnung und
-          unseren Mietbedingungen per E-Mail.
+          Sie erhalten gleich eine E-Mail mit den Zahlungsinformationen.
+          <template v-if="zahlungBis">Bitte überweisen Sie bis <strong>{{ fristText(zahlungBis) }}</strong>, so lange halten wir den Termin für Sie frei.</template>
+          Sobald Ihre Überweisung da ist, bekommen Sie die Buchungsbestätigung mit
+          Rechnung und unseren Mietbedingungen per E-Mail.
         </p>
         <UiButton to="/" variant="solid">Zur Startseite</UiButton>
       </div>

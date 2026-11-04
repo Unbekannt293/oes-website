@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { AdminBuchungDaten } from '~~/shared/admin'
 import { formatPrice } from '~~/shared/pricing'
+import { heuteBerlin } from '~~/shared/preise'
+import { fristText, fristVon, stornoAb } from '~~/shared/zahlungsfrist'
 
 // Eine Buchung in der Verwaltung: alles Wichtige auf einen Blick und jede
 // Nachtrage-Aktion mit einem Tipp (Status, Zahlung, Kaution, Fahrtkosten,
@@ -13,6 +15,11 @@ const fehler = ref('')
 
 const STATUS = { angefragt: 'Neu', bestaetigt: 'Bestätigt', storniert: 'Storniert' } as const
 const zeitraum = computed(() => b.value.von === b.value.bis ? adminDatum(b.value.von) : `${adminDatum(b.value.von)} bis ${adminDatum(b.value.bis)}`)
+// Offene Ueberweisung: bis wann gezahlt sein muss, ab wann automatisch storniert wird.
+const fristOffen = computed(() => b.value.zahlungsart === 'ueberweisung' && !b.value.bezahlt_am && b.value.status === 'angefragt')
+const frist = computed(() => fristVon(b.value))
+const fristVorbei = computed(() => heuteBerlin() > frist.value)
+const autoStorno = computed(() => stornoAb(frist.value) < b.value.von ? stornoAb(frist.value) : null)
 const kurz = (iso: string) => new Date(iso).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' })
 
 async function aendern(body: Record<string, unknown>, frage?: string) {
@@ -93,6 +100,12 @@ watch(() => b.value.notiz, (n) => { notiz.value = n ?? '' })
           <li class="muted"><span>Kaution ({{ b.kaution_zahlart === 'bar' ? 'bar' : 'Überweisung' }})</span><span>{{ formatPrice(b.kaution_cent) }}</span></li>
         </ul>
         <p class="muted ab__zahl">Zahlung: {{ b.zahlungsart === 'online' ? 'online' : 'Überweisung' }}</p>
+        <p v-if="fristOffen" class="ab__frist" :class="{ 'is-vorbei': fristVorbei }">
+          Zahlung bis {{ fristText(frist) }}<template v-if="fristVorbei">, abgelaufen</template>.
+          <template v-if="autoStorno">Ohne Zahlung automatisch storniert am {{ fristText(autoStorno) }}.</template>
+          <template v-else>Event zu nah für automatisches Stornieren, ohne Zahlung bitte selbst klären.</template>
+          <template v-if="b.zahlungserinnerung_am"> Erinnert am {{ kurz(b.zahlungserinnerung_am) }}.</template>
+        </p>
       </section>
     </div>
 
@@ -165,6 +178,12 @@ watch(() => b.value.notiz, (n) => { notiz.value = n ?? '' })
       <a :href="`/api/admin/buchungen/${b.id}/rechnung`" target="_blank" class="ab__link">Rechnung ansehen</a>
       <UiButton v-if="!fkOffen && b.status !== 'storniert'" variant="light" size="sm" @click="fkStart">Fahrtkosten ändern</UiButton>
       <UiButton
+        v-if="fristOffen" variant="light" size="sm" :disabled="laeuft"
+        @click="aendern({ aktion: 'frist', tage: 3 }, `Zahlungsfrist für ${b.nummer} um 3 Tage verlängern?`)"
+      >
+        Frist +3 Tage
+      </UiButton>
+      <UiButton
         v-if="b.status === 'storniert'" variant="light" size="sm" :disabled="laeuft"
         @click="aendern({ aktion: 'status', wert: 'angefragt' }, 'Buchung wieder aufnehmen? Die Termine werden dann wieder belegt.')"
       >
@@ -187,6 +206,8 @@ watch(() => b.value.notiz, (n) => { notiz.value = n ?? '' })
   border-radius: var(--r-md);
 }
 .ab--angefragt { border-left-color: var(--c-gold); }
+.ab__frist { font-size: var(--t-small); color: var(--c-text-muted); margin-top: var(--s-1); }
+.ab__frist.is-vorbei { color: var(--c-danger); }
 .ab--bestaetigt { border-left-color: var(--c-success); }
 .ab--storniert { opacity: 0.75; }
 .ab[aria-busy='true'] { opacity: 0.6; }

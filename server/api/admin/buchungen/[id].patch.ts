@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { heuteBerlin } from '~~/shared/preise'
+import { fristVon, plusTage } from '~~/shared/zahlungsfrist'
 
 // Daten zu einer Buchung nachtragen. Je Aktion ein Feld, damit Louis auf
 // dem Handy mit einem Tipp eine Sache erledigt.
@@ -12,7 +14,12 @@ const schema = z.discriminatedUnion('aktion', [
   z.object({ aktion: z.literal('bestaetigen') }),
   // Bestaetigung (gleiche Rechnung) noch einmal senden.
   z.object({ aktion: z.literal('bestaetigung_senden') }),
+  // Zahlungsfrist einer Ueberweisung verlaengern (ab heute bzw. alter Frist).
+  z.object({ aktion: z.literal('frist'), tage: z.number().int().min(1).max(30) }),
 ])
+
+/** Wer wieder aufgenommen wird, bekommt mindestens so viele Tage zum Zahlen. */
+const FRIST_NACH_WIEDERAUFNAHME = 3
 
 const SPALTE = { bezahlt: 'bezahlt_am', kaution_erhalten: 'kaution_erhalten_am', kaution_zurueck: 'kaution_zurueck_am' } as const
 
@@ -20,7 +27,8 @@ export default defineEventHandler(async (event) => {
   const { id } = await getValidatedRouterParams(event, z.object({ id: z.uuid() }).parse)
   const a = await readValidatedBody(event, schema.parse)
   const db = useSupabase()
-  const { data: b, error } = await db.from('buchungen').select('status, summe_cent, fahrtkosten_cent').eq('id', id).single()
+  // "*": zahlung_bis gibt es erst nach Migration 2026-11-04-zahlungsfrist.sql.
+  const { data: b, error } = await db.from('buchungen').select('*').eq('id', id).single()
   if (error || !b) throw createError({ statusCode: 404, statusMessage: 'Buchung nicht gefunden' })
 
   if (a.aktion === 'bestaetigen' || a.aktion === 'bestaetigung_senden') {
@@ -56,6 +64,17 @@ export default defineEventHandler(async (event) => {
     // allen Tagen noch frei sind. Sonst waere ein Tag doppelt vergeben.
     if (b.status === 'storniert' && a.wert !== 'storniert') await nochFrei(id)
     aenderung = { status: a.wert }
+    // Offene Ueberweisung wieder aufgenommen: neue Frist, sonst storniert
+    // die taegliche Pruefung sie am naechsten Morgen gleich wieder.
+    if (b.status === 'storniert' && a.wert === 'angefragt' && b.zahlungsart === 'ueberweisung' && !b.bezahlt_am) {
+      const neu = plusTage(heuteBerlin(), FRIST_NACH_WIEDERAUFNAHME)
+      aenderung = { ...aenderung, zahlung_bis: [fristVon(b), neu].sort().at(-1), zahlungserinnerung_am: null }
+    }
+  }
+  else if (a.aktion === 'frist') {
+    if (b.zahlungsart !== 'ueberweisung' || b.bezahlt_am) throw createError({ statusCode: 409, statusMessage: 'Nur für offene Überweisungen' })
+    const ab = [fristVon(b), heuteBerlin()].sort().at(-1)!
+    aenderung = { zahlung_bis: plusTage(ab, a.tage), zahlungserinnerung_am: null }
   }
   else if (a.aktion === 'fahrtkosten') {
     // Gesamtsumme enthaelt die Fahrtkosten: alte raus, neue rein.

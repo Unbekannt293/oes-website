@@ -11,6 +11,8 @@ export interface AdminBuchungDaten {
   rechnungsnummer?: string | null, bestaetigung_gesendet_am?: string | null
   /** Nach Migration 2026-11-04-abholung.sql. */
   uebergabe?: 'lieferung' | 'abholung'
+  /** Nach Migration 2026-11-04-zahlungsfrist.sql. */
+  zahlung_bis?: string | null, zahlungserinnerung_am?: string | null
   positionen: { name: string, detail: string | null, menge: number, einzelpreis_cent: number }[]
 }
 

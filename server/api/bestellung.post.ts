@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { bestellungSchema } from '~~/shared/schemas'
 import { quoteDelivery } from '~~/shared/pricing'
+import { heuteBerlin } from '~~/shared/preise'
+import { zahlungsfrist } from '~~/shared/zahlungsfrist'
 
 // Bestellung aus der Kasse:
 // 1. Auswahl pruefen, Preise und Kaution auf dem Server neu rechnen,
@@ -78,6 +80,13 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Ueberweisung: Zahlungsfrist merken (steht in der Mail, die taegliche
+  // Pruefung erinnert und storniert danach). Ohne Migration rechnet der
+  // Server die Frist bei Bedarf aus Bestelldatum und Termin.
+  const frist = zahlungsfrist(heuteBerlin(), korb.von)
+  const { error: fristFehler } = await useSupabase().from('buchungen').update({ zahlung_bis: frist }).eq('id', id)
+  if (fristFehler) console.error('[bestellung] Zahlungsfrist nicht gespeichert:', fristFehler.message)
+
   await bestellMailsSenden(event, id)
-  return { nummer }
+  return { nummer, zahlungBis: frist }
 })

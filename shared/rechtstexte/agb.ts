@@ -4,7 +4,8 @@
  * im Mailanhang (server/utils/rechtstexte-pdf.ts).
  * Angeglichen: Bestellknopf heisst wie auf der Seite "Zahlungspflichtig
  * bestellen" (Louis' Brief), Paketnamen wie im Katalog (Basic, Classic,
- * Premium, Premium Plus, Deluxe).
+ * Premium, Premium Plus, Deluxe), § 6 (2) Zahlungsfrist statt "keine
+ * Reservierung vor Zahlung" (so arbeitet die Seite, shared/zahlungsfrist.ts).
  * Vor dem Go-live juristisch pruefen lassen.
  */
 import type { Rechtstext } from './typ'
@@ -58,7 +59,7 @@ export const AGB: Rechtstext = {
       "titel": "§ 6 Zahlungsarten und Banküberweisung",
       "absaetze": [
         "(1) Im Checkout angebotene Zahlungsarten sind die dort freigeschalteten Verfahren, insbesondere PayPal sowie Zahlung per Banküberweisung und gegebenenfalls weitere über Stripe angebundene Zahlungsmethoden. Die konkreten Zahlungsanbieter und verfügbaren Verfahren werden vor Abgabe der Bestellung genannt. Für die technische Abwicklung gelten ergänzend die einschlägigen Bestimmungen des jeweils gewählten Zahlungsdienstleisters.",
-        "(2) Bei Wahl der Banküberweisung erhält der Kunde die Zahlungsinformationen. OES nimmt vor Eingang der Zahlung und abschließender Verfügbarkeitsprüfung keine Terminreservierung vor. Das Risiko einer zwischenzeitlichen Nichtverfügbarkeit wird vor Abgabe der Bestellung ausdrücklich erläutert. Nach festgestelltem Zahlungseingang wird die Verfügbarkeit erneut geprüft; nur bei positiver Prüfung versendet OES eine verbindliche Buchungsbestätigung. Anderenfalls erhält der Kunde den gezahlten Betrag unverzüglich zurück.",
+        "(2) Bei Wahl der Banküberweisung erhält der Kunde die Zahlungsinformationen. Mit der Bestellung hält OES den gewünschten Termin unverbindlich bis zum Ablauf der Zahlungsfrist frei. Die Zahlungsfrist beträgt fünf Tage ab Bestellung, bei Veranstaltungen, die weniger als 14 Tage nach der Bestellung beginnen, zwei Tage, und endet spätestens am Tag vor Mietbeginn; das genaue Datum steht in der Eingangsbestätigung. Geht die Zahlung nicht innerhalb der Frist ein, kann OES die Vormerkung ohne Kosten für den Kunden aufheben; der Kunde wird darüber per E-Mail informiert. Nach festgestelltem Zahlungseingang wird die Verfügbarkeit erneut geprüft; nur bei positiver Prüfung versendet OES eine verbindliche Buchungsbestätigung. Anderenfalls erhält der Kunde den gezahlten Betrag unverzüglich zurück.",
         "(3) Bei online abgeschlossenen Buchungen ist der Mietpreis auf die im Checkout gewählte Weise zu zahlen. Eine bei Übergabe fällige Kaution kann dort bar, per PayPal oder per Echtzeitüberweisung hinterlegt werden. Die Übergabe erfolgt erst nach festgestelltem Eingang der vereinbarten Kaution."
       ]
     },
