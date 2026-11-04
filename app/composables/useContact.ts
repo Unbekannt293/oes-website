@@ -1,3 +1,5 @@
+import { FIRMA } from '~~/shared/firma'
+
 /**
  * Eine einzige Quelle für Kontaktdaten.
  *
@@ -19,20 +21,15 @@ export function useContact() {
       instagram: 'https://www.instagram.com/ottoseventservice',
       tiktok: 'https://www.tiktok.com/@ottos.event.servi',
     },
-    /**
-     * Ladungsfähige Anschrift fürs Impressum, von Louis wörtlich
-     * durchgegeben. Achtung: weicht von der Straße im Homepage-Mockup
-     * ab ("Wildsparkstraße" dort, "Willöperstraße" hier) - vor dem
-     * Livegang einmal gegenprüfen, welche stimmt.
-     */
+    /** Ladungsfaehige Anschrift fuers Impressum, aus shared/firma.ts (Louis' Unterlagen, 04.11.2026). */
     legal: {
-      name: 'Louis Otto',
-      businessName: 'Event-Service',
-      street: 'Willöperstraße 19',
-      zip: '22047',
-      city: 'Hamburg',
-      country: 'Deutschland',
-      phone: '+49 159 06839267',
+      name: FIRMA.inhaber,
+      businessName: FIRMA.name,
+      street: FIRMA.strasse,
+      zip: FIRMA.plz,
+      city: FIRMA.ort,
+      country: FIRMA.land,
+      phone: FIRMA.telefon,
     },
   }
 }

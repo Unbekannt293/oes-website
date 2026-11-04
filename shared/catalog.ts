@@ -28,9 +28,10 @@ export const products: Product[] = [
   {
     slug: 'fotobox', name: 'Fotobox', category: 'fotobox',
     priceCents: 14900, summary: 'Unsere Fotobox mit Touchscreen, LED-Licht und Sofortdruck.',
-    features: ['Hochwertige Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder in der Online-Galerie'],
+    features: ['Hochwertige Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder in der Online-Galerie', 'Basis-Requisiten inklusive'],
     images: [
       '/images/produkte/fotobox-oes.webp',
+      '/images/produkte/fotobox-studio.webp',
       '/images/produkte/fotobox-links.webp',
       '/images/produkte/fotobox-front.webp',
       '/images/produkte/fotobox-mit-drucker.webp',
@@ -39,7 +40,7 @@ export const products: Product[] = [
       '/images/produkte/set-fotobox-zwei-soundboxen-drucker.webp',
     ],
     // Galerie springt mit der Soundbox-Wahl im Buchungskasten mit.
-    imageFor: { sb0: 0, sb1: 5, sb2: 6 },
+    imageFor: { sb0: 0, sb1: 6, sb2: 7 },
     available: true, stock: 1,
     booking: 'paket',
   },
@@ -161,7 +162,11 @@ export const soundboxRates: SoundboxRates = {
  */
 export const LAYOUT_ADDON = 'eigenes-layout'
 export const addons: Addon[] = [
-  { slug: LAYOUT_ADDON, name: 'Eigenes Foto-Layout / Branding', priceCents: 999, available: true, image: '/images/produkte/layout-beispiele.webp' },
+  // Basis-Requisiten (Huete, Brillen, Schilder) sind bei jeder Fotobox dabei.
+  { slug: 'basis-requisiten', name: 'Basis-Requisiten', priceCents: 0, available: true, included: true,
+    image: '/images/produkte/requisiten.webp', imageLabel: 'Requisiten ansehen' },
+  { slug: LAYOUT_ADDON, name: 'Eigenes Foto-Layout / Branding', priceCents: 999, available: true,
+    image: '/images/produkte/layout-beispiele.webp', imageLabel: 'Layout-Beispiele ansehen' },
   { slug: 'premium-requisiten', name: 'Premium-Requisiten', priceCents: 999, available: false },
   { slug: 'hintergrund', name: 'Hintergrund / Leinwand', priceCents: 2999, available: false },
   { slug: 'gaestebuch', name: 'Gästebuch', priceCents: 1999, available: false },

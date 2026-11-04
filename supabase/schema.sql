@@ -66,13 +66,19 @@ create table if not exists buchungen (
   kaution_cent      int not null default 0 check (kaution_cent >= 0),
   -- Kaution nie online (Kartengebuehren), nur bar oder per Ueberweisung.
   kaution_zahlart   text not null default 'bar' check (kaution_zahlart in ('bar', 'ueberweisung')),
+  -- Fotobox immer Lieferung, Soundbox auch Selbstabholung (Mietbedingungen § 9).
+  uebergabe         text not null default 'lieferung' check (uebergabe in ('lieferung', 'abholung')),
   entfernung_km     numeric(6, 1),
 
   zahlungsart          text not null default 'ueberweisung',
   bezahlt_am           timestamptz,
   kaution_erhalten_am  timestamptz,
   kaution_zurueck_am   timestamptz,
-  notiz                text            -- interne Notiz fuer Louis
+  notiz                text,           -- interne Notiz fuer Louis
+  -- Rechnung (supabase/migrationen/2026-11-04-rechnungen.sql)
+  rechnungsnummer          text unique,
+  rechnung_am              date,
+  bestaetigung_gesendet_am timestamptz
 );
 
 create index if not exists buchungen_von_idx on buchungen (von);
@@ -167,15 +173,17 @@ begin
 
   insert into buchungen as b (vorname, nachname, email, telefon, strasse, plz, ort, adresszusatz,
                               von, bis, summe_cent, fahrtkosten_cent, kaution_cent, kaution_zahlart,
-                              entfernung_km, zahlungsart, notiz)
+                              entfernung_km, zahlungsart, notiz, uebergabe)
   select x.vorname, x.nachname, x.email, x.telefon, x.strasse, x.plz, x.ort, x.adresszusatz,
          x.von, x.bis, x.summe_cent, coalesce(x.fahrtkosten_cent, 0), coalesce(x.kaution_cent, 0),
          coalesce(x.kaution_zahlart, 'bar'),
-         x.entfernung_km, coalesce(x.zahlungsart, 'ueberweisung'), x.notiz
+         x.entfernung_km, coalesce(x.zahlungsart, 'ueberweisung'), x.notiz,
+         coalesce(x.uebergabe, 'lieferung')
     from jsonb_to_record(p_buchung) as x(
            vorname text, nachname text, email text, telefon text, strasse text, plz text, ort text,
            adresszusatz text, von date, bis date, summe_cent int, fahrtkosten_cent int,
-           kaution_cent int, kaution_zahlart text, entfernung_km numeric, zahlungsart text, notiz text)
+           kaution_cent int, kaution_zahlart text, entfernung_km numeric, zahlungsart text, notiz text,
+           uebergabe text)
   returning b.id, b.nummer into v_id, v_nummer;
 
   insert into positionen (buchung_id, art, slug, name, detail, menge, einzelpreis_cent)
@@ -204,6 +212,23 @@ begin
 end;
 $$;
 
+-- ---------- Rechnungsnummern ----------
+-- Fortlaufend, erst wenn die Rechnung entsteht (nach der Zahlung).
+create sequence if not exists rechnungsnummer_seq;
+create or replace function rechnung_vergeben(p_id uuid)
+returns table (nummer text, datum date)
+language plpgsql
+set search_path = public
+as $$
+begin
+  update buchungen b
+     set rechnungsnummer = to_char(now() at time zone 'Europe/Berlin', 'YYYY') || '-' || lpad(nextval('rechnungsnummer_seq')::text, 4, '0'),
+         rechnung_am = (now() at time zone 'Europe/Berlin')::date
+   where b.id = p_id and b.rechnungsnummer is null;
+  return query select b.rechnungsnummer, b.rechnung_am from buchungen b where b.id = p_id;
+end;
+$$;
+
 -- ---------- Bewertungen ----------
 -- Neue Bewertungen sind unsichtbar, bis Louis sie freischaltet (Link in
 -- der Benachrichtigungsmail oder freigegeben = true im Table Editor).
@@ -226,6 +251,21 @@ alter table bewertungen drop constraint if exists bewertungen_bezug_check;
 alter table bewertungen add constraint bewertungen_bezug_check
   check (bezug in ('fotobox', 'soundbox', 'kombi-fotobox-soundbox', 'kombi-fotobox-2-soundboxen'));
 
+-- ---------- Preise ----------
+-- Nur Abweichungen vom Standard in shared/catalog.ts. Ohne Zeitraum
+-- dauerhaft, mit Zeitraum Aktionspreis fuer Buchungen in diesem Zeitraum.
+create table if not exists preise (
+  id           bigint generated always as identity primary key,
+  schluessel   text not null,
+  wert         int  not null check (wert >= 0),   -- Cent, bei km-Angaben km
+  gueltig_von  date,
+  gueltig_bis  date,
+  erstellt_am  timestamptz not null default now(),
+  check ((gueltig_von is null) = (gueltig_bis is null)),
+  check (gueltig_bis is null or gueltig_bis >= gueltig_von)
+);
+create unique index if not exists preise_dauerhaft on preise (schluessel) where gueltig_von is null;
+
 -- ============================================================
 -- Zugriff: nur der Server (Secret Key) darf lesen und schreiben.
 -- RLS an und keine Policies heisst: der oeffentliche Schluessel
@@ -236,8 +276,11 @@ alter table buchungen  enable row level security;
 alter table positionen enable row level security;
 alter table belegungen enable row level security;
 alter table bewertungen enable row level security;
+alter table preise      enable row level security;
 
 revoke execute on function freie_geraete(text, date, date)          from public, anon, authenticated;
 revoke execute on function buchung_anlegen(jsonb, jsonb, jsonb)     from public, anon, authenticated;
 grant  execute on function freie_geraete(text, date, date)          to service_role;
 grant  execute on function buchung_anlegen(jsonb, jsonb, jsonb)     to service_role;
+revoke execute on function rechnung_vergeben(uuid) from public, anon, authenticated;
+grant  execute on function rechnung_vergeben(uuid) to service_role;

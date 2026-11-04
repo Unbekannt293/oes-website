@@ -72,6 +72,10 @@ export interface Addon {
   /** false = noch nicht buchbar ("noch nicht verfügbar" laut Louis). */
   available: boolean
   image?: string
+  /** Text des Knopfs, der das Bild zeigt, z. B. "Layout-Beispiele ansehen". */
+  imageLabel?: string
+  /** Immer kostenlos dabei: angehakt, nicht abwaehlbar, kein Preis. */
+  included?: boolean
 }
 
 export interface SoundboxRates {

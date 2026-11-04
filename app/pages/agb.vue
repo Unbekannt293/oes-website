@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { AGB } from '~~/shared/rechtstexte/agb'
+
 useSeoMeta({ title: 'AGB' })
 </script>
 
@@ -6,13 +8,11 @@ useSeoMeta({ title: 'AGB' })
   <div>
     <PageHero
       crumb="AGB"
-      title="Allgemeine Geschäftsbedingungen"
+      title="Allgemeine Mietbedingungen"
       sub="Die Bedingungen für Miete, Lieferung und Rückgabe unserer Eventausstattung."
     />
     <div class="section shell">
-      <p class="prose muted">
-        Dieser Text folgt in Kürze.
-      </p>
+      <PdfLeser name="agb" :text="AGB" />
     </div>
   </div>
 </template>

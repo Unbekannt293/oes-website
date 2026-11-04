@@ -6,12 +6,13 @@ import { bewertungSchema } from '~~/shared/schemas'
 // Link zum Freischalten. Erst danach erscheint sie auf der Seite.
 // POST /api/bewertungen { name, sterne, text, bezug, website, einwilligung }
 export default defineEventHandler(async (event) => {
+  bremse(event, 'bewertung', 3, STUNDE)
   const parsed = bewertungSchema.safeParse(await readBody(event))
   if (!parsed.success) {
     throw createError({ statusCode: 422, statusMessage: 'Validierung fehlgeschlagen', data: { fields: z.flattenError(parsed.error).fieldErrors } })
   }
-  // Honeypot: so tun, als waere alles gut.
-  if (parsed.data.website) return { ok: true }
+  // Honeypot und Zeitfalle: so tun, als waere alles gut.
+  if (parsed.data.website || zuSchnell(parsed.data.ausfuellzeit)) return { ok: true }
 
   const { name, sterne, text, bezug } = parsed.data
   const { data, error } = await useSupabase()
@@ -34,6 +35,7 @@ export default defineEventHandler(async (event) => {
       subject: `Neue Bewertung (${sterne} von 5 Sternen) von ${name}`,
       text: `${name} hat ${sterne} von 5 Sternen vergeben (${worauf}):\n\n${text}\n\n`
         + `Freischalten oder löschen:\n${link}\n\n`
+        + `Alle Bewertungen in der Verwaltung:\n${getRequestURL(event).origin}/admin/bewertungen\n\n`
         + 'Bis zur Freischaltung ist die Bewertung auf der Seite nicht zu sehen.\n',
     })
   }

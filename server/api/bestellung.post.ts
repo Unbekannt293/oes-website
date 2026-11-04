@@ -11,6 +11,7 @@ import { quoteDelivery } from '~~/shared/pricing'
 //    Online: Bezahlseite bei Stripe, Mails erst nach der Zahlung
 //    (server/utils/stripe.ts).
 export default defineEventHandler(async (event) => {
+  bremse(event, 'bestellung', 10, STUNDE)
   const parsed = bestellungSchema.safeParse(await readBody(event))
   if (!parsed.success) {
     throw createError({ statusCode: 422, statusMessage: 'Validierung fehlgeschlagen', data: { fields: z.flattenError(parsed.error).fieldErrors } })
@@ -21,9 +22,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const korb = korbBerechnen(b.zeilen)
+  // Selbstabholung nur, wenn keine Fotobox dabei ist (die liefert OES immer).
+  const abholung = b.uebergabe === 'abholung'
+  if (abholung && korb.belegungen.some(x => x.geraet === 'fotobox')) {
+    throw createError({ statusCode: 422, statusMessage: 'Die Fotobox liefern wir immer, Selbstabholung gibt es nur für Soundboxen' })
+  }
   // Entfernungsdienst weg: trotzdem bestellen lassen, Fahrtkosten klaert
-  // Louis danach (steht in der Notiz und in den Mails).
-  const strecke = await streckeOderOffen(event, b.adresse)
+  // Louis danach (steht in der Notiz und in den Mails). Bei Abholung keine Fahrt.
+  const strecke = abholung ? null : await streckeOderOffen(event, b.adresse)
   const lieferung = strecke
     ? quoteDelivery(strecke.distanceKm, korb.lines)
     : { distanceKm: 0, freeKm: 0, billableKm: 0, feeCents: 0 }
@@ -38,7 +44,8 @@ export default defineEventHandler(async (event) => {
       kaution_cent: korb.kautionCent,
       kaution_zahlart: b.kaution,
       entfernung_km: strecke?.distanceKm ?? null,
-      notiz: strecke ? null : 'Fahrtkosten offen: Entfernungsdienst war nicht erreichbar, bitte nachberechnen',
+      notiz: strecke || abholung ? null : 'Fahrtkosten offen: Entfernungsdienst war nicht erreichbar, bitte nachberechnen',
+      uebergabe: b.uebergabe,
       zahlungsart: b.zahlungsart,
     },
     p_positionen: korb.positionen,

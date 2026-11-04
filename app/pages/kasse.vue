@@ -3,7 +3,7 @@ import type { FetchError } from 'ofetch'
 import type { CartLine, DeliveryQuote } from '~~/shared/types'
 import type { Korbzeile } from '~~/shared/schemas'
 import { kontaktSchema, lieferadresseSchema } from '~~/shared/schemas'
-import { formatPrice, PRICE_PER_KM_CENTS } from '~~/shared/pricing'
+import { formatPrice, tarif } from '~~/shared/pricing'
 
 // Kasse nach Louis' Brief: Adresse (daraus die Fahrtkosten), Kontakt,
 // Zahlungsart, dann Mietvertrag bestaetigen und "Zahlungspflichtig bestellen".
@@ -19,8 +19,11 @@ const contact = useContact()
 const bestellt = ref<string | null>(null)
 
 // Leerer Korb (z. B. direkt aufgerufen): zurueck zum Warenkorb.
+// Leerer Warenkorb oder ein Termin, der schon begonnen hat: zurueck in den
+// Warenkorb, dort steht, was zu tun ist.
 watch([loaded, () => lines.value.length], ([l, n]) => {
-  if (l && !n && !bestellt.value) navigateTo('/warenkorb')
+  const heute = new Date().toLocaleDateString('sv-SE')
+  if (l && !bestellt.value && (!n || lines.value.some(x => x.from < heute))) navigateTo('/warenkorb')
 }, { immediate: true })
 
 /** Was an den Server geht: nur die Auswahl, keine Preise. */
@@ -40,11 +43,24 @@ const lieferung = ref<Lieferung | null>(null)
 const lieferungStatus = ref<'idle' | 'laedt' | 'fehler'>('idle')
 const lieferungMeldung = ref('')
 
+// Soundbox allein darf man selbst abholen, die Fotobox liefert OES immer
+// (Mietbedingungen § 9). Bei Abholung ist die Adresse die Rechnungsadresse.
+const nurSoundbox = computed(() => lines.value.length > 0 && !lines.value.some(l => l.kind === 'package'))
+const uebergabe = ref<'lieferung' | 'abholung'>('lieferung')
+watch(nurSoundbox, (n) => { if (!n) uebergabe.value = 'lieferung' })
+watch(uebergabe, () => { if (lieferung.value) { lieferung.value = null; steps.reopen(1) } })
+const abholung = computed(() => uebergabe.value === 'abholung')
+
 async function adresseWeiter() {
   for (const k of Object.keys(adresseFehler)) delete adresseFehler[k]
   const r = lieferadresseSchema.safeParse(adresse)
   if (!r.success) {
     for (const i of r.error.issues) adresseFehler[String(i.path[0])] ??= i.message
+    return
+  }
+  if (abholung.value) {
+    lieferung.value = { offen: false, distanceKm: 0, label: 'Selbstabholung', quote: { distanceKm: 0, freeKm: 0, billableKm: 0, feeCents: 0 } }
+    steps.complete(1)
     return
   }
   lieferungStatus.value = 'laedt'
@@ -56,9 +72,14 @@ async function adresseWeiter() {
   catch (err) {
     const e = err as FetchError
     lieferungStatus.value = 'fehler'
-    lieferungMeldung.value = e.statusCode === 422
-      ? 'Diese Adresse haben wir nicht gefunden. Bitte Straße, Hausnummer und PLZ prüfen.'
-      : 'Die Entfernung konnte gerade nicht berechnet werden. Bitte später erneut versuchen.'
+    // 422 kommt auch, wenn der Warenkorb nicht mehr gilt (z. B. alter Termin):
+    // dann nicht die Adresse beschuldigen.
+    const warenkorb = (e.statusMessage ?? (e.data as { statusMessage?: string } | undefined)?.statusMessage ?? '').startsWith('Warenkorb')
+    lieferungMeldung.value = warenkorb
+      ? 'Ein Termin in Ihrem Warenkorb ist nicht mehr buchbar. Bitte im Warenkorb prüfen und neu auswählen.'
+      : e.statusCode === 422
+        ? 'Diese Adresse haben wir nicht gefunden. Bitte Straße, Hausnummer und PLZ prüfen.'
+        : 'Die Entfernung konnte gerade nicht berechnet werden. Bitte später erneut versuchen.'
   }
 }
 // Adresse geaendert: Fahrtkosten gelten nicht mehr.
@@ -120,7 +141,7 @@ async function bestellen() {
   try {
     const r = await $fetch<{ nummer: string, url?: string }>('/api/bestellung', {
       method: 'POST',
-      body: { adresse, kontakt, zahlungsart: zahlungsart.value, kaution: kaution.value, zeilen: zeilen.value, mietvertrag: true },
+      body: { adresse, kontakt, uebergabe: uebergabe.value, zahlungsart: zahlungsart.value, kaution: kaution.value, zeilen: zeilen.value, mietvertrag: true },
     })
     if (r.url) {
       // Online: weiter zur Bezahlseite von Stripe. Korb bleibt bis zur Zahlung,
@@ -144,7 +165,9 @@ async function bestellen() {
 }
 
 const summaries = computed(() => ({
-  1: lieferung.value ? `${adresse.strasse}, ${adresse.plz} ${adresse.ort}${lieferung.value.offen ? ' · Fahrtkosten nach Absprache' : ''}` : '',
+  1: !lieferung.value ? '' : abholung.value
+    ? `Selbstabholung in Hamburg-Tonndorf · ${adresse.strasse}, ${adresse.plz} ${adresse.ort}`
+    : `${adresse.strasse}, ${adresse.plz} ${adresse.ort}${lieferung.value.offen ? ' · Fahrtkosten nach Absprache' : ''}`,
   2: `${kontakt.vorname} ${kontakt.nachname}`,
   3: zahlungsLabel.value,
 }))
@@ -169,8 +192,25 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 
     <div v-else-if="lines.length" class="ks">
       <div class="ks__main">
-        <BookingStep :n="1" title="Lieferadresse" :state="steps.state(1)" :summary="summaries[1]" @open="steps.open(1)">
+        <BookingStep :n="1" :title="abholung ? 'Abholung und Rechnungsadresse' : 'Lieferadresse'" :state="steps.state(1)" :summary="summaries[1]" @open="steps.open(1)">
           <form class="ks__form" novalidate @submit.prevent="adresseWeiter">
+            <div v-if="nurSoundbox" class="opts" role="radiogroup" aria-label="Übergabe">
+              <label class="opt" :class="{ 'is-sel': uebergabe === 'lieferung' }">
+                <input v-model="uebergabe" type="radio" name="uebergabe" value="lieferung">
+                <span class="opt__main">
+                  <span class="opt__name">Lieferung</span>
+                  <span class="opt__sub">Wir bringen die Soundbox und holen sie wieder ab. Fahrtkosten nach Entfernung.</span>
+                </span>
+              </label>
+              <label class="opt" :class="{ 'is-sel': uebergabe === 'abholung' }">
+                <input v-model="uebergabe" type="radio" name="uebergabe" value="abholung">
+                <span class="opt__main">
+                  <span class="opt__name">Selbst abholen</span>
+                  <span class="opt__sub">Kostenlos in Hamburg-Tonndorf, Abhol- und Rückgabezeit nach Absprache. Die genaue Adresse steht in der Bestätigung.</span>
+                </span>
+              </label>
+            </div>
+            <p v-if="abholung" class="ks__hint muted">Ihre Adresse brauchen wir für die Rechnung.</p>
             <UiField id="strasse" label="Straße und Hausnummer" :error="adresseFehler.strasse">
               <input id="strasse" v-model="adresse.strasse" class="control ks__big" autocomplete="street-address" v-bind="a11y(adresseFehler, 'strasse')">
             </UiField>
@@ -182,7 +222,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
                 <input id="ort" v-model="adresse.ort" class="control ks__big" autocomplete="address-level2" v-bind="a11y(adresseFehler, 'ort')">
               </UiField>
             </div>
-            <UiField id="zusatz" label="Zusätzliche Adressinformation" optional>
+            <UiField v-if="!abholung" id="zusatz" label="Zusätzliche Adressinformation" optional>
               <input id="zusatz" v-model="adresse.zusatz" class="control" placeholder="z. B. Hinterhof, Etage, Ansprechpartner vor Ort">
             </UiField>
             <p v-if="lieferungStatus === 'fehler'" class="ks__err" role="alert">
@@ -190,6 +230,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
             </p>
             <UiButton variant="solid" size="sm" class="ks__next" :disabled="lieferungStatus === 'laedt'">
               <template v-if="lieferungStatus === 'laedt'">Fahrtkosten werden berechnet …</template>
+              <template v-else-if="abholung">Weiter <UiIcon name="arrow" :size="14" /></template>
               <template v-else>Fahrtkosten berechnen <UiIcon name="arrow" :size="14" /></template>
             </UiButton>
           </form>
@@ -231,7 +272,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
               <input v-model="zahlungsart" type="radio" name="zahlung" value="ueberweisung">
               <span class="opt__main">
                 <span class="opt__name">Überweisung</span>
-                <span class="opt__sub">Die Bankverbindung steht auf der Rechnung.</span>
+                <span class="opt__sub">Die Bankverbindung kommt per E-Mail. Verbindlich wird die Buchung mit unserer Bestätigung nach Zahlungseingang, bis dahin halten wir den Termin frei.</span>
               </span>
             </label>
           </div>
@@ -278,8 +319,13 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
         <dl>
           <div><dt>Zwischensumme</dt><dd>{{ formatPrice(subtotal) }}</dd></div>
           <div>
-            <dt>Fahrtkosten<template v-if="lieferung && !lieferung.offen"> ({{ lieferung.distanceKm.toLocaleString('de-DE') }} km)</template></dt>
-            <dd>{{ !lieferung ? 'nach Adresse' : lieferung.offen ? 'nach Absprache' : formatPrice(fahrtkosten) }}</dd>
+            <template v-if="abholung">
+              <dt>Selbstabholung</dt><dd>{{ formatPrice(0) }}</dd>
+            </template>
+            <template v-else>
+              <dt>Fahrtkosten<template v-if="lieferung && !lieferung.offen"> ({{ lieferung.distanceKm.toLocaleString('de-DE') }} km)</template></dt>
+              <dd>{{ !lieferung ? 'nach Adresse' : lieferung.offen ? 'nach Absprache' : formatPrice(fahrtkosten) }}</dd>
+            </template>
           </div>
           <div class="ks__total"><dt>Gesamt<template v-if="fahrtkostenOffen"> zzgl. Fahrtkosten</template></dt><dd>{{ formatPrice(gesamt) }}</dd></div>
           <div class="muted">
@@ -293,7 +339,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
             trotzdem bestellen, wir teilen Ihnen die Fahrtkosten danach mit.</span>
         </p>
         <p class="ks__note muted">
-          Lieferung im Freiradius kostenlos, danach {{ formatPrice(PRICE_PER_KM_CENTS) }} pro km.
+          <template v-if="!abholung">Lieferung im Freiradius kostenlos, danach {{ formatPrice(tarif.proKmCent) }} pro km.</template>
           Die Kaution erhalten Sie nach der Rückgabe zurück, wenn alles vollständig und unbeschädigt ist.
         </p>
       </aside>
@@ -306,8 +352,9 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
         <h2 id="danke-h" class="display ks__done-h">Danke für Ihre Bestellung!</h2>
         <p class="muted">Bestellnummer <strong>{{ bestellt }}</strong></p>
         <p>
-          Sie erhalten in Kürze eine Bestellbestätigung, die Rechnung und noch
-          einmal den Mietvertrag per E-Mail.
+          Sie erhalten gleich eine E-Mail mit den Zahlungsinformationen. Sobald Ihre
+          Überweisung da ist, bekommen Sie die Buchungsbestätigung mit Rechnung und
+          unseren Mietbedingungen per E-Mail.
         </p>
         <UiButton to="/" variant="solid">Zur Startseite</UiButton>
       </div>
@@ -341,6 +388,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 /* Louis: Adressfeld deutlicher, damit man sieht, dass es Pflicht ist. */
 .ks__big { border-width: 1.5px; }
 .ks__next { justify-self: end; }
+.ks__hint { font-size: var(--t-small); }
 .ks__err { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; color: var(--c-danger); }
 .ks__soon { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-text-muted); }
 .opt.is-off { cursor: default; opacity: 0.6; }

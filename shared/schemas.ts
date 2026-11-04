@@ -12,8 +12,10 @@ export const anfrageSchema = z.object({
   telefon:  z.string().trim().min(6, 'Bitte Telefonnummer angeben').max(40),
   eventDatum: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Bitte Datum wählen'),
   nachricht: z.string().trim().min(10, 'Bitte kurz beschreiben, worum es geht').max(4000),
-  /** Muss leer bleiben. Bots fuellen es aus. */
-  website: z.string().max(0).optional(),
+  /** Honeypot. Ausgefuellt = Bot, der Server antwortet dann "ok" und schickt nichts. */
+  website: z.string().max(200).optional(),
+  /** Zeitfalle: ms seit dem Oeffnen des Formulars (server/utils/bremse.ts). */
+  ausfuellzeit: z.number().int().nonnegative().optional(),
   datenschutz: z.literal(true, {
     message: 'Bitte der Datenschutzerklärung zustimmen',
   }),
@@ -60,6 +62,8 @@ export const bestellungSchema = z.object({
   adresse: lieferadresseSchema,
   kontakt: kontaktSchema,
   zahlungsart: z.enum(['ueberweisung', 'online']),
+  /** Fotobox immer Lieferung, Soundbox allein auch Selbstabholung (Mietbedingungen § 9). */
+  uebergabe: z.enum(['lieferung', 'abholung']).default('lieferung'),
   /** Kaution nie online, nur bar bei Uebergabe oder per Ueberweisung vorab. */
   kaution: z.enum(['bar', 'ueberweisung']).default('bar'),
   zeilen: z.array(korbzeileSchema).min(1).max(30),
@@ -77,6 +81,8 @@ export const bewertungSchema = z.object({
   bezug: z.enum(BEZUG_KEYS).nullable(),
   /** Honeypot. Ausgefuellt = Bot, der Server antwortet dann "ok" und speichert nichts. */
   website: z.string().max(200).optional(),
+  /** Zeitfalle: ms seit dem Oeffnen des Formulars (server/utils/bremse.ts). */
+  ausfuellzeit: z.number().int().nonnegative().optional(),
   einwilligung: z.literal(true, { message: 'Bitte der Veröffentlichung zustimmen' }),
 })
 

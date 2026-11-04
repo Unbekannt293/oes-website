@@ -173,7 +173,11 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
   /* Der Textblock unten ist mit Slogan und zwei grossen Buttons ~ halb so hoch
      wie der Schirm. Die Box (LED-Oberkante bis Kastenunterkante = 66 % der
      Bildhoehe) muss darueber passen, sonst liegt weisse Schrift auf der weissen Front. */
-  .hero { --fb-y: 0.3; --fb-h: 0.64; }
+  /* Kasten ganz ueber dem Titel (Lukas, 03.11.2026). Der Textblock steht
+     immer ~443 px ueber dem unteren Rand, deshalb bei kurzen Bildschirmen
+     (iPhone SE) kleiner. Gemessen: LED-Oberkante >= 12 px, Kasten endet
+     >= 14 px ueber dem Titel. */
+  .hero { --fb-y: 0.238; --fb-h: 0.54; }
   .hero__veil {
     background: linear-gradient(0deg,
       rgb(11 10 9 / 0.95) 0%, rgb(11 10 9 / 0.75) 32%, transparent 55%);
@@ -181,6 +185,9 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
   .hero__inner { padding-block: var(--s-6) calc(var(--s-6) + 56px); }
   .hero__cta { width: 100%; }
   .hero__btn { flex: 1 1 100%; }
+}
+@media (max-width: 720px) and (max-height: 800px) {
+  .hero { --fb-y: 0.181; --fb-h: 0.405; }
 }
 
 /* ---- Produktvorschau: ein ganzer Bildschirm, auf den der Hero einrastet ---- */

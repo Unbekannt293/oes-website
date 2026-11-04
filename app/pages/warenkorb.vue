@@ -54,6 +54,14 @@ function dates(l: CartLine) {
     : `${formatEventDate(l.from)} bis ${formatEventDate(l.to)} · ${days} Tage`
 }
 const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `/produkte/${l.slug}`)
+
+// Der Warenkorb liegt im Browser und kann alt sein. Termine, die schon
+// begonnen haben, lehnt der Server ab: hier vorher markieren und die Kasse
+// sperren. "heute" erst im Browser setzen (Zeitzone des Servers kann abweichen).
+const heute = ref('')
+onMounted(() => { heute.value = new Date().toLocaleDateString('sv-SE') })
+const vorbei = (b: Booking) => !!heute.value && b.main.from < heute.value
+const abgelaufen = computed(() => bookings.value.some(vorbei))
 </script>
 
 <template>
@@ -84,7 +92,7 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
         </div>
 
         <ul class="wk__list">
-          <li v-for="b in bookings" :key="b.main.group" class="wk__item">
+          <li v-for="b in bookings" :key="b.main.group" class="wk__item" :class="{ 'wk__item--vorbei': vorbei(b) }">
             <NuxtLink :to="linkFor(b.main)" class="wk__media" tabindex="-1" aria-hidden="true">
               <NuxtImg :src="photo(b.main)" alt="" width="320" height="320" class="wk__img" />
             </NuxtLink>
@@ -98,6 +106,9 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
               <p class="wk__spec">{{ spec(b.main) }}</p>
               <p class="wk__date">
                 <UiIcon name="calendar" :size="15" /> {{ dates(b.main) }}
+              </p>
+              <p v-if="vorbei(b)" class="wk__vorbei" role="alert">
+                <UiIcon name="alert" :size="14" /> Dieser Termin ist schon vorbei. Bitte entfernen und neu auswählen.
               </p>
 
               <ul v-if="b.addons.length" class="wk__addons">
@@ -153,7 +164,9 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
           Die Kaution erhalten Sie nach der Rückgabe zurück, wenn alles vollständig
           und unbeschädigt ist.
         </p>
-        <UiButton to="/kasse" variant="solid" size="lg" class="wk__btn">Zur Kasse</UiButton>
+        <UiButton v-if="abgelaufen" variant="solid" size="lg" class="wk__btn" disabled>Zur Kasse</UiButton>
+        <UiButton v-else to="/kasse" variant="solid" size="lg" class="wk__btn">Zur Kasse</UiButton>
+        <p v-if="abgelaufen" class="wk__vorbei">Bitte zuerst den abgelaufenen Termin entfernen.</p>
       </aside>
     </div>
   </div>
@@ -288,6 +301,9 @@ const linkFor = (l: CartLine) => (l.kind === 'package' ? '/produkte/fotobox' : `
 
 .wk__note a { color: var(--c-text); text-decoration: underline; text-underline-offset: 2px; }
 .wk__btn { width: 100%; }
+.wk__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.wk__vorbei { display: flex; align-items: center; gap: 0.4rem; font-size: var(--t-small); color: var(--c-danger); }
+.wk__item--vorbei .wk__img { filter: grayscale(1); opacity: 0.6; }
 
 .wk__empty {
   display: grid; justify-items: center; gap: var(--s-3); text-align: center;

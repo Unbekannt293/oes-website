@@ -29,6 +29,7 @@ const gesamt = computed(() => zusammenfassung(alle.value))
   transition: border-color var(--d-fast) var(--e-out);
 }
 .rsum:hover { border-color: var(--c-gold); }
-.rsum__txt { font-size: var(--t-small); }
+/* gap statt Leerzeichen: Vue entfernt den Zeilenumbruch zwischen <strong> und <span>. */
+.rsum__txt { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; font-size: var(--t-small); }
 .rsum__arrow { margin-left: auto; color: var(--c-gold); }
 </style>

@@ -113,9 +113,12 @@ const withSoundbox = kombis.filter(k => k.soundboxes > 0)
 .grid {
   display: grid; gap: var(--s-5);
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  /* Alle Zeilen so hoch wie die hoechste: Coming-soon-Karten haben nur
-     einen Namen und waren sonst in ihrer eigenen Zeile niedriger. */
-  grid-auto-rows: 1fr;
+}
+/* Alle Zeilen so hoch wie die hoechste: Coming-soon-Karten haben nur einen
+   Namen und waren sonst in ihrer eigenen Zeile niedriger. Erst ab zwei
+   Spalten, sonst waeren sie am Handy so hoch wie die Fotobox-Karte. */
+@media (min-width: 560px) {
+  .grid { grid-auto-rows: 1fr; }
 }
 .empty { text-align: center; padding-block: var(--s-8); }
 

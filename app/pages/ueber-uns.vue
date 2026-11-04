@@ -2,7 +2,7 @@
 useSeoMeta({
   title: 'Über uns',
   description:
-    'Zwei Brüder aus Hamburg: Otto\'s Event Service vermietet hochwertige '
+    'Louis Otto aus Hamburg: Otto\'s Event Service vermietet hochwertige '
     + 'Eventausstattung unkompliziert, flexibel und fair.',
 })
 
@@ -15,7 +15,7 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
     <PageHero
       crumb="Über uns"
       title="Ihr Partner für erfolgreiche Events."
-      sub="Zwei Brüder aus Hamburg, die Ihre Feier mit Fotobox, Sound und persönlicher Betreuung zum Erlebnis machen."
+      sub="Eventausstattung aus Hamburg, mit persönlicher Betreuung von der Anfrage bis zum Abbau."
       layout="stack"
     />
 
@@ -29,28 +29,28 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
           </div>
           <figcaption>
             <span class="display ab__louis-name">Louis Otto</span>
-            <span class="muted">Mitgründer und Ihr Ansprechpartner</span>
+            <span class="muted">Inhaber und Ihr Ansprechpartner</span>
           </figcaption>
         </figure>
 
         <div class="ab__col">
-          <h2 class="display h-col">Wer wir sind</h2>
+          <h2 class="display h-col">Wer ich bin</h2>
           <p class="prose">
-            Wir sind zwei Brüder aus Hamburg und stehen gemeinsam hinter OES,
-            Otto's Event Service. Mit Zuverlässigkeit, Qualität und Leidenschaft
-            sorgen wir dafür, dass Ihre Veranstaltung zu einem besonderen
-            Erlebnis wird.
+            Hinter OES – Otto’s Event Service – stehe ich als engagierter
+            Unternehmer aus Hamburg. Mit Zuverlässigkeit, Qualität und echter
+            Leidenschaft sorge ich persönlich dafür, dass Ihre Veranstaltung zu
+            einem besonderen Erlebnis wird.
           </p>
         </div>
 
         <div class="ab__col">
-          <h2 class="display h-col">Unsere Mission</h2>
+          <h2 class="display h-col">Mein Ziel</h2>
           <p class="prose">
-            Unsere Mission ist es, Ihnen hochwertige und zuverlässige
-            Eventausstattung unkompliziert zur Verfügung zu stellen. Von
-            Fotoboxen über Zelte bis hin zu Licht- und Tontechnik erhalten Sie
-            bei uns alles aus einer Hand: flexibel, fair und passend zu Ihrer
-            Veranstaltung.
+            Mein Ziel ist es, Ihnen hochwertige und zuverlässige Eventausstattung
+            unkompliziert zur Verfügung zu stellen. Von Fotoboxen über Zelte bis
+            hin zu Licht- und Tontechnik erhalten Sie bei OES alles aus einer
+            Hand – flexibel, fair und individuell auf Ihre Veranstaltung
+            abgestimmt.
           </p>
         </div>
       </div>

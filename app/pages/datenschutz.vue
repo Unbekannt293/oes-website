@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { DATENSCHUTZ } from '~~/shared/rechtstexte/datenschutz'
+
 useSeoMeta({ title: 'Datenschutz' })
 </script>
 
@@ -10,9 +12,7 @@ useSeoMeta({ title: 'Datenschutz' })
       sub="Wie wir mit Ihren Daten umgehen, wenn Sie unsere Seite nutzen, anfragen oder buchen."
     />
     <div class="section shell">
-      <p class="prose muted">
-        Dieser Text folgt in Kürze.
-      </p>
+      <PdfLeser name="datenschutz" :text="DATENSCHUTZ" />
     </div>
   </div>
 </template>

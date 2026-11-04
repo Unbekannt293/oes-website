@@ -63,6 +63,10 @@ export default defineNuxtConfig({
     // nur in Netlify. Das Webhook-Secret kommt aus dem Stripe-Dashboard.
     stripeSecretKey: '',
     stripeWebhookSecret: '',
+    // Verwaltung fuer Louis (/admin): Passwort und Schluessel fuer das
+    // verschluesselte Sitzungs-Cookie (mindestens 32 Zeichen).
+    adminPassword: '',
+    adminSessionSecret: '',
     public: {
       siteUrl: 'https://ottos-eventservice.de',
       // Online-Zahlung (Stripe) an der Kasse. Bis ein Konto eingerichtet ist,
@@ -71,15 +75,9 @@ export default defineNuxtConfig({
     },
   },
 
-  // VORLAEUFIG: Solange nur die Linkseite fertig ist, leitet die
-  // Startseite in Produktion dorthin um. Bewusst 302 und nicht 301 - eine
-  // permanente Umleitung wuerde sich in den Browsern der Besucher festsetzen.
-  // Nur unter $production, damit die Startseite lokal entwickelbar bleibt.
-  // Diesen Block loeschen, sobald die Website live gehen soll.
-  $production: {
-    routeRules: {
-      '/': { redirect: { to: '/links', statusCode: 302 } },
-    },
+  // Verwaltung nie in Suchmaschinen.
+  routeRules: {
+    '/admin/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
   },
 
   nitro: {

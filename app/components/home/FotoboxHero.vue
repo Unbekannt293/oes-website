@@ -9,12 +9,15 @@ defineProps<{ alt: string }>()
 
 const IMAGE = '/images/hero/fotobox.webp'
 const MAPS = '/images/hero/fotobox-maps.png'
-/** Werte aus der Bildaufbereitung, relativ im Bild, y von oben. */
-const FLASH_AT: [number, number] = [0.5, 0.0772]      // LED-Licht auf dem Kasten
-const BOX_CENTER: [number, number] = [0.5009, 0.4394]  // Kastenmitte ohne Licht und Stativ
-const BOX_HEIGHT = 0.5159
+/**
+ * Werte aus der Bildaufbereitung (scripts/hero-fotobox.py gibt sie aus),
+ * relativ im Bild, y von oben. Seit 03.11.2026 Louis' Studiofoto von vorn.
+ */
+const FLASH_AT: [number, number] = [0.4991, 0.0663]    // LED-Licht auf dem Kasten
+const BOX_CENTER: [number, number] = [0.4991, 0.4322]  // Kastenmitte ohne Licht und Stativ
+const BOX_HEIGHT = 0.5156
 /** Nur der Kasten bekommt Seitenwaende, nicht Licht, Kabel oder Stoff: x0, y0, x1, y1. */
-const BOX_RECT: [number, number, number, number] = [0.0966, 0.1815, 0.9052, 0.6974]
+const BOX_RECT: [number, number, number, number] = [0.0588, 0.1744, 0.9393, 0.69]
 /**
  * Szene, die der Pinsel hinter der Box freilegt. Leer = dunkle Buehne bleibt.
  * Konzertfoto von Pexels (Pexels-Lizenz, frei nutzbar), vom Auftraggeber

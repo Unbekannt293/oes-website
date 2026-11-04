@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { anfrageSchema } from '~~/shared/schemas'
 
 export default defineEventHandler(async (event) => {
+  bremse(event, 'anfrage', 5, STUNDE)
   const body = await readBody(event)
   const parsed = anfrageSchema.safeParse(body)
 
@@ -13,9 +14,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Honeypot: Bots fuellen unsichtbare Felder aus. Wir tun so, als
-  // hätte es geklappt, damit sie es nicht erneut versuchen.
-  if (parsed.data.website) {
+  // Honeypot und Zeitfalle: Bots fuellen unsichtbare Felder aus oder sind
+  // schneller als jeder Mensch. Wir tun so, als haette es geklappt, damit
+  // sie es nicht erneut versuchen.
+  if (parsed.data.website || zuSchnell(parsed.data.ausfuellzeit)) {
     return { ok: true }
   }
 

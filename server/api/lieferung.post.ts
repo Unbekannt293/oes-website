@@ -7,6 +7,7 @@ import { quoteDelivery } from '~~/shared/pricing'
 // nicht aus dem Browser.
 // POST /api/lieferung { strasse, plz, ort, zeilen }
 export default defineEventHandler(async (event) => {
+  bremse(event, 'lieferung', 40, STUNDE)
   const parsed = lieferungAnfrageSchema.safeParse(await readBody(event))
   if (!parsed.success) {
     throw createError({ statusCode: 422, statusMessage: 'Validierung fehlgeschlagen', data: { fields: z.flattenError(parsed.error).fieldErrors } })

@@ -25,7 +25,12 @@ const thanks = ref<HTMLElement | null>(null)
 // Erst im Browser setzen: der Server rendert evtl. in einer anderen
 // Zeitzone, das gaebe beim Hydrieren einen Unterschied.
 const minDate = ref<string>()
-onMounted(() => { minDate.value = new Date().toLocaleDateString('sv-SE') })
+// Zeitfalle gegen Bots: wie lange das Formular offen war (server/utils/bremse.ts).
+let geoeffnet = 0
+onMounted(() => {
+  minDate.value = new Date().toLocaleDateString('sv-SE')
+  geoeffnet = Date.now()
+})
 
 function clearErrors() {
   for (const k of Object.keys(errors) as Field[]) delete errors[k]
@@ -66,7 +71,7 @@ async function submit() {
 
   status.value = 'sending'
   try {
-    await $fetch('/api/anfrage', { method: 'POST', body: data })
+    await $fetch('/api/anfrage', { method: 'POST', body: { ...data, ausfuellzeit: Date.now() - geoeffnet } })
     sentName.value = data.vorname
     status.value = 'sent'
     await nextTick()

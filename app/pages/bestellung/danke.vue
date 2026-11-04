@@ -38,12 +38,12 @@ watch(data, (d) => {
           </h2>
           <p v-if="data.nummer" class="muted">Bestellnummer <strong>{{ data.nummer }}</strong></p>
           <p v-if="data.bezahlt">
-            Sie erhalten in Kürze eine Bestellbestätigung, die Rechnung und noch
-            einmal den Mietvertrag per E-Mail.
+            Sie erhalten in Kürze Ihre Buchungsbestätigung mit Rechnung und unseren
+            Mietbedingungen per E-Mail.
           </p>
           <p v-else>
             Ihre Zahlung wird noch bearbeitet. Sobald sie bestätigt ist, erhalten Sie
-            Bestellbestätigung, Rechnung und Mietvertrag per E-Mail.
+            die Buchungsbestätigung mit Rechnung und Mietbedingungen per E-Mail.
           </p>
         </template>
         <template v-else-if="error || !sessionId">

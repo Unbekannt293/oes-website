@@ -16,7 +16,7 @@ interface LinkItem {
 const contact = useContact()
 
 const links: LinkItem[] = [
-  { label: 'Website',       meta: 'ottos-eventservice.de',  icon: 'globe', soon: true },
+  { label: 'Website',       meta: 'Fotobox & Soundbox online buchen', icon: 'globe', href: '/' },
   // Zeigt auf die einzelne Fotobox-Anzeige. Kleinanzeigen vergibt beim
   // Verlängern oder Neueinstellen eine neue ID, der Link bricht dann.
   // Sobald mehrere Anzeigen laufen, besser auf die Bestandsliste des
@@ -63,8 +63,8 @@ useSeoMeta({
             <component
               :is="l.soon ? 'div' : 'a'"
               :href="l.href"
-              :target="l.soon ? undefined : '_blank'"
-              :rel="l.soon ? undefined : 'noopener'"
+              :target="l.href?.startsWith('http') ? '_blank' : undefined"
+              :rel="l.href?.startsWith('http') ? 'noopener' : undefined"
               class="row" :class="{ 'row--soon': l.soon }"
             >
               <span class="badge" aria-hidden="true">

@@ -17,6 +17,9 @@ const form = reactive({
 })
 watch(() => bezug, (b) => { form.bezug = b })
 const hover = ref(0)
+// Zeitfalle gegen Bots: wie lange das Formular offen war (server/utils/bremse.ts).
+let geoeffnet = 0
+onMounted(() => { geoeffnet = Date.now() })
 const errors = reactive<Partial<Record<Field, string>>>({})
 const status = ref<'idle' | 'sending' | 'sent' | 'failed'>('idle')
 const tried = ref(false)
@@ -38,7 +41,7 @@ async function submit() {
   if (!data) return
   status.value = 'sending'
   try {
-    await $fetch('/api/bewertungen', { method: 'POST', body: data })
+    await $fetch('/api/bewertungen', { method: 'POST', body: { ...data, ausfuellzeit: Date.now() - geoeffnet } })
     status.value = 'sent'
     Object.assign(form, { name: '', sterne: 0, text: '', einwilligung: false })
     tried.value = false

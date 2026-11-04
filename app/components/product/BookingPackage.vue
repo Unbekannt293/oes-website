@@ -2,7 +2,7 @@
 import type { RentalPackage } from '~~/shared/types'
 import { addons, fotoboxPackages, LAYOUT_ADDON, soundboxRates } from '~~/shared/catalog'
 import {
-  depositCents, eachDay, formatPrice, kombiAddCents, packageRangeCents, PRICE_PER_KM_CENTS,
+  depositCents, eachDay, formatPrice, kombiAddCents, packageRangeCents, tarif,
   rentalDays, soundboxDayCents, soundboxRentalCents, weekpartOf,
 } from '~~/shared/pricing'
 
@@ -55,8 +55,10 @@ const sbOptions = [
 // Zubehoer, das es noch nicht gibt, steht ausgegraut mit "bald" da.
 const layoutIncluded = computed(() => !!pkg.value?.designIncluded)
 const shopAddons = addons.filter(a => a.available)
+const includedAddons = shopAddons.filter(a => a.included)
+const choosableAddons = shopAddons.filter(a => !a.included)
 const soonAddons = addons.filter(a => !a.available)
-const chosenAddons = computed(() => shopAddons.filter(a =>
+const chosenAddons = computed(() => choosableAddons.filter(a =>
   chosen.value.includes(a.slug) && !(a.slug === LAYOUT_ADDON && layoutIncluded.value)))
 // Zusatzakku nur mit Soundbox, wie bei der Soundbox-Miete: pro Tag.
 watch(soundboxes, (sb) => { if (!sb) battery.value = false })
@@ -208,7 +210,20 @@ function addToCart() {
 
       <BookingStep :n="4" title="Zubehör" :state="steps.state(4)" :summary="summaries[4]" @open="steps.open(4)">
         <ul class="bk__addons">
-          <li v-for="a in shopAddons" :key="a.slug">
+          <!-- Immer dabei (Basis-Requisiten): angehakt und gesperrt, ohne Preis. -->
+          <li v-for="a in includedAddons" :key="a.slug">
+            <label class="check is-off">
+              <input type="checkbox" checked disabled>
+              <span class="bk__addon">
+                <span>{{ a.name }}</span>
+                <span class="bk__addon-incl">inklusive</span>
+              </span>
+            </label>
+            <button v-if="a.image" type="button" class="label bk__peek" @click="beispielZeigen(a.image, a.name)">
+              {{ a.imageLabel ?? 'Bild ansehen' }} <UiIcon name="arrow" :size="12" />
+            </button>
+          </li>
+          <li v-for="a in choosableAddons" :key="a.slug">
             <!-- Inklusives Layout: angehakt und gesperrt, ohne Aufpreis. -->
             <label v-if="a.slug === LAYOUT_ADDON && layoutIncluded" class="check is-off">
               <input type="checkbox" checked disabled>
@@ -225,7 +240,7 @@ function addToCart() {
               </span>
             </label>
             <button v-if="a.image" type="button" class="label bk__peek" @click="beispielZeigen(a.image, a.name)">
-              Layout-Beispiele ansehen <UiIcon name="arrow" :size="12" />
+              {{ a.imageLabel ?? 'Bild ansehen' }} <UiIcon name="arrow" :size="12" />
             </button>
           </li>
           <li v-if="soundboxes">
@@ -279,7 +294,7 @@ function addToCart() {
       </div>
       <div class="bk__note"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
       <p class="bk__small muted">
-        Lieferung bis {{ pkg.freeDeliveryKm }} km inklusive, danach {{ formatPrice(PRICE_PER_KM_CENTS) }} pro km.
+        Lieferung bis {{ pkg.freeDeliveryKm }} km inklusive, danach {{ formatPrice(tarif.proKmCent) }} pro km.
       </p>
     </dl>
 

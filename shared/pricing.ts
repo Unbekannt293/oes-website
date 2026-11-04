@@ -1,8 +1,21 @@
 import { soundboxRates } from './catalog'
 import type { CartLine, DeliveryQuote, RentalPackage, Weekpart } from './types'
 
-/** 0,25 EUR pro Kilometer, aus der Anforderung von Louis. */
-export const PRICE_PER_KM_CENTS = 25
+/**
+ * Lieferung und Kaution. Standardwerte aus Louis' Anforderungen, aenderbar
+ * in der Verwaltung (/admin/preise, siehe shared/preise.ts). Ein Objekt
+ * statt Konstanten, damit die geaenderten Werte zur Laufzeit hier landen.
+ *  - proKmCent: 0,25 EUR pro Kilometer
+ *  - Kaution: einheitlich 250 EUR je Buchung, egal welche Geraete (Mietbedingungen
+ *    § 8, Stand 04.11.2026). Frueher Fotobox 250, je Soundbox 200, hoechstens 450.
+ *    Mit Fotobox = Soundbox = Hoechstbetrag = 250 ergibt jede Buchung 250 EUR.
+ */
+export const tarif = {
+  proKmCent: 25,
+  kautionFotoboxCent: 25000,
+  kautionSoundboxCent: 25000,
+  kautionMaxCent: 25000,
+}
 
 const eur = new Intl.NumberFormat('de-DE', {
   style: 'currency', currency: 'EUR',
@@ -27,7 +40,7 @@ export function subtotalCents(lines: CartLine[]): number {
  * Regel von Louis (14.10.2026): Pro Auftrag fährt er viermal (Hinbringen,
  * Rückfahrt, Abholen, Rückfahrt). Gefahrene Strecke = Entfernung × 4,
  * Freistrecke = Freiradius × 4, berechnet wird nur der Rest, je Kilometer
- * PRICE_PER_KM_CENTS. Beispiel: 10 km Entfernung, 4 km frei
+ * tarif.proKmCent. Beispiel: 10 km Entfernung, 4 km frei
  * → 40 km − 16 km = 24 km × 0,25 € = 6,00 €.
  *
  * @param distanceKm  Einfache Strecke vom Lager zum Veranstaltungsort in km
@@ -48,7 +61,7 @@ export function quoteDelivery(distanceKm: number, lines: CartLine[]): DeliveryQu
 
   const billableKm = Math.max(0, distanceKm * 4 - freeKm * 4);
 
-  const feeCents = Math.round(billableKm * PRICE_PER_KM_CENTS);
+  const feeCents = Math.round(billableKm * tarif.proKmCent);
 
   return { distanceKm, freeKm: freeKm, billableKm: Math.round(billableKm * 10) / 10, feeCents: feeCents }
 }
@@ -57,17 +70,10 @@ export function totalCents(lines: CartLine[], delivery: DeliveryQuote): number {
   return subtotalCents(lines) + delivery.feeCents
 }
 
-/**
- * Kaution laut Louis: Fotobox 250 EUR, je Soundbox 200 EUR. Insgesamt
- * hoechstens 450 EUR, auch wenn Fotobox und zwei Soundboxen zusammen
- * rechnerisch 650 EUR ergaeben.
- */
-export const DEPOSIT_CENTS = { fotobox: 25000, soundbox: 20000 } as const
-export const DEPOSIT_CAP_CENTS = 45000
-
+/** Kaution, siehe tarif. */
 export function depositCents(fotobox: boolean, soundboxes: number): number {
-  const sum = (fotobox ? DEPOSIT_CENTS.fotobox : 0) + soundboxes * DEPOSIT_CENTS.soundbox
-  return Math.min(sum, DEPOSIT_CAP_CENTS)
+  const sum = (fotobox ? tarif.kautionFotoboxCent : 0) + soundboxes * tarif.kautionSoundboxCent
+  return Math.min(sum, tarif.kautionMaxCent)
 }
 
 /** Montag bis Donnerstag oder Freitag bis Sonntag, fuer ein ISO-Datum ('2026-12-12'). */
