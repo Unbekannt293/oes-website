@@ -1,11 +1,15 @@
 // GET /api/admin/bewertungen: alle, wartende zuerst, dann neueste.
+const laden = (spalten: string) => useSupabase()
+  .from('bewertungen')
+  .select(spalten)
+  .order('freigegeben', { ascending: true })
+  .order('erstellt_am', { ascending: false })
+  .limit(500)
+  .returns<{ bilder?: string[] }[]>()
+
 export default defineEventHandler(async () => {
-  const { data, error } = await useSupabase()
-    .from('bewertungen')
-    .select('id, name, sterne, text, bezug, erstellt_am, freigegeben')
-    .order('freigegeben', { ascending: true })
-    .order('erstellt_am', { ascending: false })
-    .limit(500)
+  let { data, error } = await laden('id, name, sterne, text, bezug, erstellt_am, freigegeben, bilder')
+  if (error) ({ data, error } = await laden('id, name, sterne, text, bezug, erstellt_am, freigegeben'))
   if (error) throw createError({ statusCode: 502, statusMessage: error.message })
-  return data
+  return mitBildUrls(data ?? [])
 })

@@ -6,7 +6,7 @@ import type { Addon, Category, Product, RentalPackage, SoundboxRates } from './t
  * ohne Deploy aendern kann.
  *
  * Vorhanden: eine Fotobox mit Drucker und zwei Soundboxen samt Stativen.
- * Geplant und auf der Seite als "Coming soon": Zelt, Bierzelt, Garnitur,
+ * Geplant und auf der Seite als "Coming soon": Zelt, DJ-Pult, Garnitur,
  * Lichter. Dazu stehen bewusst nur Name und Kategorie hier, keine
  * Beschreibung, Preise oder Masse: die kennen wir noch nicht.
  */
@@ -33,14 +33,13 @@ export const products: Product[] = [
       '/images/produkte/fotobox-oes.webp',
       '/images/produkte/fotobox-studio.webp',
       '/images/produkte/fotobox-links.webp',
-      '/images/produkte/fotobox-front.webp',
       '/images/produkte/fotobox-mit-drucker.webp',
       '/images/produkte/drucker-dnp.webp',
       '/images/produkte/set-fotobox-soundbox-drucker.webp',
       '/images/produkte/set-fotobox-zwei-soundboxen-drucker.webp',
     ],
     // Galerie springt mit der Soundbox-Wahl im Buchungskasten mit.
-    imageFor: { sb0: 0, sb1: 6, sb2: 7 },
+    imageFor: { sb0: 0, sb1: 5, sb2: 6 },
     available: true, stock: 1,
     booking: 'paket',
   },
@@ -68,7 +67,7 @@ export const products: Product[] = [
     booking: 'zeitraum',
   },
   comingSoon('zelt', 'Zelt', 'zelte'),
-  comingSoon('bierzelt', 'Bierzelt', 'zelte'),
+  comingSoon('dj-pult', 'DJ-Pult', 'sound'),
   comingSoon('garnitur', 'Bierzeltgarnitur', 'mobiliar'),
   comingSoon('lichter', 'Lichter', 'licht'),
 ]

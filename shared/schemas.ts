@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { BEZUG_KEYS } from './bewertungen'
+import { BEZUG_KEYS, BILD_MAX_BYTES, BILDER_MAX } from './bewertungen'
 
 /**
  * Dasselbe Schema validiert im Browser und auf dem Server.
@@ -84,6 +84,9 @@ export const bewertungSchema = z.object({
   /** Zeitfalle: ms seit dem Oeffnen des Formulars (server/utils/bremse.ts). */
   ausfuellzeit: z.number().int().nonnegative().optional(),
   einwilligung: z.literal(true, { message: 'Bitte der Veröffentlichung zustimmen' }),
+  /** Fotos als JPEG-Data-URL, im Browser schon verkleinert. Der Server prueft den Inhalt. */
+  bilder: z.array(z.string().startsWith('data:image/jpeg;base64,').max(Math.ceil(BILD_MAX_BYTES * 4 / 3) + 40))
+    .max(BILDER_MAX, `Höchstens ${BILDER_MAX} Fotos`).default([]),
 })
 
 export type BewertungInput = z.infer<typeof bewertungSchema>

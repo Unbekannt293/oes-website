@@ -6,12 +6,14 @@ import { freigabeSchema } from '~~/shared/schemas'
 export default defineEventHandler(async (event) => {
   const parsed = freigabeSchema.safeParse(getQuery(event))
   if (!parsed.success) throw createError({ statusCode: 404, statusMessage: 'Link ungültig' })
-  const { data } = await useSupabase()
+  const laden = (spalten: string) => useSupabase()
     .from('bewertungen')
-    .select('name, sterne, text, bezug, erstellt_am, freigegeben')
+    .select(spalten)
     .eq('id', parsed.data.id)
     .eq('freigabe_token', parsed.data.t)
-    .maybeSingle()
+    .maybeSingle<{ bilder?: string[] }>()
+  let { data, error } = await laden('name, sterne, text, bezug, erstellt_am, freigegeben, bilder')
+  if (error) ({ data } = await laden('name, sterne, text, bezug, erstellt_am, freigegeben'))
   if (!data) throw createError({ statusCode: 404, statusMessage: 'Bewertung nicht gefunden' })
-  return data
+  return mitBildUrls([data])[0]
 })

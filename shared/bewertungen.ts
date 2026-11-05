@@ -49,6 +49,8 @@ export interface Bewertung {
   text: string
   /** null = allgemein, OES insgesamt. */
   bezug: Bezug | null
+  /** Volle Bild-Adressen (vom Server gebaut), hoechstens BILDER_MAX. */
+  bilder?: string[]
   erstellt_am: string
 }
 
@@ -69,3 +71,8 @@ export const formatSchnitt = (n: number) => n.toLocaleString('de-DE', { minimumF
 export function vorschau(liste: Bewertung[], n: number): Bewertung[] {
   return liste.slice(0, n)
 }
+
+/** Fotos je Bewertung und ihre Groesse (Browser verkleinert, Server prueft). */
+export const BILDER_MAX = 3
+export const BILD_KANTE = 1600
+export const BILD_MAX_BYTES = 1_048_576

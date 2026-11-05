@@ -12,7 +12,7 @@ import type { Rechtstext } from './typ'
 
 export const DATENSCHUTZ: Rechtstext = {
   "titel": "Datenschutzerklärung",
-  "stand": "Stand: 4. November 2026",
+  "stand": "Stand: 5. November 2026",
   "abschnitte": [
     {
       "titel": "1. Verantwortlicher und Kontakt",
@@ -56,7 +56,8 @@ export const DATENSCHUTZ: Rechtstext = {
       "absaetze": [
         "Auf unserer Website können Sie eine Bewertung abgeben. Dabei verarbeiten wir den von Ihnen angegebenen Namen (auch ein Kürzel wie „Anna M.“ ist möglich), die Sternebewertung, Ihren Text, das bewertete Produkt sowie den Zeitpunkt. Eine E-Mail-Adresse wird nicht abgefragt.",
         "Bewertungen werden erst nach unserer Prüfung veröffentlicht, und zwar mit dem angegebenen Namen. Rechtsgrundlage ist Ihre Einwilligung, die Sie beim Absenden erteilen (Art. 6 Abs. 1 Buchst. a DSGVO). Sie können sie jederzeit mit Wirkung für die Zukunft widerrufen, eine kurze Nachricht an die unter Nummer 1 genannte Adresse genügt. Wir löschen die Bewertung dann.",
-        "Über neue Bewertungen werden wir per E-Mail benachrichtigt. Gespeichert werden Bewertungen in der unter Nummer 4 genannten Datenbank."
+        "Freiwillig können Sie bis zu drei Fotos hinzufügen. Ihr Browser verkleinert die Fotos vor dem Hochladen und entfernt dabei die in Fotos gespeicherten Zusatzdaten wie Aufnahmeort, Aufnahmezeit und Kameramodell. Die Fotos werden zusammen mit der Bewertung veröffentlicht; bitte laden Sie nur Fotos hoch, an denen Sie die Rechte haben und auf denen erkennbare Personen mit der Veröffentlichung einverstanden sind. Mit der Bewertung löschen wir auch die Fotos.",
+        "Über neue Bewertungen werden wir per E-Mail benachrichtigt. Gespeichert werden Bewertungen und Fotos bei dem unter Nummer 4 genannten Anbieter (Datenbank und Dateispeicher)."
       ]
     },
     {

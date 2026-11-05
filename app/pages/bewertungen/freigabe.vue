@@ -11,7 +11,7 @@ const id = String(route.query.id ?? '')
 const t = String(route.query.t ?? '')
 
 const { data: b, error } = await useFetch<{
-  name: string, sterne: number, text: string, bezug: Bezug | null, erstellt_am: string, freigegeben: boolean
+  name: string, sterne: number, text: string, bezug: Bezug | null, erstellt_am: string, freigegeben: boolean, bilder?: string[]
 }>('/api/bewertungen/freigabe', { query: { id, t } })
 
 const status = ref<'idle' | 'sending' | 'failed'>('idle')
@@ -43,6 +43,11 @@ async function aktion(was: 'freigeben' | 'verbergen' | 'loeschen') {
       <p class="label fg__bezug">{{ b.bezug ? BEZUEGE[b.bezug] : 'Allgemein' }}</p>
       <ReviewStars :value="b.sterne" :size="18" />
       <p class="fg__text">{{ b.text }}</p>
+      <div v-if="b.bilder?.length" class="fg__fotos">
+        <a v-for="(src, i) in b.bilder" :key="src" :href="src" target="_blank" rel="noopener">
+          <img :src="src" :alt="`Foto ${i + 1}`">
+        </a>
+      </div>
       <p class="muted"><strong>{{ b.name }}</strong> · {{ new Date(b.erstellt_am).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }) }}</p>
 
       <p class="fg__state" :class="{ 'is-on': b.freigegeben }">
@@ -65,6 +70,8 @@ async function aktion(was: 'freigeben' | 'verbergen' | 'loeschen') {
 <style scoped>
 .fg { max-width: 40rem; display: grid; gap: var(--s-6); }
 .fg__h { font-size: var(--t-h2); }
+.fg__fotos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
+.fg__fotos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-sm); display: block; }
 .fg__card { display: grid; gap: var(--s-3); padding: var(--s-6); background: var(--c-paper-pure); border: var(--border-hair); border-radius: var(--r-md); }
 .fg__bezug { color: var(--c-gold); }
 .fg__text { line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }

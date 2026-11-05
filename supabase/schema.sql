@@ -248,7 +248,9 @@ create table if not exists bewertungen (
   bezug          text,
   freigegeben    boolean not null default false,
   freigegeben_am timestamptz,
-  freigabe_token uuid not null default gen_random_uuid()
+  freigabe_token uuid not null default gen_random_uuid(),
+  -- Pfade im Storage-Bucket "bewertungen" (2026-11-05-bewertungsbilder.sql)
+  bilder         text[] not null default '{}' check (coalesce(array_length(bilder, 1), 0) <= 3)
 );
 create index if not exists bewertungen_sichtbar on bewertungen (erstellt_am desc) where freigegeben;
 

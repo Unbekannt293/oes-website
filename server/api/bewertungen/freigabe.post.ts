@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const { id, t, aktion } = parsed.data
   const tabelle = useSupabase().from('bewertungen')
   const { data, error } = aktion === 'loeschen'
-    ? await tabelle.delete().eq('id', id).eq('freigabe_token', t).select('id')
+    ? await tabelle.delete().eq('id', id).eq('freigabe_token', t).select('*')
     : await tabelle
         .update({ freigegeben: aktion === 'freigeben', freigegeben_am: aktion === 'freigeben' ? new Date().toISOString() : null })
         .eq('id', id).eq('freigabe_token', t).select('id')
@@ -22,5 +22,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 502, statusMessage: 'Datenbank nicht erreichbar' })
   }
   if (!data?.length) throw createError({ statusCode: 404, statusMessage: 'Bewertung nicht gefunden' })
+  if (aktion === 'loeschen') await bilderLoeschen((data[0] as { bilder?: string[] }).bilder ?? [])
   return { ok: true, aktion }
 })

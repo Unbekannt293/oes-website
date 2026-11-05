@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FetchError } from 'ofetch'
-import { BEZUEGE, type Bezug } from '~~/shared/bewertungen'
+import { BEZUEGE, BILDER_MAX, type Bezug } from '~~/shared/bewertungen'
 import { bewertungSchema } from '~~/shared/schemas'
 
 // Bewertung schreiben. Aufbau wie das Kontaktformular: gleiches Schema im
@@ -9,12 +9,33 @@ const { bezug = null } = defineProps<{ bezug?: Bezug | null }>()
 const emit = defineEmits<{ fertig: [] }>()
 const MAX_TEXT = 1000
 
-type Field = 'name' | 'sterne' | 'text' | 'einwilligung'
+type Field = 'name' | 'sterne' | 'text' | 'einwilligung' | 'bilder'
 
 const form = reactive({
   name: '', sterne: 0, text: '', bezug: bezug as Bezug | null,
-  einwilligung: false, website: '',
+  einwilligung: false, website: '', bilder: [] as string[],
 })
+
+// Fotos: im Browser verkleinert (app/utils/fotoVerkleinern.ts), Vorschau
+// sind die fertigen Data-URLs. Mehr als BILDER_MAX werden ignoriert.
+const fotoLaeuft = ref(false)
+const fotoInput = ref<HTMLInputElement | null>(null)
+async function fotosWaehlen(e: Event) {
+  const input = e.target as HTMLInputElement
+  const dateien = [...(input.files ?? [])].slice(0, BILDER_MAX - form.bilder.length)
+  input.value = '' // dasselbe Foto spaeter noch einmal waehlbar
+  delete errors.bilder
+  fotoLaeuft.value = true
+  for (const d of dateien) {
+    try {
+      form.bilder.push(await fotoVerkleinern(d))
+    }
+    catch {
+      errors.bilder = 'Ein Foto ließ sich nicht verarbeiten. Bitte ein anderes wählen (JPG, PNG oder HEIC).'
+    }
+  }
+  fotoLaeuft.value = false
+}
 watch(() => bezug, (b) => { form.bezug = b })
 const hover = ref(0)
 // Zeitfalle gegen Bots: wie lange das Formular offen war (server/utils/bremse.ts).
@@ -43,7 +64,7 @@ async function submit() {
   try {
     await $fetch('/api/bewertungen', { method: 'POST', body: { ...data, ausfuellzeit: Date.now() - geoeffnet } })
     status.value = 'sent'
-    Object.assign(form, { name: '', sterne: 0, text: '', einwilligung: false })
+    Object.assign(form, { name: '', sterne: 0, text: '', einwilligung: false, bilder: [] })
     tried.value = false
   }
   catch (err) {
@@ -109,6 +130,26 @@ function a11y(field: Field) {
         </div>
       </UiField>
 
+      <div class="bf__fotos">
+        <p class="label bf__legend">Fotos <span class="muted bf__opt">(optional, bis zu {{ BILDER_MAX }})</span></p>
+        <ul class="bf__thumbs">
+          <li v-for="(src, i) in form.bilder" :key="i" class="bf__thumb">
+            <img :src="src" :alt="`Foto ${i + 1}`">
+            <button type="button" class="bf__thumb-x" :aria-label="`Foto ${i + 1} entfernen`" @click="form.bilder.splice(i, 1)">
+              <UiIcon name="close" :size="14" />
+            </button>
+          </li>
+          <li v-if="form.bilder.length < BILDER_MAX">
+            <button type="button" class="bf__add" :disabled="fotoLaeuft" @click="fotoInput?.click()">
+              <template v-if="fotoLaeuft">…</template>
+              <template v-else><UiIcon name="camera" :size="22" /><span>Foto</span></template>
+            </button>
+          </li>
+        </ul>
+        <input ref="fotoInput" type="file" accept="image/*" multiple class="visually-hidden" tabindex="-1" @change="fotosWaehlen">
+        <p v-if="errors.bilder" class="bf__err"><UiIcon name="alert" :size="14" />{{ errors.bilder }}</p>
+      </div>
+
       <!-- Honeypot: fuer Menschen unsichtbar und nicht per Tab erreichbar. -->
       <div class="bf__trap" aria-hidden="true">
         <label for="bw-website">Website</label>
@@ -119,8 +160,8 @@ function a11y(field: Field) {
         <label class="check">
           <input id="bw-einwilligung" v-model="form.einwilligung" type="checkbox" v-bind="a11y('einwilligung')">
           <span>
-            Ich bin einverstanden, dass meine Bewertung mit Namen auf dieser Seite
-            veröffentlicht wird. Mehr dazu in der <NuxtLink to="/datenschutz">Datenschutzerklärung</NuxtLink>.
+            Ich bin einverstanden, dass meine Bewertung mit Namen{{ form.bilder.length ? ' und Fotos' : '' }} auf dieser Seite
+            veröffentlicht wird<template v-if="form.bilder.length">, und habe die Rechte an den Fotos</template>. Mehr dazu in der <NuxtLink to="/datenschutz">Datenschutzerklärung</NuxtLink>.
           </span>
         </label>
         <p v-if="errors.einwilligung" id="bw-einwilligung-fehler" class="bf__err"><UiIcon name="alert" :size="14" />{{ errors.einwilligung }}</p>
@@ -131,7 +172,7 @@ function a11y(field: Field) {
         Das hat gerade nicht geklappt. Bitte versuchen Sie es später noch einmal.
       </p>
 
-      <UiButton variant="solid" class="bf__submit" :disabled="status === 'sending'" :aria-busy="status === 'sending'">
+      <UiButton variant="solid" class="bf__submit" :disabled="status === 'sending' || fotoLaeuft" :aria-busy="status === 'sending'">
         <template v-if="status === 'sending'">Wird gesendet …</template>
         <template v-else><UiIcon name="send" :size="16" /> Bewertung absenden</template>
       </UiButton>
@@ -160,6 +201,20 @@ function a11y(field: Field) {
 .bf__area textarea { padding-bottom: 1.75rem; resize: vertical; }
 .bf__count { position: absolute; right: 0.75rem; bottom: 0.5rem; font-size: 0.75rem; pointer-events: none; }
 .bf__submit { width: 100%; gap: var(--s-2); }
+.bf__opt { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.bf__thumbs { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.bf__thumb { position: relative; width: 5.5rem; height: 5.5rem; border-radius: var(--r-sm); overflow: hidden; border: var(--border-hair); }
+.bf__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bf__thumb-x {
+  position: absolute; top: 0.25rem; right: 0.25rem; display: grid; place-items: center;
+  width: 1.6rem; height: 1.6rem; border-radius: 50%; background: rgb(0 0 0 / 0.65); color: #FFFFFF;
+}
+.bf__add {
+  display: grid; place-items: center; align-content: center; gap: 0.2rem;
+  width: 5.5rem; height: 5.5rem; border-radius: var(--r-sm);
+  border: 1px dashed var(--c-gold); color: var(--c-gold); font-size: 0.75rem;
+}
+.bf__add:hover:not(:disabled) { background: rgb(184 146 74 / 0.06); }
 .bf__hint { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); margin-top: calc(-1 * var(--s-3)); }
 .bf__done { display: grid; justify-items: center; gap: var(--s-3); padding: var(--s-6) 0; text-align: center; }
 .bf__badge { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; color: var(--c-gold); border: 1px solid var(--c-gold); }
