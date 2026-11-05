@@ -169,25 +169,34 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
 }
 
 @media (max-width: 720px) {
-  /* Kleiner und hoeher, damit unten Platz fuer Text und Buttons bleibt. */
-  /* Der Textblock unten ist mit Slogan und zwei grossen Buttons ~ halb so hoch
-     wie der Schirm. Die Box (LED-Oberkante bis Kastenunterkante = 66 % der
-     Bildhoehe) muss darueber passen, sonst liegt weisse Schrift auf der weissen Front. */
-  /* Kasten ganz ueber dem Titel (Lukas, 03.11.2026). Der Textblock steht
-     immer ~443 px ueber dem unteren Rand, deshalb bei kurzen Bildschirmen
-     (iPhone SE) kleiner. Gemessen: LED-Oberkante >= 12 px, Kasten endet
-     >= 14 px ueber dem Titel. */
-  .hero { --fb-y: 0.238; --fb-h: 0.54; }
+  /* Mittelweg (Lukas, 05.11.2026): groesser als frueher, damit der Stoff
+     bis hinter die Buttons reicht und die Box nicht schwebt, aber nicht
+     bildschirmhoch, damit das Feierbild sichtbar bleibt. */
+  .hero { --fb-y: 0.31; --fb-h: 0.7; }
   .hero__veil {
     background: linear-gradient(0deg,
       rgb(11 10 9 / 0.95) 0%, rgb(11 10 9 / 0.75) 32%, transparent 55%);
   }
-  .hero__inner { padding-block: var(--s-6) calc(var(--s-6) + 56px); }
+  /* Wo der Titel die Box streift: Schatten nur an der Schrift statt Schleier. */
+  .hero__title, .hero__lead { text-shadow: 0 1px 2px rgb(0 0 0 / 0.55), 0 0 18px rgb(0 0 0 / 0.6); }
+  /* Titel auf dem Handy in einer Zeile und mittig unter der Box: der
+     Textblock wird eine Zeile kuerzer, der Titel rutscht unter den Kasten
+     statt auf die weisse Front. Beide Woerter gold (Lukas, 05.11.2026). */
+  .hero__title { color: var(--c-gold); font-size: clamp(2.4rem, 11.5vw, 3.4rem); white-space: nowrap; }
+  .hero__title br { display: none; }
+  .hero__title em { margin-left: 0.22em; }
+  .hero__text { max-width: none; text-align: center; }
+  .hero__lead { margin-inline: auto; }
+  /* Hinweis links und zweizeilig, sonst stoesst er an das Licht. */
+  .hero__hint { right: auto; left: var(--gutter); max-width: 7rem; line-height: 1.5; }
+  .hero__inner { padding-block: var(--s-6) calc(var(--s-4) + 56px); gap: var(--s-5); }
+  .hero__scroll { bottom: var(--s-3); }
   .hero__cta { width: 100%; }
   .hero__btn { flex: 1 1 100%; }
 }
-@media (max-width: 720px) and (max-height: 800px) {
-  .hero { --fb-y: 0.181; --fb-h: 0.405; }
+/* Kurze Handys (iPhone SE): der Textblock nimmt mehr vom Schirm ein. */
+@media (max-width: 720px) and (max-height: 700px) {
+  .hero { --fb-y: 0.27; --fb-h: 0.6; }
 }
 
 /* ---- Produktvorschau: ein ganzer Bildschirm, auf den der Hero einrastet ---- */
