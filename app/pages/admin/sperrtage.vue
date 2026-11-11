@@ -94,7 +94,8 @@ const name = (s: Pick<Sperre, 'geraet' | 'anzahl'>) => s.geraet === 'fotobox' ? 
 .sp__form { display: grid; gap: var(--s-4); padding: var(--s-5); background: var(--c-paper-pure); border: var(--border-hair); border-radius: var(--r-md); }
 @media (min-width: 640px) {
   .sp__form { grid-template-columns: 1fr 1fr; }
-  .sp__grund, .sp__btn, }
+  .sp__grund, .sp__btn, .sp__fehler { grid-column: 1 / -1; }
+}
 .sp__btn { justify-self: start; }
 .sp__h2 { margin-top: var(--s-4); }
 .sp__liste { list-style: none; padding: 0; display: grid; gap: var(--s-3); }
