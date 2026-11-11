@@ -89,7 +89,7 @@ useSeoMeta({
           thumbs eager :width="1254" :height="1254"
         />
         <div v-else class="pd__empty" aria-hidden="true">
-          <svg viewBox="0 0 100 100"><path d="M50 0C53 35 65 47 100 50 65 53 53 65 50 100 47 65 35 53 0 50 35 47 47 35 50 0Z" /></svg>
+          <UiIcon name="funke" :size="96" class="pd__empty-funke" />
         </div>
       </div>
 
@@ -143,10 +143,7 @@ useSeoMeta({
         />
         <div class="pd__kombi-text">
           <h2 class="display pd__pakete-h">Fotobox dazu?</h2>
-          <p class="pd__kombi-spar">
-            <UiIcon name="info" :size="14" />
-            Im Paket ist die Soundbox günstiger als einzeln gemietet.
-          </p>
+          <UiHinweis>Im Paket ist die Soundbox günstiger als einzeln gemietet.</UiHinweis>
           <p class="muted">Fotobox und Soundbox buchen Sie zusammen als Event-Komplettpaket.</p>
           <div class="pd__kombi-links">
             <UiButton to="/pakete" variant="solid" size="sm">Event-Komplettpakete</UiButton>
@@ -156,8 +153,12 @@ useSeoMeta({
       </section>
 
       <!-- Ausfuehrliche Beschreibung von Louis: Text, Ausstattung, wofuer. -->
-      <section v-if="product.beschreibung" class="pd__desc" aria-labelledby="desc-h">
-        <h2 id="desc-h" class="display pd__pakete-h">{{ product.beschreibung.titel }}</h2>
+      <!-- Erst zugeklappt (Lukas, 11.11.2026), wie die Textfassung der Rechtstexte. -->
+      <UiAufklapper
+        v-if="product.beschreibung" gross class="pd__desc"
+        titel="Produktbeschreibung" untertitel="Ausstattung, technische Daten und wofür sie sich eignet"
+      >
+        <h2 class="display pd__desc-titel">{{ product.beschreibung.titel }}</h2>
         <p v-for="(a, i) in product.beschreibung.absaetze" :key="i" class="pd__desc-p">{{ a }}</p>
         <div class="pd__desc-lists">
           <div>
@@ -173,7 +174,7 @@ useSeoMeta({
             </ul>
           </div>
         </div>
-      </section>
+      </UiAufklapper>
 
       <!-- Bewertungen in der freien Flaeche neben dem Buchungskasten. -->
       <ReviewSection v-if="product.available && reviewBezug" :bezuege="[reviewBezug]" kompakt class="pd__reviews" />
@@ -217,7 +218,7 @@ useSeoMeta({
   display: grid; place-items: center;
   background: radial-gradient(circle at 50% 45%, #F8F5F0, #E8E1D6 75%);
 }
-.pd__empty svg { width: 30%; fill: var(--c-gold); opacity: 0.22; }
+.pd__empty-funke { width: 30%; height: auto; color: var(--c-gold); opacity: 0.22; }
 
 .pd__cat { color: var(--c-gold); }
 .pd__name { font-size: var(--t-h1); }
@@ -251,13 +252,6 @@ useSeoMeta({
   background: var(--c-paper-pure); border: 1px solid var(--c-gold); border-radius: var(--r-md);
   box-shadow: 0 10px 30px -18px rgb(195 139 55 / 0.55);
 }
-/* Kombi-Vorteil wie der Hinweis "Layout fehlt" an der Kasse. */
-.pd__kombi-spar {
-  display: flex; align-items: flex-start; gap: 0.4rem; line-height: 1.45;
-  padding: var(--s-3) var(--s-4); font-size: var(--t-small);
-  background: rgb(195 139 55 / 0.08); border-left: 2px solid var(--c-gold);
-}
-.pd__kombi-spar svg { flex: none; margin-top: 0.15rem; color: var(--c-gold); }
 .pd__kombi-img { width: 7.5rem; height: 7.5rem; flex: none; object-fit: cover; border-radius: var(--r-sm); }
 .pd__kombi-text { display: grid; gap: var(--s-2); }
 .pd__kombi-text .muted { font-size: var(--t-small); }
@@ -267,7 +261,9 @@ useSeoMeta({
 .pd__kombi-link:hover { color: var(--c-text); }
 
 .pd__modell { color: var(--c-text-muted); margin-top: calc(-1 * var(--s-2)); }
-.pd__desc { grid-area: desc; display: grid; gap: var(--s-4); align-content: start; padding-top: var(--s-6); border-top: var(--border-hair); }
+.pd__desc { grid-area: desc; align-self: start; }
+.pd__desc :deep(.ak__inhalt) { display: grid; gap: var(--s-4); }
+.pd__desc-titel { font-size: var(--t-h3); }
 .pd__desc-p { line-height: 1.7; max-width: 68ch; }
 .pd__desc-lists { display: grid; gap: var(--s-5); margin-top: var(--s-2); }
 @media (min-width: 560px) { .pd__desc-lists { grid-template-columns: 1fr 1fr; } }
@@ -276,4 +272,5 @@ useSeoMeta({
 .pd__desc-ul li { position: relative; padding-left: 1.1rem; line-height: 1.5; }
 .pd__desc-ul li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--c-gold); }
 .pd__reviews { grid-area: rev; align-self: start; padding-top: var(--s-6); border-top: var(--border-hair); }
+.pd__desc + .pd__reviews { border-top: 0; padding-top: var(--s-2); }
 </style>

@@ -23,6 +23,7 @@ const contact = useContact()
 /** Bestellnummer nach erfolgreicher Bestellung, oeffnet das Danke-Fenster. */
 const bestellt = ref<string | null>(null)
 const zahlungBis = ref<string | null>(null)
+const dankeDlg = ref<{ oeffnen: () => void } | null>(null)
 
 // Leerer Korb (z. B. direkt aufgerufen): zurueck zum Warenkorb.
 // Leerer Warenkorb oder ein Termin, der schon begonnen hat: zurueck in den
@@ -217,6 +218,7 @@ async function bestellen() {
       return
     }
     bestellt.value = r.nummer
+    nextTick(() => dankeDlg.value?.oeffnen())
     zahlungBis.value = r.zahlungBis ?? null
     status.value = 'idle'
     clear()
@@ -259,11 +261,10 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
   <PageHero crumb="Kasse" title="Kasse" :trail="[{ to: '/warenkorb', label: 'Warenkorb' }]" slim />
   <div class="section shell ks__page">
 
-    <p v-if="abgebrochen && lines.length" class="ks__info" role="status">
-      <UiIcon name="info" :size="16" />
+    <UiHinweis v-if="abgebrochen && lines.length" class="ks__info" role="status">
       Die Zahlung wurde abgebrochen, es wurde nichts berechnet. Ihre Angaben sind noch da,
       Sie können es einfach noch einmal versuchen.
-    </p>
+    </UiHinweis>
 
     <div v-if="!loaded" class="ks__wait" aria-hidden="true" />
 
@@ -287,7 +288,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
                 </span>
               </label>
             </div>
-            <p v-if="abholung" class="ks__hint muted">Ihre Adresse brauchen wir für die Rechnung.</p>
+            <p v-if="abholung" class="notiz">Ihre Adresse brauchen wir für die Rechnung.</p>
             <UiField id="strasse" label="Straße und Hausnummer" :error="adresseFehler.strasse">
               <input id="strasse" v-model="adresse.strasse" class="control ks__big" autocomplete="street-address" v-bind="a11y(adresseFehler, 'strasse')">
             </UiField>
@@ -302,9 +303,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
             <UiField v-if="!abholung" id="zusatz" label="Zusätzliche Adressinformation" optional>
               <input id="zusatz" v-model="adresse.zusatz" class="control" placeholder="z. B. Hinterhof, Etage, Ansprechpartner vor Ort">
             </UiField>
-            <p v-if="lieferungStatus === 'fehler'" class="ks__err" role="alert">
-              <UiIcon name="alert" :size="14" /> {{ lieferungMeldung }}
-            </p>
+            <UiFehler v-if="lieferungStatus === 'fehler'">{{ lieferungMeldung }}</UiFehler>
             <UiButton variant="solid" size="sm" class="ks__next" :disabled="lieferungStatus === 'laedt'">
               <template v-if="lieferungStatus === 'laedt'">Fahrtkosten werden berechnet …</template>
               <template v-else-if="abholung">Weiter <UiIcon name="arrow" :size="14" /></template>
@@ -318,7 +317,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
             <!-- Firma: Haekchen links, Feld bis dahin ausgegraut. -->
             <UiField id="firma-name" label="Firma" :error="kontaktFehler.firma" optional>
               <div class="ks__firma" :class="{ 'is-an': istFirma }">
-                <label class="ks__firma-cb">
+                <label class="check ks__firma-cb">
                   <input v-model="istFirma" type="checkbox" aria-label="Ich buche als Firma">
                 </label>
                 <input
@@ -356,10 +355,12 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
               </UiField>
             </div>
             <!-- Nur bei aelterem Warenkorb ohne Layout-Wahl. -->
-            <div v-if="mitLayout && !layouts.length" class="ks__nachholen" :class="{ 'is-err': kontaktFehler.layouts }">
-              <span><UiIcon name="info" :size="14" /> Für Ihr eigenes Fotolayout fehlt noch die Auswahl.</span>
-              <UiButton type="button" variant="light" size="sm" @click="layoutsNachholen">Layout wählen</UiButton>
-            </div>
+            <UiHinweis v-if="mitLayout && !layouts.length" :ton="kontaktFehler.layouts ? 'fehler' : 'info'">
+              Für Ihr eigenes Fotolayout fehlt noch die Auswahl.
+              <template #aktion>
+                <UiButton type="button" variant="light" size="sm" @click="layoutsNachholen">Layout wählen</UiButton>
+              </template>
+            </UiHinweis>
             <UiButton variant="solid" size="sm" class="ks__next">Weiter <UiIcon name="arrow" :size="14" /></UiButton>
           </form>
         </BookingStep>
@@ -372,7 +373,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
                 <span class="opt__name">Online bezahlen</span>
                 <span class="opt__sub">Karte, PayPal, Apple Pay, Google Pay, Klarna</span>
               </span>
-              <span v-if="!config.public.onlinePayment" class="ks__soon">bald</span>
+              <span v-if="!config.public.onlinePayment" class="etikett">bald</span>
             </label>
             <label class="opt" :class="{ 'is-sel': zahlungsart === 'ueberweisung' }">
               <input v-model="zahlungsart" type="radio" name="zahlung" value="ueberweisung">
@@ -396,9 +397,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
                   und akzeptiere dessen Bedingungen.
                 </span>
               </label>
-              <p v-if="vertragFehlt" id="vertrag-fehler" class="ks__err">
-                <UiIcon name="alert" :size="14" /> Bitte bestätigen Sie den Mietvertrag.
-              </p>
+              <UiFehler v-if="vertragFehlt" id="vertrag-fehler">Bitte bestätigen Sie den Mietvertrag.</UiFehler>
             </div>
 
             <!-- Louis, 11.11.2026: nur fuer Privatkunden (Verbraucher-Widerrufsrecht). -->
@@ -414,15 +413,12 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
                   <NuxtLink to="/widerruf" target="_blank" class="ks__mehr">Widerrufsbelehrung</NuxtLink>
                 </span>
               </label>
-              <p v-if="widerrufFehlt" id="widerruf-fehler" class="ks__err">
-                <UiIcon name="alert" :size="14" /> Bitte stimmen Sie zu, damit wir Ihre Buchung ausführen können.
-              </p>
+              <UiFehler v-if="widerrufFehlt" id="widerruf-fehler">Bitte stimmen Sie zu, damit wir Ihre Buchung ausführen können.</UiFehler>
             </div>
 
-            <p v-if="status === 'fehler'" class="ks__fail" role="alert">
-              <UiIcon name="alert" :size="16" /> {{ fehlerText }}
-              <a :href="`tel:${contact.phoneRaw}`">{{ contact.phone }}</a>
-            </p>
+            <UiHinweis v-if="status === 'fehler'" ton="fehler">
+              {{ fehlerText }} <a :href="`tel:${contact.phoneRaw}`">{{ contact.phone }}</a>
+            </UiHinweis>
 
             <UiButton variant="solid" size="lg" class="ks__buy" :disabled="status === 'sendet'" @click="bestellen">
               <template v-if="status === 'sendet'">Wird bestellt …</template>
@@ -463,12 +459,11 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
             <dd>{{ formatPrice(deposit) }}</dd>
           </div>
         </dl>
-        <p v-if="fahrtkostenOffen" class="ks__note ks__note--offen">
-          <UiIcon name="info" :size="14" />
-          <span>Die Fahrtkosten konnten gerade nicht automatisch berechnet werden. Sie können
-            trotzdem bestellen, wir teilen Ihnen die Fahrtkosten danach mit.</span>
-        </p>
-        <p class="ks__note muted">
+        <UiHinweis v-if="fahrtkostenOffen">
+          Die Fahrtkosten konnten gerade nicht automatisch berechnet werden. Sie können
+          trotzdem bestellen, wir teilen Ihnen die Fahrtkosten danach mit.
+        </UiHinweis>
+        <p class="notiz">
           <template v-if="!abholung">Lieferung im Freiradius kostenlos, danach {{ formatPrice(tarif.proKmCent) }} pro km.</template>
           Die Kaution erhalten Sie nach der Rückgabe zurück, wenn alles vollständig und unbeschädigt ist.
         </p>
@@ -481,20 +476,19 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
     />
 
     <!-- Danke-Fenster nach der Bestellung (Louis' Brief). -->
-    <div v-if="bestellt" class="ks__done-bg" role="dialog" aria-modal="true" aria-labelledby="danke-h">
-      <div class="ks__done">
-        <span class="ks__done-icon"><UiIcon name="check" :size="26" /></span>
-        <h2 id="danke-h" class="display ks__done-h">Danke für Ihre Bestellung!</h2>
-        <p class="muted">Bestellnummer <strong>{{ bestellt }}</strong></p>
+    <!-- Schliessen fuehrt zur Startseite: der Warenkorb ist dann leer. -->
+    <UiDialog ref="dankeDlg" breite="30rem" label="Bestellung abgeschickt" @zu="navigateTo('/')">
+      <UiErfolg titel="Danke für Ihre Bestellung!">
+        <p>Bestellnummer <strong>{{ bestellt }}</strong></p>
         <p>
           Sie erhalten gleich eine E-Mail mit den Zahlungsinformationen.
           <template v-if="zahlungBis">Bitte überweisen Sie bis <strong>{{ fristText(zahlungBis) }}</strong>, so lange halten wir den Termin für Sie frei.</template>
           Sobald Ihre Überweisung da ist, bekommen Sie die Buchungsbestätigung mit
           Rechnung und unseren Mietbedingungen per E-Mail.
         </p>
-        <UiButton to="/" variant="solid">Zur Startseite</UiButton>
-      </div>
-    </div>
+        <template #aktion><UiButton to="/" variant="solid">Zur Startseite</UiButton></template>
+      </UiErfolg>
+    </UiDialog>
   </div>
   </div>
 </template>
@@ -503,12 +497,7 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 @import '~/components/product/booking.css';
 
 .ks__page { padding-top: var(--s-7); }
-.ks__info {
-  display: flex; align-items: start; gap: 0.5rem; margin-bottom: var(--s-5);
-  padding: var(--s-3) var(--s-4); font-size: var(--t-small);
-  background: rgb(195 139 55 / 0.08); border-left: 2px solid var(--c-gold);
-}
-.ks__info svg { flex: none; margin-top: 0.15rem; color: var(--c-gold); }
+.ks__info { margin-bottom: var(--s-5); }
 .ks__wait { min-height: 40vh; }
 
 .ks { display: grid; gap: var(--s-7); align-items: start; }
@@ -524,40 +513,29 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 /* Louis: Adressfeld deutlicher, damit man sieht, dass es Pflicht ist. */
 .ks__big { border-width: 1.5px; }
 .ks__next { justify-self: end; }
-.ks__hint { font-size: var(--t-small); }
 .ks__firma { display: flex; align-items: stretch; }
 .ks__firma-cb {
   display: grid; place-items: center; flex: none; width: 3rem; cursor: pointer;
   border: 1px solid var(--c-gold-hair); border-right: 0; border-radius: var(--r-sm) 0 0 var(--r-sm);
   background: var(--c-paper);
 }
-.ks__firma-cb input { width: 1.1rem; height: 1.1rem; accent-color: var(--c-gold); cursor: pointer; }
+.ks__firma-cb.check { grid-template-columns: none; gap: 0; align-items: center; }
+.ks__firma-cb input { margin: 0; }
 .ks__firma .control { border-radius: 0 var(--r-sm) var(--r-sm) 0; }
 .ks__firma .control:disabled { background: var(--c-paper); color: var(--c-text-muted); cursor: not-allowed; opacity: 0.7; }
-.ks__firma.is-an .ks__firma-cb { border-color: var(--c-gold); background: rgb(195 139 55 / 0.08); }
-.ks__nachholen {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3);
-  padding: var(--s-3) var(--s-4); font-size: var(--t-small);
-  background: rgb(195 139 55 / 0.08); border-left: 2px solid var(--c-gold);
-}
-.ks__nachholen.is-err { border-left-color: var(--c-danger); background: rgb(192 57 43 / 0.06); }
-.ks__nachholen span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.ks__firma.is-an .ks__firma-cb { border-color: var(--c-gold); background: var(--c-gold-tint); }
 .ks__lay { display: grid; gap: var(--s-2); padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-gold-hair); }
 .ks__lay-h { color: var(--c-text); }
 .ks__lay ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .ks__lay img { height: 3.6rem; width: auto; border-radius: 3px; background: #1A1614; padding: 2px; }
 .ks__mehr { display: inline-block; margin-left: 0.25rem; }
-.ks__err { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; color: var(--c-danger); }
-.ks__soon { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-text-muted); }
 .opt.is-off { cursor: default; opacity: 0.6; }
 .opt.is-off:hover { border-color: var(--c-gold-hair); }
 .opts + .ks__next { display: flex; width: fit-content; margin: var(--s-4) 0 0 auto; }
 
 .ks__final { display: grid; gap: var(--s-4); padding-top: var(--s-2); }
 .ks__vertrag { display: grid; gap: var(--s-2); padding: var(--s-4); border: 1px solid var(--c-gold-hair); border-radius: var(--r-sm); transition: border-color var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out); }
-.ks__vertrag.is-err { border-color: var(--c-danger); background: rgb(192 57 43 / 0.06); }
-.ks__fail { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: var(--t-small); color: var(--c-danger); }
-.ks__fail a { color: var(--c-text); text-decoration: underline; }
+.ks__vertrag.is-err { border-color: var(--c-danger); background: var(--c-danger-tint); }
 .ks__buy { width: 100%; }
 
 .ks__sum {
@@ -568,29 +546,11 @@ const a11y = (fehler: Record<string, string | undefined>, f: string) => ({
 .ks__sum-h { color: var(--c-text); }
 .ks__items { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-2); font-size: var(--t-small); }
 .ks__items li { display: flex; justify-content: space-between; gap: var(--s-3); }
-.ks__items li.is-addon { color: var(--c-text-muted); font-size: 0.8125rem; }
+.ks__items li.is-addon { color: var(--c-text-muted); font-size: var(--t-xs); }
 .ks__sum dl { display: grid; gap: var(--s-2); margin: 0; padding-top: var(--s-3); border-top: 1px solid var(--c-gold-hair); font-size: var(--t-small); }
 .ks__sum dl > div { display: flex; justify-content: space-between; gap: var(--s-3); }
 .ks__sum dd { margin: 0; white-space: nowrap; }
 .ks__total { font-size: 1.1rem; font-weight: 600; padding-top: var(--s-2); border-top: 1px solid var(--c-gold-hair); }
 .ks__total dd { color: var(--c-gold); }
-.ks__note { font-size: 0.8125rem; }
-.ks__note--offen { display: flex; gap: 0.4rem; align-items: start; padding: var(--s-3); background: rgb(195 139 55 / 0.08); border-left: 2px solid var(--c-gold); }
-.ks__note--offen svg { flex: none; margin-top: 0.15rem; color: var(--c-gold); }
 
-.ks__done-bg {
-  position: fixed; inset: 0; z-index: 100;
-  display: grid; place-items: center; padding: var(--s-5);
-  background: rgb(0 0 0 / 0.55);
-}
-.ks__done {
-  display: grid; justify-items: center; gap: var(--s-3); text-align: center;
-  max-width: 28rem; padding: var(--s-7) var(--s-6);
-  background: var(--c-paper-pure); border-radius: var(--r-md); box-shadow: var(--shadow-card);
-}
-.ks__done-icon {
-  display: grid; place-items: center; width: 4rem; height: 4rem; border-radius: 50%;
-  color: var(--c-gold); border: 1px solid var(--c-gold-hair);
-}
-.ks__done-h { font-size: var(--t-h3); }
 </style>

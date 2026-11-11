@@ -102,9 +102,9 @@ function addToCart() {
         </ClientOnly>
         <!-- Ein Klick waehlt einen Tag. Dass ein zweiter Klick den Zeitraum
              verlaengert, sieht man sonst nicht. -->
-        <p v-if="days === 1" class="bk__small muted bk__tip">Mehrere Tage? Letzten Tag anklicken.</p>
+        <p v-if="days === 1" class="notiz bk__tip">Mehrere Tage? Letzten Tag anklicken.</p>
         <div class="bk__row">
-          <span v-if="days" class="bk__small">{{ rangeLabel }}</span>
+          <span v-if="days" class="notiz">{{ rangeLabel }}</span>
           <UiButton
             variant="solid" size="sm" class="bk__next"
             :disabled="!days || !rangeOk" @click="steps.complete(1)"
@@ -152,10 +152,10 @@ function addToCart() {
       <UiIcon name="cart" :size="18" /> In den Warenkorb
     </UiButton>
 
-    <p v-if="added" class="bk__ok" role="status">
-      <UiIcon name="check" :size="16" />
-      Im Warenkorb. <NuxtLink to="/warenkorb">Zum Warenkorb</NuxtLink>
-    </p>
+    <UiHinweis v-if="added" ton="erfolg">
+      Im Warenkorb.
+      <template #aktion><NuxtLink to="/warenkorb">Zum Warenkorb</NuxtLink></template>
+    </UiHinweis>
   </div>
 </template>
 

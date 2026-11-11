@@ -105,10 +105,9 @@ function springe(i: number) {
       </template>
       <!-- Ohne pdf.js: der Text direkt. Mit pdf.js zum Aufklappen. -->
       <RechtstextInhalt v-if="fehler" :text="text" ohne-inhalt />
-      <details v-else class="pl__text">
-        <summary>Textfassung anzeigen</summary>
+      <UiAufklapper v-else titel="Textfassung anzeigen" class="pl__text">
         <RechtstextInhalt :text="text" ohne-inhalt />
-      </details>
+      </UiAufklapper>
     </div>
   </div>
 </template>
@@ -124,7 +123,7 @@ function springe(i: number) {
 .pl__dl {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
   padding: 0.75rem 1rem; border-radius: var(--r-sm);
-  background: var(--c-gold); color: #FFFFFF;
+  background: var(--c-gold); color: var(--c-on-gold);
   font-size: var(--t-label); font-weight: 600; letter-spacing: var(--tr-label); text-transform: uppercase;
 }
 .pl__dl:hover { background: var(--c-gold-lift); }
@@ -149,6 +148,4 @@ function springe(i: number) {
 .pl__blatt:not(.is-da) { background: linear-gradient(90deg, #FFFFFF, #F6F3EE, #FFFFFF); }
 .pl__blatt canvas { display: block; width: 100%; height: 100%; }
 .pl__text { margin-top: var(--s-4); }
-.pl__text summary { cursor: pointer; font-size: var(--t-small); color: var(--c-text-muted); margin-bottom: var(--s-5); }
-.pl__text summary:hover { color: var(--c-gold); }
 </style>

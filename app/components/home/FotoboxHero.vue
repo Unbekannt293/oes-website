@@ -121,7 +121,7 @@ function onClick(e: MouseEvent) {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background: #0B0A09;
+  background: var(--c-buehne);
   touch-action: pan-y;
 }
 

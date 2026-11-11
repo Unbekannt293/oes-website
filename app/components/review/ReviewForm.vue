@@ -16,31 +16,16 @@ const form = reactive({
   einwilligung: false, website: '', bilder: [] as string[],
 })
 
-// Fotos: im Browser verkleinert (app/utils/fotoVerkleinern.ts), Vorschau
-// sind die fertigen Data-URLs. Mehr als BILDER_MAX werden ignoriert.
-const fotoLaeuft = ref(false)
-const fotoInput = ref<HTMLInputElement | null>(null)
-async function fotosWaehlen(e: Event) {
-  const input = e.target as HTMLInputElement
-  const dateien = [...(input.files ?? [])].slice(0, BILDER_MAX - form.bilder.length)
-  input.value = '' // dasselbe Foto spaeter noch einmal waehlbar
-  delete errors.bilder
-  fotoLaeuft.value = true
-  for (const d of dateien) {
-    try {
-      form.bilder.push(await fotoVerkleinern(d))
-    }
-    catch {
-      errors.bilder = 'Ein Foto ließ sich nicht verarbeiten. Bitte ein anderes wählen (JPG, PNG oder HEIC).'
-    }
-  }
-  fotoLaeuft.value = false
-}
+// Fotos: im Browser verkleinert (app/utils/fotoVerkleinern.ts), der Upload
+// ist derselbe Baustein wie beim Logo (UiUpload).
+const fotos = computed({
+  get: () => form.bilder.map(src => ({ src })),
+  set: (v: { src: string }[]) => { form.bilder = v.map(x => x.src); delete errors.bilder },
+})
 watch(() => bezug, (b) => { form.bezug = b })
 const hover = ref(0)
 // Zeitfalle gegen Bots: wie lange das Formular offen war (server/utils/bremse.ts).
-let geoeffnet = 0
-onMounted(() => { geoeffnet = Date.now() })
+const { ausfuellzeit } = useZeitfalle()
 const errors = reactive<Partial<Record<Field, string>>>({})
 const status = ref<'idle' | 'sending' | 'sent' | 'failed'>('idle')
 const tried = ref(false)
@@ -62,7 +47,7 @@ async function submit() {
   if (!data) return
   status.value = 'sending'
   try {
-    await $fetch('/api/bewertungen', { method: 'POST', body: { ...data, ausfuellzeit: Date.now() - geoeffnet } })
+    await $fetch('/api/bewertungen', { method: 'POST', body: { ...data, ausfuellzeit: ausfuellzeit() } })
     status.value = 'sent'
     Object.assign(form, { name: '', sterne: 0, text: '', einwilligung: false, bilder: [] })
     tried.value = false
@@ -88,12 +73,12 @@ function a11y(field: Field) {
 
 <template>
   <div class="bf">
-    <div v-if="status === 'sent'" class="bf__done" role="status">
-      <span class="bf__badge"><UiIcon name="check" :size="24" /></span>
-      <h3 class="display bf__done-h">Vielen Dank!</h3>
-      <p class="muted">Ihre Bewertung erscheint, sobald wir sie freigeschaltet haben.</p>
-      <UiButton variant="outline" size="sm" @click="status = 'idle'; emit('fertig')">Weitere Bewertung schreiben</UiButton>
-    </div>
+    <UiErfolg v-if="status === 'sent'" titel="Vielen Dank!">
+      <p>Ihre Bewertung erscheint, sobald wir sie freigeschaltet haben.</p>
+      <template #aktion>
+        <UiButton variant="outline" size="sm" @click="status = 'idle'; emit('fertig')">Weitere Bewertung schreiben</UiButton>
+      </template>
+    </UiErfolg>
 
     <form v-else novalidate class="bf__form" @submit.prevent="submit">
       <fieldset class="bf__stars-set">
@@ -106,7 +91,7 @@ function a11y(field: Field) {
           </label>
           <span class="bf__stars-txt muted">{{ sterneText[hover || form.sterne] }}</span>
         </div>
-        <p v-if="errors.sterne" id="bw-sterne-fehler" class="bf__err"><UiIcon name="alert" :size="14" />{{ errors.sterne }}</p>
+        <UiFehler v-if="errors.sterne" id="bw-sterne-fehler">{{ errors.sterne }}</UiFehler>
       </fieldset>
 
       <UiField id="bw-name" label="Name" :error="errors.name">
@@ -132,29 +117,11 @@ function a11y(field: Field) {
 
       <div class="bf__fotos">
         <p class="label bf__legend">Fotos <span class="muted bf__opt">(optional, bis zu {{ BILDER_MAX }})</span></p>
-        <ul class="bf__thumbs">
-          <li v-for="(src, i) in form.bilder" :key="i" class="bf__thumb">
-            <img :src="src" :alt="`Foto ${i + 1}`">
-            <button type="button" class="bf__thumb-x" :aria-label="`Foto ${i + 1} entfernen`" @click="form.bilder.splice(i, 1)">
-              <UiIcon name="close" :size="14" />
-            </button>
-          </li>
-          <li v-if="form.bilder.length < BILDER_MAX">
-            <button type="button" class="bf__add" :disabled="fotoLaeuft" @click="fotoInput?.click()">
-              <template v-if="fotoLaeuft">…</template>
-              <template v-else><UiIcon name="camera" :size="22" /><span>Foto</span></template>
-            </button>
-          </li>
-        </ul>
-        <input ref="fotoInput" type="file" accept="image/*" multiple class="visually-hidden" tabindex="-1" @change="fotosWaehlen">
-        <p v-if="errors.bilder" class="bf__err"><UiIcon name="alert" :size="14" />{{ errors.bilder }}</p>
+        <UiUpload v-model="fotos" :lesen="fotoVerkleinern" :max="BILDER_MAX" label="Foto" accept="image/*" />
+        <UiFehler v-if="errors.bilder">{{ errors.bilder }}</UiFehler>
       </div>
 
-      <!-- Honeypot: fuer Menschen unsichtbar und nicht per Tab erreichbar. -->
-      <div class="bf__trap" aria-hidden="true">
-        <label for="bw-website">Website</label>
-        <input id="bw-website" v-model="form.website" type="text" tabindex="-1" autocomplete="off">
-      </div>
+      <UiFalle v-model="form.website" />
 
       <div>
         <label class="check">
@@ -164,19 +131,18 @@ function a11y(field: Field) {
             veröffentlicht wird<template v-if="form.bilder.length">, und habe die Rechte an den Fotos</template>. Mehr dazu in der <NuxtLink to="/datenschutz">Datenschutzerklärung</NuxtLink>.
           </span>
         </label>
-        <p v-if="errors.einwilligung" id="bw-einwilligung-fehler" class="bf__err"><UiIcon name="alert" :size="14" />{{ errors.einwilligung }}</p>
+        <UiFehler v-if="errors.einwilligung" id="bw-einwilligung-fehler">{{ errors.einwilligung }}</UiFehler>
       </div>
 
-      <p v-if="status === 'failed'" class="bf__fail" role="alert">
-        <UiIcon name="alert" :size="16" />
+      <UiHinweis v-if="status === 'failed'" ton="fehler">
         Das hat gerade nicht geklappt. Bitte versuchen Sie es später noch einmal.
-      </p>
+      </UiHinweis>
 
-      <UiButton variant="solid" class="bf__submit" :disabled="status === 'sending' || fotoLaeuft" :aria-busy="status === 'sending'">
+      <UiButton variant="solid" class="bf__submit" :disabled="status === 'sending'" :aria-busy="status === 'sending'">
         <template v-if="status === 'sending'">Wird gesendet …</template>
         <template v-else><UiIcon name="send" :size="16" /> Bewertung absenden</template>
       </UiButton>
-      <p class="bf__hint muted"><UiIcon name="lock" :size="14" /> Ihre Bewertung wird nach Prüfung veröffentlicht.</p>
+      <p class="notiz bf__hint"><UiIcon name="lock" :size="14" /> Ihre Bewertung wird nach Prüfung veröffentlicht.</p>
     </form>
   </div>
 </template>
@@ -194,29 +160,10 @@ function a11y(field: Field) {
 .bf__radio { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .bf__star:has(.bf__radio:focus-visible) { outline: 2px solid var(--c-gold); outline-offset: 2px; border-radius: var(--r-sm); }
 .bf__stars-txt { margin-left: var(--s-3); font-size: var(--t-small); }
-.bf__trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.bf__err { display: flex; align-items: center; gap: 0.4rem; margin-top: var(--s-2); font-size: 0.8125rem; color: var(--c-danger); }
-.bf__fail { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); color: var(--c-danger); }
 .bf__area { position: relative; }
 .bf__area textarea { padding-bottom: 1.75rem; resize: vertical; }
-.bf__count { position: absolute; right: 0.75rem; bottom: 0.5rem; font-size: 0.75rem; pointer-events: none; }
+.bf__count { position: absolute; right: 0.75rem; bottom: 0.5rem; font-size: var(--t-2xs); pointer-events: none; }
 .bf__submit { width: 100%; gap: var(--s-2); }
 .bf__opt { text-transform: none; letter-spacing: 0; font-weight: 400; }
-.bf__thumbs { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
-.bf__thumb { position: relative; width: 5.5rem; height: 5.5rem; border-radius: var(--r-sm); overflow: hidden; border: var(--border-hair); }
-.bf__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.bf__thumb-x {
-  position: absolute; top: 0.25rem; right: 0.25rem; display: grid; place-items: center;
-  width: 1.6rem; height: 1.6rem; border-radius: 50%; background: rgb(0 0 0 / 0.65); color: #FFFFFF;
-}
-.bf__add {
-  display: grid; place-items: center; align-content: center; gap: 0.2rem;
-  width: 5.5rem; height: 5.5rem; border-radius: var(--r-sm);
-  border: 1px dashed var(--c-gold); color: var(--c-gold); font-size: 0.75rem;
-}
-.bf__add:hover:not(:disabled) { background: rgb(184 146 74 / 0.06); }
-.bf__hint { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); margin-top: calc(-1 * var(--s-3)); }
-.bf__done { display: grid; justify-items: center; gap: var(--s-3); padding: var(--s-6) 0; text-align: center; }
-.bf__badge { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; color: var(--c-gold); border: 1px solid var(--c-gold); }
-.bf__done-h { font-size: var(--t-h3); }
+.bf__hint { margin-top: calc(-1 * var(--s-3)); }
 </style>

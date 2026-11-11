@@ -74,8 +74,8 @@ const {
    jedem Banner (Lukas, 18.10.2026), beim schmalen Streifen ist es das einzige. */
 .ph {
   --ph-licht:
-    radial-gradient(45% 150% at 0% 0%, rgb(195 139 55 / 0.16), transparent 70%),
-    radial-gradient(45% 150% at 100% 0%, rgb(195 139 55 / 0.16), transparent 70%);
+    radial-gradient(45% 150% at 0% 0%, var(--c-gold-glow), transparent 70%),
+    radial-gradient(45% 150% at 100% 0%, var(--c-gold-glow), transparent 70%);
 }
 .ph.ph--slim::before,
 .ph.ph--bare::before { background: var(--ph-licht); }
@@ -95,7 +95,7 @@ const {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: #0B0A09;
+  background: var(--c-buehne);
 }
 
 .ph__img {

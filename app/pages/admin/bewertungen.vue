@@ -38,7 +38,7 @@ async function aktion(b: AdminBewertung, was: 'freigeben' | 'verbergen' | 'loesc
         </button>
       </div>
     </div>
-    <p v-if="fehler" class="bw__fehler" role="alert">{{ fehler }}</p>
+    <UiHinweis v-if="fehler" ton="fehler">{{ fehler }}</UiHinweis>
     <p v-if="!liste.length" class="muted bw__leer">
       {{ filter === 'wartend' ? 'Keine neuen Bewertungen. Alles erledigt.' : 'Noch nichts freigegeben.' }}
     </p>
@@ -61,9 +61,8 @@ async function aktion(b: AdminBewertung, was: 'freigeben' | 'verbergen' | 'loesc
 .bw__h { font-size: var(--t-h2); }
 .bw__seg { display: inline-flex; padding: 0.25rem; background: var(--c-paper-pure); border: var(--border-hair); border-radius: 99px; }
 .bw__seg-b { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 99px; font-size: var(--t-small); color: var(--c-text-muted); }
-.bw__seg-b[aria-selected='true'] { background: var(--c-gold); color: #FFFFFF; }
+.bw__seg-b[aria-selected='true'] { background: var(--c-gold); color: var(--c-on-gold); }
 .bw__zahl { min-width: 1.3rem; padding: 0 0.35rem; border-radius: 99px; background: var(--c-danger); color: #FFFFFF; font-size: 0.7rem; text-align: center; }
-.bw__fehler { color: var(--c-danger); }
 .bw__leer { padding: var(--s-7) 0; text-align: center; }
 .bw__liste { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
 .bw__karte { display: grid; gap: var(--s-4); align-content: space-between; padding: var(--s-5); background: var(--c-paper-pure); border: var(--border-hair); border-radius: var(--r-md); }

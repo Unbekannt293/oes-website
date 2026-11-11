@@ -160,14 +160,14 @@ watchEffect(() => {
 .cal__grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
 .cal__dow {
   padding-bottom: var(--s-1); text-align: center;
-  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em; color: var(--c-text-muted);
+  font-size: var(--t-label); font-weight: 600; letter-spacing: 0.06em; color: var(--c-text-muted);
 }
 .cal__dow.is-we { color: var(--c-gold); }
 
 .cal__day {
   aspect-ratio: 1; max-height: 2.75rem;
   display: grid; place-items: center;
-  font-size: 0.875rem; font-variant-numeric: tabular-nums;
+  font-size: var(--t-small); font-variant-numeric: tabular-nums;
   color: var(--c-text); border-radius: var(--r-sm);
   transition: background var(--d-fast) var(--e-out), color var(--d-fast) var(--e-out);
 }
@@ -175,17 +175,17 @@ watchEffect(() => {
 .cal__day:hover:not(:disabled) { background: rgb(195 139 55 / 0.28); }
 .cal__day.is-today { box-shadow: inset 0 0 0 1px var(--c-gold-hair); }
 .cal__day.is-range { background: rgb(195 139 55 / 0.35); }
-.cal__day.is-sel, .cal__day.is-sel:hover { background: var(--c-gold); color: #FFFFFF; font-weight: 600; }
+.cal__day.is-sel, .cal__day.is-sel:hover { background: var(--c-gold); color: var(--c-on-gold); font-weight: 600; }
 .cal__day:disabled { color: var(--c-text-muted); opacity: 0.4; cursor: default; }
 .cal__day.is-busy { text-decoration: line-through; background: transparent; }
 .cal__day:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 1px; }
 
-.cal__warn { font-size: 0.8125rem; color: var(--c-danger); }
+.cal__warn { font-size: var(--t-xs); color: var(--c-danger); }
 
 .cal__legend {
   list-style: none; padding: 0; margin: 0;
   display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4);
-  font-size: 0.75rem; color: var(--c-text-muted);
+  font-size: var(--t-2xs); color: var(--c-text-muted);
 }
 .cal__legend li { display: flex; align-items: center; gap: 0.4rem; }
 .cal__sw {

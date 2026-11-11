@@ -96,7 +96,7 @@ useSeoMeta({
                 <span class="row__meta">{{ l.meta }}</span>
               </span>
 
-              <span v-if="l.soon" class="label row__soon">bald verfügbar</span>
+              <span v-if="l.soon" class="etikett row__soon">bald verfügbar</span>
               <svg
                 v-else class="row__go" aria-hidden="true" viewBox="0 0 24 24"
                 width="15" height="15" fill="none" stroke="currentColor"
@@ -170,7 +170,7 @@ a.row:hover { border-color: var(--c-gold); box-shadow: var(--shadow-card); }
 a.row:hover .badge { background: #1C1B19; }
 
 .row__text { display: grid; gap: 2px; min-width: 0; }
-.row__label { font-size: 0.75rem; color: var(--c-text); }
+.row__label { font-size: var(--t-2xs); color: var(--c-text); }
 .row__meta {
   font-size: var(--t-small); color: var(--c-text-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -178,10 +178,7 @@ a.row:hover .badge { background: #1C1B19; }
 
 .row__go { flex: none; margin-left: auto; color: var(--c-gold); }
 
-.row__soon {
-  flex: none; margin-left: auto;
-  font-size: 0.5625rem; color: var(--c-text-muted);
-}
+.row__soon { flex: none; margin-left: auto; }
 
 /* ---- Telefon ---- */
 .tel {
@@ -196,7 +193,7 @@ a.row:hover .badge { background: #1C1B19; }
 .tel a:hover { color: var(--c-gold); border-color: var(--c-gold); }
 
 .legal { margin-top: var(--s-6); text-align: center; }
-.legal a { font-size: 0.75rem; color: var(--c-text-muted); }
+.legal a { font-size: var(--t-2xs); color: var(--c-text-muted); }
 .legal a:hover { color: var(--c-gold); }
 
 /* Ausgegraut: gestrichelte Kontur, keine Fuellung */

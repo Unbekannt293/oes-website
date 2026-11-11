@@ -135,7 +135,7 @@ function onScroll() {
 }
 .gal__btn--prev { left: var(--s-3); }
 .gal__btn--next { right: var(--s-3); }
-.gal__btn:hover { background: var(--c-gold); color: #FFFFFF; }
+.gal__btn:hover { background: var(--c-gold); color: var(--c-on-gold); }
 .gal__flip { transform: scaleX(-1); }
 /* Pfeile erst beim Hovern, mit Tastatur und auf Touch-Geraeten immer. */
 .gal:hover .gal__btn,

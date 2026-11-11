@@ -85,7 +85,7 @@ function entfernen(r: PreisRegel) {
       Neue Preise gelten sofort für neue Buchungen. Bestehende Buchungen behalten ihren Preis.
       Komplettpakete sind Festpreise für Paket und Soundboxen zusammen.
     </p>
-    <p v-if="fehler" class="pr__fehler" role="alert">{{ fehler }}</p>
+    <UiHinweis v-if="fehler" ton="fehler" class="pr__fehler">{{ fehler }}</UiHinweis>
 
     <!-- ============ Aktionen ============ -->
     <section class="pr__box" aria-labelledby="ak-h">
@@ -150,7 +150,7 @@ function entfernen(r: PreisRegel) {
 .pr { display: grid; gap: var(--s-5); max-width: 52rem; }
 .pr__h { font-size: var(--t-h2); }
 .pr__intro, .pr__klein { font-size: var(--t-small); max-width: 62ch; }
-.pr__fehler { position: sticky; top: var(--s-3); z-index: 2; padding: var(--s-3) var(--s-4); background: #FDECEA; color: var(--c-danger); border-radius: var(--r-md); font-size: var(--t-small); }
+.pr__fehler { position: sticky; top: var(--s-3); z-index: 2; }
 .pr__box { display: grid; gap: var(--s-3); padding: var(--s-5); background: var(--c-paper-pure); border: var(--border-hair); border-radius: var(--r-md); }
 .pr__gruppe { color: var(--c-gold); margin-bottom: var(--s-1); }
 
@@ -186,7 +186,7 @@ function entfernen(r: PreisRegel) {
   padding: var(--s-3) var(--s-4); border: var(--border-hair); border-radius: var(--r-md); font-size: var(--t-small);
 }
 .pr__ak-liste li.is-vorbei { opacity: 0.55; }
-.pr__ak-st { padding: 0.15rem 0.55rem; border-radius: 99px; background: var(--c-paper); font-size: 0.75rem; font-weight: 600; }
+.pr__ak-st { padding: 0.15rem 0.55rem; border-radius: 99px; background: var(--c-paper); font-size: var(--t-2xs); font-weight: 600; }
 .is-laeuft .pr__ak-st { background: rgb(46 125 91 / 0.12); color: var(--c-success); }
 .pr__weg { color: var(--c-danger); font-weight: 600; font-size: var(--t-small); }
 </style>

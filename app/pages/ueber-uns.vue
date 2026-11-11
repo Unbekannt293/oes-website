@@ -61,9 +61,7 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
         <h2 id="werte-h" class="label values__h">Unsere Werte</h2>
         <ul class="values__list">
           <li v-for="v in values" :key="v">
-            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-              <path d="M12 2l2.4 7.2H22l-6 4.5 2.3 7.3-6.3-4.6L5.7 21 8 13.7 2 9.2h7.6z" fill="currentColor" />
-            </svg>
+            <UiIcon name="funke" :size="16" />
             <span class="display">{{ v }}</span>
           </li>
         </ul>
@@ -100,7 +98,7 @@ const values = ['Zuverlässig', 'Persönlich', 'Kompetent', 'Leidenschaftlich']
   background:
     radial-gradient(60% 80% at 0% 0%, rgb(195 139 55 / 0.22), transparent 70%),
     radial-gradient(60% 80% at 100% 0%, rgb(195 139 55 / 0.22), transparent 70%),
-    #0B0A09;
+    var(--c-buehne);
 }
 .ab__louis-bg img {
   display: block; width: 100%; height: auto;

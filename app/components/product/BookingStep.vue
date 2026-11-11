@@ -63,14 +63,14 @@ const isOpen = computed(() => state === 'active')
   align-self: flex-start; margin-top: 0.1rem;
   display: inline-grid; place-items: center; flex: none;
   width: 1.4rem; height: 1.4rem; border-radius: 50%;
-  font-size: 0.75rem; font-weight: 600;
+  font-size: var(--t-2xs); font-weight: 600;
   border: 1px solid currentColor; opacity: 0.6;
 }
 .st--active .st__no { color: #FFFFFF; background: var(--c-text); border-color: var(--c-text); opacity: 1; }
 .st__text { flex: 1; min-width: 0; display: grid; }
 /* Gewaehlter Wert unter dem Titel: so passt auch "23.10.–25.10. · 3 Tage". */
 .st__val {
-  font-size: 0.8125rem; font-weight: 400; color: var(--c-text);
+  font-size: var(--t-xs); font-weight: 400; color: var(--c-text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .st__check { flex: none; color: var(--c-gold); }

@@ -152,8 +152,8 @@ a.kt__val:hover { color: var(--c-gold); }
   display: inline-flex; align-items: center; gap: 0.4rem;
   transition: background var(--d-fast) var(--e-out);
   padding: 0.4rem 0.75rem;
-  font-size: 0.8125rem; font-weight: 600;
-  color: #FFFFFF;
+  font-size: var(--t-xs); font-weight: 600;
+  color: var(--c-on-gold);
   background: var(--c-gold);
   border-radius: var(--r-md);
 }
@@ -165,7 +165,7 @@ a.kt__val:hover { color: var(--c-gold); }
   font-weight: 500;
 }
 .kt__maparea { display: block; }
-.kt__osm { font-size: 0.6875rem; color: #A9A296; }
+.kt__osm { font-size: var(--t-label); color: #A9A296; }
 .kt__osm:hover { color: #FFFFFF; }
 
 /* ---- Social ---- */

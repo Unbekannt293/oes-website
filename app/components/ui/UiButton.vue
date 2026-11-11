@@ -34,14 +34,14 @@ const tag = computed(() => (to ? resolveComponent('NuxtLink') : 'button'))
 }
 .btn--sm { padding: 0.55rem 1rem; }
 .btn--md { padding: 0.8rem 1.6rem; }
-.btn--lg { padding: 1.05rem 2.4rem; font-size: 0.75rem; }
-.btn--xl { padding: 1.3rem 2.8rem; font-size: 0.8125rem; letter-spacing: 0.16em; }
+.btn--lg { padding: 1.05rem 2.4rem; font-size: var(--t-2xs); }
+.btn--xl { padding: 1.3rem 2.8rem; font-size: var(--t-xs); letter-spacing: 0.16em; }
 
-.btn--solid   { background: var(--c-gold); color: #FFFFFF; }
+.btn--solid   { background: var(--c-gold); color: var(--c-on-gold); }
 .btn--solid:hover   { background: var(--c-gold-lift); }
 
 .btn--outline { border: 1px solid var(--c-gold); color: var(--c-gold); }
-.btn--outline:hover { background: var(--c-gold); color: #FFFFFF; }
+.btn--outline:hover { background: var(--c-gold); color: var(--c-on-gold); }
 
 .btn--ghost   { color: var(--c-text); border: 1px solid var(--c-gold-hair); }
 .btn--ghost:hover   { border-color: var(--c-gold); color: var(--c-gold); }

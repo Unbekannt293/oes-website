@@ -106,7 +106,7 @@ const { count } = useCart()
   position: absolute; top: -0.5rem; right: -0.5rem;
   display: grid; place-items: center;
   min-width: 1.2rem; height: 1.2rem; padding-inline: 0.3rem;
-  font-size: 0.6875rem; font-weight: 700; letter-spacing: 0;
+  font-size: var(--t-label); font-weight: 700; letter-spacing: 0;
   color: var(--c-ink); background: var(--c-gold);
   border: 2px solid var(--c-ink);
   border-radius: 999px;

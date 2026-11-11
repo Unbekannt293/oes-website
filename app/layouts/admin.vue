@@ -39,9 +39,9 @@ const angemeldet = computed(() => route.path !== '/admin/anmelden')
 .adm { min-height: 100dvh; background: var(--c-paper); }
 .adm__bar {
   background:
-    radial-gradient(45% 150% at 0% 0%, rgb(195 139 55 / 0.16), transparent 70%),
-    radial-gradient(45% 150% at 100% 0%, rgb(195 139 55 / 0.16), transparent 70%),
-    #0B0A09;
+    radial-gradient(45% 150% at 0% 0%, var(--c-gold-glow), transparent 70%),
+    radial-gradient(45% 150% at 100% 0%, var(--c-gold-glow), transparent 70%),
+    var(--c-buehne);
 }
 .adm__bar-in { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding-block: var(--s-4); }
 .adm__brand { display: inline-flex; align-items: center; gap: var(--s-3); color: var(--c-gold); }

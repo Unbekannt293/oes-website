@@ -72,7 +72,7 @@ const weitere = computed(() => liste.value.length - karten.value.length)
 .rsec__h { font-size: var(--t-h2); }
 .rsec--kompakt .rsec__h { font-size: var(--t-h3); }
 .rsec__filter { display: grid; gap: 0.3rem; }
-.rsec__filter-l { color: var(--c-text-muted); font-size: 0.6875rem; }
+.rsec__filter-l { color: var(--c-text-muted); font-size: var(--t-label); }
 .rsec__sel { width: auto; min-width: 14rem; padding-block: 0.5rem; }
 .rsec__avg { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); font-size: var(--t-small); }
 .rsec__btns { display: flex; flex-wrap: wrap; gap: var(--s-3); }

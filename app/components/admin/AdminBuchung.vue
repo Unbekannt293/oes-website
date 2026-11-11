@@ -170,13 +170,13 @@ watch(() => b.value.notiz, (n) => { notiz.value = n ?? '' })
       </UiButton>
     </div>
 
-    <p v-if="fehler" class="ab__fehler" role="alert">{{ fehler }}</p>
-    <p v-if="laeuft" class="ab__laeuft" role="status">Einen Moment, wird gespeichert bzw. die Mail wird gesendet …</p>
+    <UiHinweis v-if="fehler" ton="fehler">{{ fehler }}</UiHinweis>
+    <p v-if="laeuft" class="notiz" role="status">Einen Moment, wird gespeichert bzw. die Mail wird gesendet …</p>
 
-    <p v-if="b.bestaetigung_gesendet_am" class="ab__gesendet">
-      <UiIcon name="check" :size="14" /> Buchungsbestätigung mit Rechnung{{ b.rechnungsnummer ? ` ${b.rechnungsnummer}` : '' }}
+    <UiHinweis v-if="b.bestaetigung_gesendet_am" ton="erfolg">
+      Buchungsbestätigung mit Rechnung{{ b.rechnungsnummer ? ` ${b.rechnungsnummer}` : '' }}
       gesendet am {{ kurz(b.bestaetigung_gesendet_am) }}
-    </p>
+    </UiHinweis>
 
     <footer class="ab__aktionen">
       <!-- Ueberweisung: erst nach Zahlungseingang bestaetigen (Mietbedingungen § 6). -->
@@ -238,10 +238,10 @@ watch(() => b.value.notiz, (n) => { notiz.value = n ?? '' })
 .ab__datum { font-size: 1.15rem; font-weight: 600; }
 .ab__nr { font-size: var(--t-small); }
 .ab__status {
-  flex: none; padding: 0.2rem 0.65rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600;
+  flex: none; padding: 0.2rem 0.65rem; border-radius: 99px; font-size: var(--t-2xs); font-weight: 600;
   background: var(--c-paper); color: var(--c-text);
 }
-.ab--angefragt .ab__status { background: var(--c-gold); color: #FFFFFF; }
+.ab--angefragt .ab__status { background: var(--c-gold); color: var(--c-on-gold); }
 .ab--bestaetigt .ab__status { background: rgb(46 125 91 / 0.12); color: var(--c-success); }
 .ab__grid { display: grid; gap: var(--s-5); }
 @media (min-width: 720px) { .ab__grid { grid-template-columns: 1fr 1.2fr; } }
@@ -271,10 +271,7 @@ watch(() => b.value.notiz, (n) => { notiz.value = n ?? '' })
 .ab__fk-btns { display: flex; gap: var(--s-3); }
 .ab__notiz { display: grid; gap: var(--s-2); justify-items: start; }
 .ab__notiz :deep(.field) { width: 100%; }
-.ab__fehler { color: var(--c-danger); font-size: var(--t-small); }
 .ab__aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); padding-top: var(--s-4); border-top: var(--border-hair); }
-.ab__laeuft { font-size: var(--t-small); color: var(--c-text-muted); }
-.ab__gesendet { display: flex; align-items: center; gap: 0.4rem; font-size: var(--t-small); color: var(--c-success); }
 .ab__link { font-size: var(--t-small); font-weight: 600; color: var(--c-gold); text-decoration: underline; text-underline-offset: 2px; }
 .ab__storno { margin-left: auto; color: var(--c-danger); font-size: var(--t-small); font-weight: 600; }
 .ab__storno:disabled { opacity: 0.5; }

@@ -7,7 +7,9 @@ import { formatSchnitt, THEMEN, type Thema, zusammenfassung } from '~~/shared/be
 // untereinander, das Formular zuerst, wenn man ueber "Schreiben" kommt.
 const { zustand } = useBewertungDialog()
 const { zumThema } = useBewertungen()
-const dlg = ref<HTMLDialogElement | null>(null)
+const dlg = ref<{ oeffnen: () => void, schliessen: () => void } | null>(null)
+const schreibBereich = ref<HTMLElement | null>(null)
+const istOffen = ref(false)
 
 const thema = computed({
   get: () => zustand.value.thema,
@@ -25,30 +27,27 @@ const liste = computed(() => {
 })
 
 watch(() => zustand.value.offen, async (offen) => {
-  if (offen && !dlg.value?.open) {
-    dlg.value?.showModal()
+  if (offen && !istOffen.value) {
+    dlg.value?.oeffnen()
+    istOffen.value = true
     if (zustand.value.schreiben) {
       await nextTick()
-      dlg.value?.querySelector<HTMLElement>('.rd__write')?.scrollIntoView({ block: 'start' })
+      schreibBereich.value?.scrollIntoView({ block: 'start' })
     }
   }
-  else if (!offen && dlg.value?.open) dlg.value.close()
+  else if (!offen && istOffen.value) dlg.value?.schliessen()
 })
-function schliessen() { zustand.value.offen = false }
+function zu() {
+  istOffen.value = false
+  zustand.value.offen = false
+}
 </script>
 
 <template>
-  <dialog
-    ref="dlg" class="rd" :class="{ 'rd--schreiben': zustand.schreiben }" aria-labelledby="rd-h"
-    @close="schliessen" @click="(e) => e.target === dlg && schliessen()"
-  >
-    <button type="button" class="rd__x" aria-label="Schließen" @click="schliessen">
-      <UiIcon name="close" :size="18" />
-    </button>
-
-    <div class="rd__box" data-lenis-prevent>
+  <UiDialog ref="dlg" :polster="false" breite="64rem" titel-id="rd-h" @zu="zu">
+    <div class="rd__box" :class="{ 'rd--schreiben': zustand.schreiben }">
       <section class="rd__list-col" aria-labelledby="rd-h">
-        <h2 id="rd-h" class="rd__h">Kundenbewertungen</h2>
+        <h2 id="rd-h" class="display rd__h">Kundenbewertungen</h2>
 
         <div class="rd__sum">
           <p class="rd__avg">{{ sum.anzahl ? formatSchnitt(sum.schnitt) : '–' }}</p>
@@ -80,34 +79,16 @@ function schliessen() { zustand.value.offen = false }
         <p v-else class="rd__empty muted">Hier steht noch keine Bewertung. Schreiben Sie gern die erste!</p>
       </section>
 
-      <section class="rd__write" aria-labelledby="rd-write-h">
-        <h3 id="rd-write-h" class="rd__h rd__h--sm">Eigene Bewertung schreiben</h3>
+      <section ref="schreibBereich" class="rd__write" aria-labelledby="rd-write-h">
+        <h3 id="rd-write-h" class="display rd__h rd__h--sm">Eigene Bewertung schreiben</h3>
         <p class="muted rd__write-sub">Teilen Sie Ihre Erfahrung mit OES.</p>
         <ReviewForm :bezug="zustand.bezug" />
       </section>
     </div>
-  </dialog>
+  </UiDialog>
 </template>
 
 <style scoped>
-.rd {
-  width: min(94vw, 64rem); max-height: 90dvh; padding: 0;
-  margin: auto; /* der Reset setzt margin: 0, damit waere der Dialog nicht mittig */
-  border: 0; border-top: 3px solid var(--c-gold); border-radius: var(--r-md);
-  background: var(--c-paper-pure); color: var(--c-text);
-  overflow: visible;
-}
-.rd::backdrop { background: rgb(0 0 0 / 0.6); }
-
-/* Schliessen-Knopf als Kreis auf der Ecke, wie im Entwurf. */
-.rd__x {
-  position: absolute; top: -1.1rem; right: -1.1rem; z-index: 2;
-  display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%;
-  background: var(--c-paper-pure); color: var(--c-text);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
-}
-.rd__x:hover { color: var(--c-gold); }
-
 .rd__box {
   display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   /* Feste Hoehe, damit die Liste darin scrollen kann. */
@@ -116,8 +97,9 @@ function schliessen() { zustand.value.offen = false }
   overflow: hidden; border-radius: inherit;
 }
 .rd__list-col { display: flex; flex-direction: column; min-height: 0; gap: var(--s-4); }
-.rd__h { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
-.rd__h--sm { font-size: 1rem; }
+/* Dialog-Ueberschriften wie ueberall: .display, Haupttitel --t-h2, Unterteil --t-h3. */
+.rd__h { font-size: var(--t-h2); line-height: 1.05; }
+.rd__h--sm { font-size: var(--t-h3); }
 
 .rd__sum { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-4); }
 .rd__avg { font-size: 2.6rem; font-weight: 700; line-height: 1; }
@@ -138,15 +120,13 @@ function schliessen() { zustand.value.offen = false }
 
 .rd__write {
   align-self: start; padding: var(--s-6) var(--s-5);
-  background: #FBF7F1; border-radius: var(--r-md);
+  background: var(--c-gold-tint); border-radius: var(--r-md);
   max-height: 100%; overflow-y: auto; overscroll-behavior: contain;
 }
 .rd__write-sub { font-size: var(--t-small); margin: var(--s-1) 0 var(--s-5); }
 
 /* Handy: untereinander, das ganze Popup scrollt. */
 @media (max-width: 859px) {
-  .rd { width: min(96vw, 40rem); }
-  .rd__x { top: var(--s-3); right: var(--s-3); box-shadow: none; background: var(--c-paper); }
   .rd__box {
     grid-template-columns: minmax(0, 1fr); grid-template-rows: none;
     height: auto; max-height: calc(90dvh - 3px); overflow-y: auto; padding: var(--s-6) var(--s-4) var(--s-5);

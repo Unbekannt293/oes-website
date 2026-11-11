@@ -107,9 +107,7 @@ const abgelaufen = computed(() => bookings.value.some(vorbei))
               <p class="wk__date">
                 <UiIcon name="calendar" :size="15" /> {{ dates(b.main) }}
               </p>
-              <p v-if="vorbei(b)" class="wk__vorbei" role="alert">
-                <UiIcon name="alert" :size="14" /> Dieser Termin ist schon vorbei. Bitte entfernen und neu auswählen.
-              </p>
+              <UiFehler v-if="vorbei(b)">Dieser Termin ist schon vorbei. Bitte entfernen und neu auswählen.</UiFehler>
 
               <ul v-if="b.addons.length" class="wk__addons">
                 <li v-for="a in b.addons" :key="a.id">
@@ -146,19 +144,21 @@ const abgelaufen = computed(() => bookings.value.some(vorbei))
         </dl>
 
         <!-- Kaution nie online: Kartengebuehren bekaeme Louis nicht zurueck. -->
-        <div v-if="deposit" class="wk__kaution" role="radiogroup" aria-labelledby="kaution-h">
+        <div v-if="deposit" class="wk__kaution">
           <p id="kaution-h" class="label wk__kaution-h">Kaution zahlen</p>
-          <label class="wk__kopt" :class="{ 'is-sel': kaution === 'bar' }">
-            <input v-model="kaution" type="radio" name="kaution" value="bar">
-            <span>Bar bei der Übergabe</span>
-          </label>
-          <label class="wk__kopt" :class="{ 'is-sel': kaution === 'ueberweisung' }">
-            <input v-model="kaution" type="radio" name="kaution" value="ueberweisung">
-            <span>Per Überweisung vorab</span>
-          </label>
+          <div class="opts" role="radiogroup" aria-labelledby="kaution-h">
+            <label class="opt" :class="{ 'is-sel': kaution === 'bar' }">
+              <input v-model="kaution" type="radio" name="kaution" value="bar">
+              <span class="opt__name">Bar bei der Übergabe</span>
+            </label>
+            <label class="opt" :class="{ 'is-sel': kaution === 'ueberweisung' }">
+              <input v-model="kaution" type="radio" name="kaution" value="ueberweisung">
+              <span class="opt__name">Per Überweisung vorab</span>
+            </label>
+          </div>
         </div>
 
-        <p class="wk__note muted">
+        <p class="notiz">
           <UiIcon name="info" :size="14" />
           Lieferkosten berechnen wir an der Kasse anhand Ihrer Adresse.
           Die Kaution erhalten Sie nach der Rückgabe zurück, wenn alles vollständig
@@ -166,7 +166,7 @@ const abgelaufen = computed(() => bookings.value.some(vorbei))
         </p>
         <UiButton v-if="abgelaufen" variant="solid" size="lg" class="wk__btn" disabled>Zur Kasse</UiButton>
         <UiButton v-else to="/kasse" variant="solid" size="lg" class="wk__btn">Zur Kasse</UiButton>
-        <p v-if="abgelaufen" class="wk__vorbei">Bitte zuerst den abgelaufenen Termin entfernen.</p>
+        <UiFehler v-if="abgelaufen">Bitte zuerst den abgelaufenen Termin entfernen.</UiFehler>
       </aside>
     </div>
   </div>
@@ -197,7 +197,7 @@ const abgelaufen = computed(() => bookings.value.some(vorbei))
   padding: var(--s-5) 0;
   border-bottom: 1px solid var(--c-gold-hair);
 }
-.wk__media { display: block; align-self: start; border-radius: var(--r-sm); overflow: hidden; background: #0B0A09; }
+.wk__media { display: block; align-self: start; border-radius: var(--r-sm); overflow: hidden; background: var(--c-buehne); }
 .wk__img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
 
 .wk__body { display: grid; align-content: start; justify-items: start; gap: var(--s-1); min-width: 0; }
@@ -212,7 +212,7 @@ const abgelaufen = computed(() => bookings.value.some(vorbei))
   list-style: none; padding: var(--s-2) 0 0; margin: var(--s-2) 0 0; width: 100%; max-width: 26rem;
   display: grid; gap: 0.1rem;
   border-top: 1px dashed var(--c-gold-hair);
-  font-size: 0.8125rem; color: var(--c-text-muted);
+  font-size: var(--t-xs); color: var(--c-text-muted);
 }
 .wk__addons li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: var(--s-2); }
 .wk__addon-price { font-variant-numeric: tabular-nums; }
@@ -221,7 +221,7 @@ const abgelaufen = computed(() => bookings.value.some(vorbei))
 .wk__remove {
   display: inline-flex; align-items: center; gap: 0.35rem;
   margin-top: var(--s-2); padding: 0.3rem 0;
-  font-size: 0.6875rem; color: var(--c-danger);
+  font-size: var(--t-label); color: var(--c-danger);
   transition: opacity var(--d-fast) var(--e-out);
 }
 .wk__remove:hover { opacity: 0.7; }
@@ -268,41 +268,14 @@ const abgelaufen = computed(() => bookings.value.some(vorbei))
 .wk__sum dd { margin: 0; white-space: nowrap; }
 .wk__total { font-size: 1.1rem; font-weight: 600; padding-top: var(--s-2); border-top: 1px solid var(--c-gold-hair); }
 .wk__total dd { color: var(--c-gold); }
-.wk__note { display: flex; gap: 0.4rem; align-items: start; font-size: 0.8125rem; line-height: 1.5; }
-.wk__note svg { flex: none; margin-top: 0.15rem; }
-.wk__note--plain { display: block; }
 
 .wk__kaution { display: grid; gap: var(--s-2); }
-.wk__kaution-h { color: var(--c-text); font-size: 0.6875rem; }
-.wk__kopt {
-  display: flex; align-items: center; gap: var(--s-3);
-  padding: var(--s-2) var(--s-3); font-size: var(--t-small);
-  border: 1px solid var(--c-gold-hair); border-radius: var(--r-sm); cursor: pointer;
-  transition: border-color var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out);
-}
-/* Eigener Radio-Punkt: gewaehlt = voll gold gefuellt mit weissem Kern,
-   wie die Haekchen-Kaestchen der Seite. */
-.wk__kopt input {
-  appearance: none; flex: none; margin: 0;
-  width: 1.05rem; height: 1.05rem; border-radius: 50%;
-  border: 1.5px solid var(--c-gold-hair); background: var(--c-paper-pure);
-  display: grid; place-items: center; cursor: pointer;
-  transition: border-color var(--d-fast) var(--e-out), background var(--d-fast) var(--e-out);
-}
-.wk__kopt input::after {
-  content: ''; width: 0.4rem; height: 0.4rem; border-radius: 50%;
-  background: #FFFFFF; transform: scale(0); transition: transform var(--d-fast) var(--e-out);
-}
-.wk__kopt input:checked { background: var(--c-gold); border-color: var(--c-gold); }
-.wk__kopt input:checked::after { transform: scale(1); }
-.wk__kopt input:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
-.wk__kopt:hover { border-color: var(--c-gold); }
-.wk__kopt.is-sel { border-color: var(--c-gold); background: rgb(195 139 55 / 0.08); }
+.wk__kaution-h { color: var(--c-text); font-size: var(--t-label); }
+/* Kaution waehlen: dieselben Auswahlzeilen wie ueberall (.opt, forms.css). */
+.wk__kaution .opt { min-height: 2.75rem; }
 
-.wk__note a { color: var(--c-text); text-decoration: underline; text-underline-offset: 2px; }
 .wk__btn { width: 100%; }
 .wk__btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.wk__vorbei { display: flex; align-items: center; gap: 0.4rem; font-size: var(--t-small); color: var(--c-danger); }
 .wk__item--vorbei .wk__img { filter: grayscale(1); opacity: 0.6; }
 
 .wk__empty {

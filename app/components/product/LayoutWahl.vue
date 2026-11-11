@@ -36,16 +36,14 @@ function umschalten(id: LayoutId, gruppe: LayoutGruppe) {
               type="checkbox" class="lw__cb" :checked="auswahl.includes(l.id)"
               @change="umschalten(l.id, l.gruppe)"
             >
-            <img :src="layoutBild(l.id)" :alt="l.name" loading="lazy" class="lw__bild">
+            <img :src="layoutBild(l.id)" :alt="l.name" class="lw__bild">
             <span class="lw__haken" aria-hidden="true"><UiIcon name="check" :size="12" /></span>
           </label>
         </li>
       </ul>
     </fieldset>
-    <p v-if="gewechselt" class="lw__info" role="status">
-      <UiIcon name="info" :size="14" /> Auswahl zu {{ aktiveGruppe === 'streifen' ? 'Fotostreifen' : 'Fotos' }} gewechselt.
-    </p>
-    <p v-if="fehler" class="lw__err" role="alert"><UiIcon name="alert" :size="14" /> {{ fehler }}</p>
+    <UiHinweis v-if="gewechselt">Auswahl zu {{ aktiveGruppe === 'streifen' ? 'Fotostreifen' : 'Fotos' }} gewechselt.</UiHinweis>
+    <UiFehler v-if="fehler">{{ fehler }}</UiFehler>
   </div>
 </template>
 
@@ -74,10 +72,8 @@ function umschalten(id: LayoutId, gruppe: LayoutGruppe) {
 .lw__haken {
   position: absolute; top: -0.45rem; right: -0.45rem; display: grid; place-items: center;
   width: 1.4rem; height: 1.4rem; border-radius: 50%;
-  background: var(--c-gold); color: #FFFFFF; opacity: 0; transform: scale(0.6);
+  background: var(--c-gold); color: var(--c-on-gold); opacity: 0; transform: scale(0.6);
   transition: opacity var(--d-fast) var(--e-out), transform var(--d-fast) var(--e-out);
 }
 .lw__karte.is-sel .lw__haken { opacity: 1; transform: none; }
-.lw__info { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; color: var(--c-gold); }
-.lw__err { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; color: #E06B5C; }
 </style>

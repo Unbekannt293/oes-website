@@ -26,9 +26,7 @@ function open() {
     >
       <ProductGallery v-if="product.images.length" :images="product.images" :alt="product.name" />
       <!-- Noch kein Foto: Stern aus dem OES-Logo als ruhige Kachel. -->
-      <svg v-else class="card__star" viewBox="0 0 100 100" aria-hidden="true">
-        <path d="M50 0C53 35 65 47 100 50 65 53 53 65 50 100 47 65 35 53 0 50 35 47 47 35 50 0Z" />
-      </svg>
+      <UiIcon v-else name="funke" :size="96" class="card__star" />
       <p v-if="!product.available" class="card__soon label">Coming soon</p>
     </div>
 
@@ -74,7 +72,7 @@ function open() {
   display: grid; place-items: center;
   background: radial-gradient(circle at 50% 45%, #F8F5F0, #E8E1D6 75%);
 }
-.card__star { width: 34%; fill: var(--c-gold); opacity: 0.22; }
+.card__star { width: 34%; height: auto; color: var(--c-gold); opacity: 0.22; }
 
 /* "Coming soon" quer ueber das Bild, wie von Louis notiert ("graue
    Schrift quer drüber"): ein schmales Band statt einer Abdunklung. */
@@ -82,7 +80,7 @@ function open() {
   position: absolute; inset-inline: -10%; top: 50%;
   padding-block: 0.7rem;
   text-align: center;
-  font-size: 0.75rem; letter-spacing: 0.32em;
+  font-size: var(--t-2xs); letter-spacing: 0.32em;
   color: #6B6660;
   background: rgb(255 255 255 / 0.72);
   backdrop-filter: blur(4px);

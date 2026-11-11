@@ -84,7 +84,7 @@ onBeforeUnmount(() => clearInterval(timer))
 .rt__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--s-3) var(--s-5); }
 .rt__h { font-size: var(--t-h3); }
 .rt__filter { display: grid; gap: 0.3rem; }
-.rt__filter-l { color: var(--c-text-muted); font-size: 0.6875rem; }
+.rt__filter-l { color: var(--c-text-muted); font-size: var(--t-label); }
 .rt__sel { width: auto; min-width: 13rem; padding-block: 0.5rem; }
 .rt__sum { display: flex; align-items: center; gap: var(--s-4); text-align: left; cursor: pointer; }
 .rt__avg { font-size: 2.4rem; font-weight: 700; line-height: 1; }

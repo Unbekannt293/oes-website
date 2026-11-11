@@ -25,11 +25,10 @@ const thanks = ref<HTMLElement | null>(null)
 // Erst im Browser setzen: der Server rendert evtl. in einer anderen
 // Zeitzone, das gaebe beim Hydrieren einen Unterschied.
 const minDate = ref<string>()
-// Zeitfalle gegen Bots: wie lange das Formular offen war (server/utils/bremse.ts).
-let geoeffnet = 0
+// Zeitfalle gegen Bots (useZeitfalle, server/utils/bremse.ts).
+const { ausfuellzeit } = useZeitfalle()
 onMounted(() => {
   minDate.value = new Date().toLocaleDateString('sv-SE')
-  geoeffnet = Date.now()
 })
 
 function clearErrors() {
@@ -71,7 +70,7 @@ async function submit() {
 
   status.value = 'sending'
   try {
-    await $fetch('/api/anfrage', { method: 'POST', body: { ...data, ausfuellzeit: Date.now() - geoeffnet } })
+    await $fetch('/api/anfrage', { method: 'POST', body: { ...data, ausfuellzeit: ausfuellzeit() } })
     sentName.value = data.vorname
     status.value = 'sent'
     await nextTick()
@@ -104,12 +103,9 @@ function a11y(field: Field) {
     <!-- Erfolg ersetzt das Formular. Fokus springt hierher, damit
          Screenreader die Bestaetigung vorlesen. -->
     <div v-if="status === 'sent'" ref="thanks" class="cf__done" tabindex="-1">
-      <span class="cf__done-badge"><UiIcon name="check" :size="26" /></span>
-      <h3 class="display cf__done-title">Vielen Dank, {{ sentName }}!</h3>
-      <p class="muted">
-        Ihre Anfrage ist bei uns angekommen. Wir melden uns so schnell wie
-        möglich bei Ihnen.
-      </p>
+      <UiErfolg :titel="`Vielen Dank, ${sentName}!`">
+        <p>Ihre Anfrage ist bei uns angekommen. Wir melden uns so schnell wie möglich bei Ihnen.</p>
+      </UiErfolg>
     </div>
 
     <form v-else novalidate class="cf__form" @submit.prevent="submit">
@@ -158,11 +154,7 @@ function a11y(field: Field) {
         />
       </UiField>
 
-      <!-- Honeypot: fuer Menschen unsichtbar und nicht per Tab erreichbar. -->
-      <div class="cf__trap" aria-hidden="true">
-        <label for="website">Website</label>
-        <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off">
-      </div>
+      <UiFalle v-model="form.website" />
 
       <div class="cf__consent">
         <label class="check">
@@ -176,19 +168,14 @@ function a11y(field: Field) {
             <NuxtLink to="/datenschutz">Datenschutzerklärung</NuxtLink>.
           </span>
         </label>
-        <p v-if="errors.datenschutz" id="datenschutz-fehler" class="cf__err">
-          <UiIcon name="alert" :size="14" />{{ errors.datenschutz }}
-        </p>
+        <UiFehler v-if="errors.datenschutz" id="datenschutz-fehler">{{ errors.datenschutz }}</UiFehler>
       </div>
 
-      <div v-if="status === 'failed'" class="cf__fail" role="alert">
-        <UiIcon name="alert" :size="18" />
-        <p>
-          Die Nachricht konnte gerade nicht gesendet werden. Rufen Sie uns gern an unter
-          <a :href="`tel:${contact.phoneRaw}`">{{ contact.phone }}</a> oder schreiben Sie an
-          <a :href="`mailto:${contact.email}`">{{ contact.email }}</a>.
-        </p>
-      </div>
+      <UiHinweis v-if="status === 'failed'" ton="fehler">
+        Die Nachricht konnte gerade nicht gesendet werden. Rufen Sie uns gern an unter
+        <a :href="`tel:${contact.phoneRaw}`">{{ contact.phone }}</a> oder schreiben Sie an
+        <a :href="`mailto:${contact.email}`">{{ contact.email }}</a>.
+      </UiHinweis>
 
       <UiButton
         variant="solid" size="lg" class="cf__submit"
@@ -209,40 +196,9 @@ function a11y(field: Field) {
   .cf__date { max-width: calc(50% - var(--s-5) / 2); }
 }
 
-.cf__trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 .cf__consent { display: grid; gap: var(--s-2); }
-.cf__err {
-  display: flex; align-items: center; gap: 0.4rem;
-  font-size: 0.8125rem; color: var(--c-danger);
-}
-
-.cf__fail {
-  display: grid; grid-template-columns: auto 1fr; gap: var(--s-3);
-  padding: var(--s-4);
-  font-size: var(--t-small); line-height: 1.55;
-  color: var(--c-text);
-  background: rgb(192 57 43 / 0.06);
-  border-left: 2px solid var(--c-danger);
-}
-.cf__fail svg { color: var(--c-danger); margin-top: 0.1rem; }
-.cf__fail a { font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-.cf__fail a:hover { color: var(--c-gold); }
-
 .cf__submit { width: 100%; margin-top: var(--s-2); }
 
-.cf__done {
-  display: grid; justify-items: center; gap: var(--s-3);
-  padding: var(--s-8) var(--s-5);
-  text-align: center;
-  background: var(--c-paper-pure);
-  border: var(--border-hair);
-  outline: none;
-}
-.cf__done-badge {
-  display: grid; place-items: center;
-  width: 3.5rem; height: 3.5rem; border-radius: 50%;
-  color: var(--c-gold); border: 1px solid var(--c-gold);
-}
-.cf__done-title { font-size: var(--t-h3); }
+.cf__done { background: var(--c-paper-pure); border: var(--border-hair); padding: var(--s-6) var(--s-5); outline: none; }
 </style>

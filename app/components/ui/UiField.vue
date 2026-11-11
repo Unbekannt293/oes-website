@@ -12,9 +12,7 @@ defineProps<{ id: string, label: string, error?: string, optional?: boolean }>()
       {{ label }}<span v-if="optional" class="field__opt"> (optional)</span>
     </label>
     <slot />
-    <p v-if="error" :id="`${id}-fehler`" class="field__error">
-      <UiIcon name="alert" :size="14" />{{ error }}
-    </p>
+    <UiFehler v-if="error" :id="`${id}-fehler`">{{ error }}</UiFehler>
   </div>
 </template>
 
@@ -22,8 +20,4 @@ defineProps<{ id: string, label: string, error?: string, optional?: boolean }>()
 .field { display: grid; gap: var(--s-2); align-content: start; }
 .field__label { color: var(--c-text); }
 .field__opt { color: var(--c-text-muted); text-transform: none; letter-spacing: 0; font-weight: 400; }
-.field__error {
-  display: flex; align-items: center; gap: 0.4rem;
-  font-size: 0.8125rem; color: var(--c-danger);
-}
 </style>

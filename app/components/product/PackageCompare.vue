@@ -168,8 +168,9 @@ onMounted(() => {
 }
 .cmp__col:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
 /* Ueberfahren oder gewaehlt: die Spalte wird zur Karte, wie in der Produktuebersicht. */
-.cmp__col:hover, .cmp__col.is-sel { background: var(--c-paper-pure); border-color: var(--c-gold-hair); }
-.cmp__col.is-sel { border-color: var(--c-gold); }
+.cmp__col:hover { background: var(--c-paper-pure); border-color: var(--c-gold-hair); }
+/* Gewaehlt wie jede Auswahl der Seite (.opt): Goldflaeche und Goldring. */
+.cmp__col.is-sel { background: var(--sel-flaeche); border-color: var(--c-gold); box-shadow: var(--sel-ring); }
 
 .cmp__cell {
   display: flex; align-items: center; justify-content: center;
@@ -197,9 +198,9 @@ onMounted(() => {
 .cmp__yes { display: inline-block; color: var(--c-gold); }
 .cmp__cell--price { flex-direction: column; font-weight: 600; font-variant-numeric: tabular-nums; }
 .cmp__labels .cmp__cell--price { flex-direction: row; font-weight: 500; }
-.cmp__hprice { font-size: 0.875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.cmp__per { font-size: 0.75rem; font-weight: 400; color: var(--c-text-muted); }
-.cmp__cell--act { color: var(--c-gold); gap: 0.3rem; min-height: 2.5rem; font-size: 0.6875rem; }
+.cmp__hprice { font-size: var(--t-small); font-weight: 600; font-variant-numeric: tabular-nums; }
+.cmp__per { font-size: var(--t-2xs); font-weight: 400; color: var(--c-text-muted); }
+.cmp__cell--act { color: var(--c-gold); gap: 0.3rem; min-height: 2.5rem; font-size: var(--t-label); }
 
 .cmp-stage { position: relative; }
 .cmp__arrow {
@@ -239,7 +240,7 @@ onMounted(() => {
     /* Auch die Luecke zur ersten Spalte abdecken, sonst blitzt dort die
        weggescrollte Spalte durch. */
     box-shadow: var(--s-2) 0 0 var(--cmp-bg, var(--c-paper));
-    font-size: 0.8125rem;
+    font-size: var(--t-xs);
   }
   /* Die sichtbare Spalte ist immer als Karte gerahmt: das ist der Teil, der blaettert. */
   .cmp__col {
@@ -250,7 +251,7 @@ onMounted(() => {
   /* Platz fuer die Pfeile links und rechts vom Namen. */
   .cmp__col .cmp__cell--head { padding-inline: 2.4rem; }
   .cmp__cell--price { display: none; }
-  .cmp__labels .cmp__cell { font-size: 0.8125rem; }
+  .cmp__labels .cmp__cell { font-size: var(--t-xs); }
 }
 
 /* ---- Breit: alle Spalten nebeneinander ---- */
@@ -258,5 +259,6 @@ onMounted(() => {
   .cmp { grid-template-columns: minmax(8.5rem, auto) repeat(var(--n), minmax(0, 1fr)); }
   .cmp__arrow, .cmp__dots, .cmp__cell--act, .cmp__hprice { display: none; }
   .cmp__col:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+  .cmp__col.is-sel:hover { box-shadow: var(--sel-ring), var(--shadow-card); }
 }
 </style>

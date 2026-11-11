@@ -62,7 +62,7 @@ async function aktion(was: 'freigeben' | 'verbergen' | 'loeschen') {
           <UiIcon name="trash" :size="16" /> Löschen
         </button>
       </div>
-      <p v-if="status === 'failed'" class="fg__fail" role="alert">Das hat nicht geklappt. Bitte später noch einmal versuchen.</p>
+      <UiHinweis v-if="status === 'failed'" ton="fehler">Das hat nicht geklappt. Bitte später noch einmal versuchen.</UiHinweis>
     </div>
   </div>
 </template>
@@ -79,5 +79,4 @@ async function aktion(was: 'freigeben' | 'verbergen' | 'loeschen') {
 .fg__state.is-on { color: var(--c-success); }
 .fg__btns { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4); margin-top: var(--s-2); }
 .fg__del { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--c-danger); font-weight: 600; font-size: var(--t-small); }
-.fg__fail { color: var(--c-danger); font-size: var(--t-small); }
 </style>

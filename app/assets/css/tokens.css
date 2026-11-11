@@ -18,6 +18,15 @@
   --c-text-onink: #EFEBE4;
   --c-danger:     #C0392B;  /* Vertrags-Checkbox unbestaetigt */
   --c-success:    #2E7D5B;  /* "Termin verfügbar" */
+  --c-gold-tint:  rgb(195 139 55 / 0.08);  /* Flaeche fuer Gewaehltes und Hinweise */
+  --c-danger-tint: rgb(192 57 43 / 0.06);
+  --c-success-tint: rgb(46 125 91 / 0.08);
+  --c-gold-glow:  rgb(195 139 55 / 0.16); /* Schein um goldene Flaechen */
+  --c-on-gold:    #FFFFFF;  /* Schrift und Haken auf Gold */
+  --c-buehne:     #0B0A09;  /* dunkle Buehne: Hero, Bilder-Hintergrund */
+  --c-scrim:      rgb(0 0 0 / 0.6); /* abgedunkelter Hintergrund hinter Dialogen */
+  --c-control-line: #C9BDA9; /* Rand von Eingabefeldern und Haekchen */
+  --c-placeholder: #A39C92;  /* Platzhaltertext, leere Auswahl */
 
   /* ---- Typografie ---- */
   --f-display: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
@@ -30,6 +39,8 @@
   --t-h3:    clamp(1.25rem, 1.05rem + 0.9vw, 1.6rem);
   --t-body:  clamp(1rem, 0.96rem + 0.18vw, 1.0625rem);
   --t-small: 0.875rem;
+  --t-xs:    0.8125rem;   /* Kleingedrucktes, Fehler, Hinweise neben Feldern */
+  --t-2xs:   0.75rem;     /* Bildunterschriften, Zaehler, Etiketten-Text */
   --t-label: 0.6875rem;   /* gesperrte Versalien in der Navigation */
 
   --tr-label: 0.14em;     /* letter-spacing für Labels */
@@ -49,6 +60,10 @@
   /* Karten kantig, Buttons und Plaketten leicht abgerundet. */
   --r-sm: 2px;  --r-md: 4px;  --r-lg: 10px;
   --border-hair: 1px solid var(--c-gold-hair);
+  /* Gewaehlt (Option, Paket, Segment): Goldflaeche auf Weiss, damit sie auf
+     Karte und Seitengrund gleich aussieht, und Goldrand doppelt so kraeftig. */
+  --sel-flaeche: linear-gradient(var(--c-gold-tint), var(--c-gold-tint)), var(--c-paper-pure);
+  --sel-ring: inset 0 0 0 1px var(--c-gold);
   --shadow-card: 0 1px 2px rgb(23 23 26 / 0.04), 0 8px 24px -12px rgb(23 23 26 / 0.12);
   --shadow-float: 0 24px 60px -20px rgb(23 23 26 / 0.28);
 
@@ -69,6 +84,7 @@
   --c-paper: var(--c-ink);
   --c-paper-pure: var(--c-ink-soft);
   --c-gold-hair: #3A342A;
+  --c-danger: #E06B5C;  /* auf Schwarz lesbar */
   color: var(--c-text);
   background: var(--c-ink);
 }

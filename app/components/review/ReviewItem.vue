@@ -10,10 +10,10 @@ const { b, mitBezug = true } = defineProps<{ b: Bewertung, mitBezug?: boolean }>
 const datum = computed(() => new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Berlin' }).format(new Date(b.erstellt_am)))
 // Fotos wie bei Google: kleine Kacheln unter dem Text, antippen = gross.
 const gross = ref<string | null>(null)
-const dialog = ref<HTMLDialogElement | null>(null)
+const bildDlg = ref<{ oeffnen: () => void } | null>(null)
 function zeigen(src: string) {
   gross.value = src
-  nextTick(() => dialog.value?.showModal())
+  bildDlg.value?.oeffnen()
 }
 const initialen = computed(() => b.name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]!.toUpperCase()).join(''))
 </script>
@@ -39,10 +39,9 @@ const initialen = computed(() => b.name.split(/\s+/).filter(Boolean).slice(0, 2)
         </button>
       </li>
     </ul>
-    <dialog ref="dialog" class="ri__gross" @click="dialog?.close()" @close="gross = null">
+    <UiDialog ref="bildDlg" bild :label="`Foto von ${b.name}`" @zu="gross = null">
       <img v-if="gross" :src="gross" :alt="`Foto von ${b.name}`">
-      <button type="button" class="ri__zu" aria-label="Schließen"><UiIcon name="close" :size="20" /></button>
-    </dialog>
+    </UiDialog>
   </article>
 </template>
 
@@ -62,25 +61,13 @@ const initialen = computed(() => b.name.split(/\s+/).filter(Boolean).slice(0, 2)
 .ri__tag {
   margin-left: auto; align-self: start; flex: none;
   padding: 0.2rem 0.6rem; border: 1px solid var(--c-gold); border-radius: var(--r-sm);
-  color: var(--c-gold); font-size: 0.75rem; white-space: nowrap;
+  color: var(--c-gold); font-size: var(--t-2xs); white-space: nowrap;
 }
 .ri__text { line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
 .ri__fotos { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); max-width: 22rem; }
 .ri__foto { display: block; width: 100%; aspect-ratio: 1; border-radius: var(--r-sm); overflow: hidden; }
 .ri__foto img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform var(--d-fast) var(--e-out); }
 .ri__foto:hover img { transform: scale(1.04); }
-.ri__gross {
-  /* Der Reset nimmt Dialogen den Rand: so steht das Foto mittig im Fenster. */
-  position: fixed; inset: 0; margin: auto; width: fit-content; height: fit-content;
-  max-width: min(92vw, 1100px); max-height: 92vh; padding: 0; border: 0; background: transparent;
-  overflow: visible; cursor: zoom-out;
-}
-.ri__gross::backdrop { background: rgb(0 0 0 / 0.85); }
-.ri__gross img { display: block; max-width: min(92vw, 1100px); max-height: 92vh; border-radius: var(--r-sm); }
-.ri__zu {
-  position: absolute; top: 0.5rem; right: 0.5rem; display: grid; place-items: center;
-  width: 2.25rem; height: 2.25rem; border-radius: 50%; background: #FFFFFF; color: #111111;
-}
 @media (max-width: 480px) {
   .ri__head { flex-wrap: wrap; }
   .ri__tag { margin-left: calc(2.75rem + var(--s-3)); }

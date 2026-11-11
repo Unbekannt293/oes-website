@@ -138,11 +138,11 @@ watch(layoutNoetig, (n) => { if (n && !layouts.value.length) steps.reopen(4) })
 watch([paket, soundboxes, from, to, chosen, battery, layouts, logo], () => { added.value = false }, { deep: true })
 
 // ---- Beispielbild (z. B. Layouts) ----
-const dlg = ref<HTMLDialogElement | null>(null)
+const bildDlg = ref<{ oeffnen: () => void } | null>(null)
 const beispiel = ref<{ src: string, alt: string } | null>(null)
 function beispielZeigen(src: string, name: string) {
   beispiel.value = { src, alt: `Beispiele: ${name}` }
-  dlg.value?.showModal()
+  bildDlg.value?.oeffnen()
 }
 
 const { add, logo: korbLogo } = useCart()
@@ -191,9 +191,9 @@ function addToCart() {
         </ClientOnly>
         <!-- Ein Klick waehlt einen Tag. Dass ein zweiter Klick den Zeitraum
              verlaengert, sieht man sonst nicht. -->
-        <p v-if="days === 1" class="bk__small muted bk__tip">Mehrere Tage? Letzten Tag anklicken.</p>
+        <p v-if="days === 1" class="notiz bk__tip">Mehrere Tage? Letzten Tag anklicken.</p>
         <div class="bk__row">
-          <span v-if="days" class="bk__small">{{ rangeLong }}</span>
+          <span v-if="days" class="notiz">{{ rangeLong }}</span>
           <UiButton variant="solid" size="sm" class="bk__next" :disabled="!days || !rangeOk" @click="steps.complete(1)">
             Weiter <UiIcon name="arrow" :size="14" />
           </UiButton>
@@ -210,10 +210,7 @@ function addToCart() {
 
       <BookingStep :n="3" title="Soundbox dazu" :state="steps.state(3)" :summary="summaries[3]" @open="steps.open(3)">
         <!-- Hinweis auf den Kombi-Vorteil (Lukas, 11.11.2026). -->
-        <p class="bk__spar-hint">
-          <UiIcon name="info" :size="14" />
-          Im Paket ist die Soundbox günstiger als einzeln gemietet.
-        </p>
+        <UiHinweis class="bk__spar-hint">Im Paket ist die Soundbox günstiger als einzeln gemietet.</UiHinweis>
         <div class="opts" role="radiogroup" aria-label="Soundbox dazu">
           <label v-for="o in sbOptions" :key="o.n" class="opt" :class="{ 'is-sel': soundboxes === o.n }">
             <input v-model="soundboxes" type="radio" name="bk-sb" :value="o.n">
@@ -241,7 +238,7 @@ function addToCart() {
               <input type="checkbox" checked disabled>
               <span class="bk__addon">
                 <span>{{ a.name }}</span>
-                <span class="bk__addon-incl">inklusive</span>
+                <span class="etikett etikett--gruen">inklusive</span>
               </span>
             </label>
             <button v-if="a.image" type="button" class="label bk__peek" @click="beispielZeigen(a.image, a.name)">
@@ -254,7 +251,7 @@ function addToCart() {
               <input type="checkbox" checked disabled>
               <span class="bk__addon">
                 <span>{{ a.name }}</span>
-                <span class="bk__addon-incl">inklusive</span>
+                <span class="etikett etikett--gruen">inklusive</span>
               </span>
             </label>
             <label v-else class="check">
@@ -282,12 +279,12 @@ function addToCart() {
               <input type="checkbox" disabled>
               <span class="bk__addon">
                 <span>{{ a.name }}</span>
-                <span class="bk__addon-soon">bald</span>
+                <span class="etikett">bald</span>
               </span>
             </label>
           </li>
         </ul>
-        <p v-if="layoutNoetig && layouts.length" class="bk__small bk__layouts">
+        <p v-if="layoutNoetig && layouts.length" class="notiz bk__layouts">
           {{ layouts.length }} Layout{{ layouts.length > 1 ? 's' : '' }} gewählt{{ logo ? ', mit Logo' : '' }}
           <button type="button" class="bk__peek label" @click="layoutDlg?.oeffnen()">ändern</button>
         </p>
@@ -302,14 +299,10 @@ function addToCart() {
       @fertig="steps.complete(4)"
     />
 
-    <!-- Beispielbild zum Zubehoer gross ansehen. Natives <dialog>: Esc schliesst,
-         der Fokus bleibt im Fenster; Klick auf den dunklen Rand schliesst auch. -->
-    <dialog ref="dlg" class="bk__dlg" :aria-label="beispiel?.alt" @click="(e) => e.target === dlg && dlg?.close()">
-      <img v-if="beispiel" :src="beispiel.src" :alt="beispiel.alt" class="bk__dlg-img">
-      <button type="button" class="bk__dlg-x" aria-label="Schließen" @click="dlg?.close()">
-        <UiIcon name="close" :size="18" />
-      </button>
-    </dialog>
+    <!-- Beispielbild zum Zubehoer gross ansehen (UiDialog, Bild-Variante). -->
+    <UiDialog ref="bildDlg" bild :label="beispiel?.alt">
+      <img v-if="beispiel" :src="beispiel.src" :alt="beispiel.alt">
+    </UiDialog>
 
     <dl v-if="pkg" class="bk__sum">
       <div>
@@ -327,7 +320,7 @@ function addToCart() {
         <dd>{{ isFrom && soundboxes ? 'ab ' : '' }}{{ formatPrice(total) }}</dd>
       </div>
       <div class="bk__note"><dt>zzgl. Kaution</dt><dd>{{ formatPrice(deposit) }}</dd></div>
-      <p class="bk__small muted">
+      <p class="notiz">
         Lieferung bis {{ pkg.freeDeliveryKm }} km inklusive, danach {{ formatPrice(tarif.proKmCent) }} pro km.
       </p>
     </dl>
@@ -336,10 +329,10 @@ function addToCart() {
       <UiIcon name="cart" :size="18" /> In den Warenkorb
     </UiButton>
 
-    <p v-if="added" class="bk__ok" role="status">
-      <UiIcon name="check" :size="16" />
-      Im Warenkorb. <NuxtLink to="/warenkorb">Zum Warenkorb</NuxtLink>
-    </p>
+    <UiHinweis v-if="added" ton="erfolg">
+      Im Warenkorb.
+      <template #aktion><NuxtLink to="/warenkorb">Zum Warenkorb</NuxtLink></template>
+    </UiHinweis>
   </div>
 </template>
 

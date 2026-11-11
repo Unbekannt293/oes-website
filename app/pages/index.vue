@@ -178,7 +178,7 @@ useHead({ htmlAttrs: { class: 'snap-home' } })
       rgb(11 10 9 / 0.95) 0%, rgb(11 10 9 / 0.75) 32%, transparent 55%);
   }
   /* Wo der Titel die Box streift: Schatten nur an der Schrift statt Schleier. */
-  .hero__title, .hero__lead { text-shadow: 0 1px 2px rgb(0 0 0 / 0.55), 0 0 18px rgb(0 0 0 / 0.6); }
+  .hero__title, .hero__lead { text-shadow: 0 1px 2px rgb(0 0 0 / 0.55), 0 0 18px var(--c-scrim); }
   /* Titel auf dem Handy in einer Zeile und mittig unter der Box: der
      Textblock wird eine Zeile kuerzer, der Titel rutscht unter den Kasten
      statt auf die weisse Front. Beide Woerter gold (Lukas, 05.11.2026). */
