@@ -33,11 +33,25 @@ const reviewBezug = computed<Bezug | null>(() => {
   return slug === 'soundbox' ? 'soundbox' : null
 })
 
+// Fotobox: Fotos mit 1 bzw. 2 Soundboxen nur, wenn genau das gewaehlt ist
+// (Lukas, 11.11.2026). Sonst sieht man Soundboxen, die man gar nicht bucht.
+const galerie = computed(() => {
+  const p = product.value!
+  const nurBei = Object.entries(p.imageFor ?? {}).filter(([k]) => /^sb[12]$/.test(k))
+  return p.images.filter((_, i) => !nurBei.some(([k, idx]) => idx === i && k !== `sb${soundboxes.value}`))
+})
+
 // Auswahl im Buchungskasten -> passendes Foto (product.imageFor im Katalog).
+// nextTick: die Galerie bekommt bei Soundbox-Wahl erst neue Bilder.
 const gallery = ref<{ go: (i: number) => void } | null>(null)
 function showImage(key: string) {
   const i = product.value?.imageFor?.[key]
-  if (i !== undefined) gallery.value?.go(i)
+  if (i === undefined) return
+  const src = product.value!.images[i]!
+  nextTick(() => {
+    const j = galerie.value.indexOf(src)
+    if (j >= 0) gallery.value?.go(j)
+  })
 }
 
 function choose(slug: string) {
@@ -71,7 +85,7 @@ useSeoMeta({
     <div class="pd" :class="{ 'pd--pakete': product.available && product.booking }">
       <div class="pd__gallery">
         <ProductGallery
-          v-if="product.images.length" ref="gallery" :images="product.images" :alt="product.name"
+          v-if="product.images.length" ref="gallery" :images="galerie" :alt="product.name"
           thumbs eager :width="1254" :height="1254"
         />
         <div v-else class="pd__empty" aria-hidden="true">
@@ -82,6 +96,7 @@ useSeoMeta({
       <div class="pd__info">
         <p class="label pd__cat">{{ category?.label }}</p>
         <h1 class="display pd__name">{{ product.name }}</h1>
+        <p v-if="product.modell" class="label pd__modell">Modell: {{ product.modell }}</p>
         <p v-if="product.summary" class="pd__summary">{{ product.summary }}</p>
 
         <ul v-if="product.features.length" class="pd__features">
@@ -128,10 +143,34 @@ useSeoMeta({
         />
         <div class="pd__kombi-text">
           <h2 class="display pd__pakete-h">Fotobox dazu?</h2>
-          <p class="muted">Fotobox und Soundbox buchen Sie zusammen als Event-Komplettpaket, günstiger als einzeln.</p>
+          <p class="pd__kombi-spar">
+            <UiIcon name="info" :size="14" />
+            Im Paket ist die Soundbox günstiger als einzeln gemietet.
+          </p>
+          <p class="muted">Fotobox und Soundbox buchen Sie zusammen als Event-Komplettpaket.</p>
           <div class="pd__kombi-links">
             <UiButton to="/pakete" variant="solid" size="sm">Event-Komplettpakete</UiButton>
             <NuxtLink to="/produkte/fotobox" class="label pd__kombi-link">Zur Fotobox <UiIcon name="arrow" :size="12" /></NuxtLink>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ausfuehrliche Beschreibung von Louis: Text, Ausstattung, wofuer. -->
+      <section v-if="product.beschreibung" class="pd__desc" aria-labelledby="desc-h">
+        <h2 id="desc-h" class="display pd__pakete-h">{{ product.beschreibung.titel }}</h2>
+        <p v-for="(a, i) in product.beschreibung.absaetze" :key="i" class="pd__desc-p">{{ a }}</p>
+        <div class="pd__desc-lists">
+          <div>
+            <h3 class="label pd__desc-h">{{ product.beschreibung.ausstattung.titel }}</h3>
+            <ul class="pd__desc-ul">
+              <li v-for="x in product.beschreibung.ausstattung.punkte" :key="x">{{ x }}</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="label pd__desc-h">Ideal geeignet für</h3>
+            <ul class="pd__desc-ul">
+              <li v-for="x in product.beschreibung.idealFuer" :key="x">{{ x }}</li>
+            </ul>
           </div>
         </div>
       </section>
@@ -157,15 +196,15 @@ useSeoMeta({
 }
 /* Mit Zusatzbereich (Paketvergleich bzw. Kombi-Hinweis): auf dem Handy erst
    buchen, der Vergleich steht danach. Die Vorteile zeigt schon der Kasten. */
-.pd--pakete { grid-template-areas: 'gal' 'info' 'aside' 'pak' 'rev'; }
+.pd--pakete { grid-template-areas: 'gal' 'info' 'aside' 'pak' 'desc' 'rev'; }
 @media (min-width: 760px) {
   .pd { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: 'gal info' 'gal aside'; }
-  .pd--pakete { grid-template-areas: 'gal info' 'pak aside' 'rev rev'; }
+  .pd--pakete { grid-template-areas: 'gal info' 'pak aside' 'desc desc' 'rev rev'; }
 }
 @media (min-width: 1200px) {
   .pd { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) 360px; grid-template-areas: 'gal info aside'; gap: var(--s-7); }
   /* Pakete unter Galerie und Text, der Buchungskasten steht daneben. */
-  .pd--pakete { grid-template-areas: 'gal info aside' 'pak pak aside' 'rev rev aside'; grid-template-rows: auto auto 1fr; }
+  .pd--pakete { grid-template-areas: 'gal info aside' 'pak pak aside' 'desc desc aside' 'rev rev aside'; grid-template-rows: auto auto auto 1fr; }
 }
 .pd__gallery { grid-area: gal; }
 .pd__info { grid-area: info; display: grid; gap: var(--s-4); }
@@ -209,14 +248,32 @@ useSeoMeta({
 .pd__kombi {
   display: flex; gap: var(--s-5); align-items: center;
   padding: var(--s-4);
-  background: var(--c-paper-pure); border: var(--border-hair); border-radius: var(--r-md);
+  background: var(--c-paper-pure); border: 1px solid var(--c-gold); border-radius: var(--r-md);
+  box-shadow: 0 10px 30px -18px rgb(195 139 55 / 0.55);
 }
+/* Kombi-Vorteil wie der Hinweis "Layout fehlt" an der Kasse. */
+.pd__kombi-spar {
+  display: flex; align-items: flex-start; gap: 0.4rem; line-height: 1.45;
+  padding: var(--s-3) var(--s-4); font-size: var(--t-small);
+  background: rgb(195 139 55 / 0.08); border-left: 2px solid var(--c-gold);
+}
+.pd__kombi-spar svg { flex: none; margin-top: 0.15rem; color: var(--c-gold); }
 .pd__kombi-img { width: 7.5rem; height: 7.5rem; flex: none; object-fit: cover; border-radius: var(--r-sm); }
 .pd__kombi-text { display: grid; gap: var(--s-2); }
 .pd__kombi-text .muted { font-size: var(--t-small); }
+
 .pd__kombi-links { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); margin-top: var(--s-1); }
 .pd__kombi-link { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--c-gold); }
 .pd__kombi-link:hover { color: var(--c-text); }
 
+.pd__modell { color: var(--c-text-muted); margin-top: calc(-1 * var(--s-2)); }
+.pd__desc { grid-area: desc; display: grid; gap: var(--s-4); align-content: start; padding-top: var(--s-6); border-top: var(--border-hair); }
+.pd__desc-p { line-height: 1.7; max-width: 68ch; }
+.pd__desc-lists { display: grid; gap: var(--s-5); margin-top: var(--s-2); }
+@media (min-width: 560px) { .pd__desc-lists { grid-template-columns: 1fr 1fr; } }
+.pd__desc-h { color: var(--c-gold); margin-bottom: var(--s-3); }
+.pd__desc-ul { list-style: none; padding: 0; display: grid; gap: var(--s-2); }
+.pd__desc-ul li { position: relative; padding-left: 1.1rem; line-height: 1.5; }
+.pd__desc-ul li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--c-gold); }
 .pd__reviews { grid-area: rev; align-self: start; padding-top: var(--s-6); border-top: var(--border-hair); }
 </style>

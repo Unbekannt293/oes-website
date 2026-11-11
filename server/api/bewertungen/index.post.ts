@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
 
   // Link auf die eigene Adresse, damit er auch lokal und in Vorschauen stimmt.
   const link = `${getRequestURL(event).origin}/bewertungen/freigabe?id=${data.id}&t=${data.freigabe_token}`
-  const worauf = bezug ? BEZUEGE[bezug] : 'allgemein'
+  const worauf = BEZUEGE[bezug]
   try {
     const { transport, from, to } = useMailer(event)
     await transport.sendMail({

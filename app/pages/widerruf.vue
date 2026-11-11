@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { WIDERRUF } from '~~/shared/rechtstexte/widerruf'
+
 useSeoMeta({ title: 'Widerrufsbelehrung' })
 </script>
 
@@ -10,9 +12,7 @@ useSeoMeta({ title: 'Widerrufsbelehrung' })
       sub="Ihre Rechte als Verbraucher und wie Sie einen Vertrag widerrufen können."
     />
     <div class="section shell">
-      <p class="prose muted">
-        Dieser Text folgt in Kürze.
-      </p>
+      <PdfLeser name="widerruf" :text="WIDERRUF" />
     </div>
   </div>
 </template>

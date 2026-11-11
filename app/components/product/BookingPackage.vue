@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { RentalPackage } from '~~/shared/types'
+import type { LayoutId } from '~~/shared/buchung'
 import { addons, fotoboxPackages, LAYOUT_ADDON, soundboxRates } from '~~/shared/catalog'
 import {
   depositCents, eachDay, formatPrice, kombiAddCents, packageRangeCents, tarif,
@@ -63,6 +64,17 @@ const chosenAddons = computed(() => choosableAddons.filter(a =>
 // Zusatzakku nur mit Soundbox, wie bei der Soundbox-Miete: pro Tag.
 watch(soundboxes, (sb) => { if (!sb) battery.value = false })
 const batteryCents = computed(() => (battery.value && soundboxes.value ? n.value * soundboxRates.extraBatteryPerDayCents : 0))
+// Fotolayout (Lukas, 11.11.2026): mit eigenem Layout (gewaehlt oder im
+// Paket) oeffnet "Weiter" beim Zubehoer das Popup zur Layout-Wahl.
+const layoutNoetig = computed(() => layoutIncluded.value || chosen.value.includes(LAYOUT_ADDON))
+const layouts = ref<LayoutId[]>([])
+const logo = ref<string | null>(null)
+const logoName = ref('')
+const layoutDlg = ref<{ oeffnen: () => void } | null>(null)
+function zubehoerWeiter() {
+  if (layoutNoetig.value && !layouts.value.length) layoutDlg.value?.oeffnen()
+  else steps.complete(4)
+}
 const extrasTotal = computed(() => chosenAddons.value.reduce((s, a) => s + a.priceCents, 0) + batteryCents.value)
 
 const baseCents = computed(() => (pkg.value ? pkg.value.priceCents * n.value : 0))
@@ -110,14 +122,20 @@ const summaries = computed(() => ({
   1: rangeShort.value,
   2: pkg.value ? `${pkg.value.prints ? `${pkg.value.prints} Ausdrucke` : 'Nur digital'} · ${pkg.value.short}` : '',
   3: sbOptions[soundboxes.value].label,
-  4: [...chosenAddons.value.map(a => a.name), ...(battery.value ? ['Zusatzakku'] : [])].join(', ')
-    || (layoutIncluded.value ? 'Layout inklusive' : 'Keins'),
+  4: [
+    [...chosenAddons.value.map(a => a.name), ...(battery.value ? ['Zusatzakku'] : [])].join(', ')
+      || (layoutIncluded.value ? 'Layout inklusive' : 'Keins'),
+    layoutNoetig.value && layouts.value.length ? `${layouts.value.length} Layout${layouts.value.length > 1 ? 's' : ''}${logo.value ? ' + Logo' : ''}` : '',
+  ].filter(Boolean).join(' · '),
 }))
 
-const ready = computed(() => steps.allDone.value && !!pkg.value && days.value > 0 && rangeOk.value)
+const ready = computed(() => steps.allDone.value && !!pkg.value && days.value > 0 && rangeOk.value
+  && (!layoutNoetig.value || layouts.value.length > 0))
+// Layout abgewaehlt: Zubehoer-Schritt wieder offen, falls jetzt eins fehlt.
+watch(layoutNoetig, (n) => { if (n && !layouts.value.length) steps.reopen(4) })
 
 // Auswahl geaendert: Bestaetigung ausblenden, sonst wirkt sie wie ein Fehler.
-watch([paket, soundboxes, from, to, chosen, battery], () => { added.value = false }, { deep: true })
+watch([paket, soundboxes, from, to, chosen, battery, layouts, logo], () => { added.value = false }, { deep: true })
 
 // ---- Beispielbild (z. B. Layouts) ----
 const dlg = ref<HTMLDialogElement | null>(null)
@@ -127,7 +145,7 @@ function beispielZeigen(src: string, name: string) {
   dlg.value?.showModal()
 }
 
-const { add } = useCart()
+const { add, logo: korbLogo } = useCart()
 
 function addToCart() {
   if (!ready.value || !pkg.value) return
@@ -139,6 +157,7 @@ function addToCart() {
       kind: 'package', slug: p.slug, name: p.name, detail: sbText + dayText,
       unitPriceCents: pkgPrice.value, quantity: 1, from: from.value, to: to.value,
       freeDeliveryKm: p.freeDeliveryKm, deposit: { fotobox: true, soundboxes: soundboxes.value },
+      ...(layoutNoetig.value ? { layouts: [...layouts.value] } : {}),
     },
     ...chosenAddons.value.map(a => ({
       kind: 'addon' as const, slug: a.slug, name: a.name,
@@ -152,6 +171,7 @@ function addToCart() {
         }]
       : []),
   ])
+  if (layoutNoetig.value) korbLogo.value = logo.value ? { daten: logo.value, name: logoName.value } : null
   added.value = true
 }
 </script>
@@ -189,6 +209,11 @@ function addToCart() {
       </BookingStep>
 
       <BookingStep :n="3" title="Soundbox dazu" :state="steps.state(3)" :summary="summaries[3]" @open="steps.open(3)">
+        <!-- Hinweis auf den Kombi-Vorteil (Lukas, 11.11.2026). -->
+        <p class="bk__spar-hint">
+          <UiIcon name="info" :size="14" />
+          Im Paket ist die Soundbox günstiger als einzeln gemietet.
+        </p>
         <div class="opts" role="radiogroup" aria-label="Soundbox dazu">
           <label v-for="o in sbOptions" :key="o.n" class="opt" :class="{ 'is-sel': soundboxes === o.n }">
             <input v-model="soundboxes" type="radio" name="bk-sb" :value="o.n">
@@ -262,11 +287,20 @@ function addToCart() {
             </label>
           </li>
         </ul>
-        <UiButton variant="solid" size="sm" class="bk__next" @click="steps.complete(4)">
+        <p v-if="layoutNoetig && layouts.length" class="bk__small bk__layouts">
+          {{ layouts.length }} Layout{{ layouts.length > 1 ? 's' : '' }} gewählt{{ logo ? ', mit Logo' : '' }}
+          <button type="button" class="bk__peek label" @click="layoutDlg?.oeffnen()">ändern</button>
+        </p>
+        <UiButton variant="solid" size="sm" class="bk__next" @click="zubehoerWeiter">
           Weiter <UiIcon name="arrow" :size="14" />
         </UiButton>
       </BookingStep>
     </div>
+
+    <LayoutDialog
+      ref="layoutDlg" v-model:layouts="layouts" v-model:logo="logo" v-model:logo-name="logoName"
+      @fertig="steps.complete(4)"
+    />
 
     <!-- Beispielbild zum Zubehoer gross ansehen. Natives <dialog>: Esc schliesst,
          der Fokus bleibt im Fenster; Klick auf den dunklen Rand schliesst auch. -->

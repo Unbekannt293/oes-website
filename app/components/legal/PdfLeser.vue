@@ -7,7 +7,7 @@ import type { Rechtstext } from '~~/shared/rechtstexte/typ'
 // weil eingebettete PDFs auf iPhone und Android nicht verlaesslich angezeigt
 // werden. Darunter die Textfassung zum Aufklappen, fuer Bildschirmleser und
 // Suchmaschinen, und als Rueckfall, falls pdf.js nicht laedt.
-const { name, text } = defineProps<{ name: 'agb' | 'datenschutz', text: Rechtstext }>()
+const { name, text } = defineProps<{ name: 'agb' | 'datenschutz' | 'widerruf', text: Rechtstext }>()
 
 const quelle = `/api/rechtstexte/${name}`
 const { data: karte } = await useFetch<{ seiten: { seite: number, oben: number }[], datei: string }>(`/api/rechtstexte/${name}/seiten`)

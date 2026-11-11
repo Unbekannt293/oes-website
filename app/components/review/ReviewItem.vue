@@ -29,7 +29,7 @@ const initialen = computed(() => b.name.split(/\s+/).filter(Boolean).slice(0, 2)
           <span class="muted">{{ datum }}</span>
         </p>
       </div>
-      <span v-if="mitBezug" class="ri__tag">{{ b.bezug ? BEZUEGE[b.bezug] : 'OES allgemein' }}</span>
+      <span v-if="mitBezug && b.bezug" class="ri__tag">{{ BEZUEGE[b.bezug] }}</span>
     </header>
     <p class="ri__text">{{ b.text }}</p>
     <ul v-if="b.bilder?.length" class="ri__fotos">

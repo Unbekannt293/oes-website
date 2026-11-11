@@ -29,7 +29,6 @@ export const BEZUG_NACH_SOUNDBOXEN: Record<0 | 1 | 2, Bezug> = {
  * Produkte. "pakete" fasst alle Komplettpakete zusammen.
  */
 export const THEMEN = {
-  allgemein: 'OES allgemein',
   fotobox: 'Fotobox',
   soundbox: 'Soundbox',
   pakete: 'Komplettpakete',
@@ -37,8 +36,9 @@ export const THEMEN = {
 
 export type Thema = keyof typeof THEMEN
 
-export function themaVon(bezug: Bezug | null): Thema {
-  if (!bezug) return 'allgemein'
+export function themaVon(bezug: Bezug | null): Thema | null {
+  // Aeltere Bewertungen ohne Produkt ("OES allgemein", bis 11.11.2026) zaehlen nur bei "Alle".
+  if (!bezug) return null
   return bezug.startsWith('kombi-') ? 'pakete' : bezug as Thema
 }
 

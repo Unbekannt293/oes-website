@@ -3,6 +3,7 @@ import { bestellungSchema } from '~~/shared/schemas'
 import { quoteDelivery } from '~~/shared/pricing'
 import { heuteBerlin } from '~~/shared/preise'
 import { zahlungsfrist } from '~~/shared/zahlungsfrist'
+import { findPackage, LAYOUT_ADDON } from '~~/shared/catalog'
 
 // Bestellung aus der Kasse:
 // 1. Auswahl pruefen, Preise und Kaution auf dem Server neu rechnen,
@@ -24,6 +25,15 @@ export default defineEventHandler(async (event) => {
   }
 
   const korb = korbBerechnen(b.zeilen)
+  // Fotolayouts: Pflicht, wenn ein eigenes Layout gebucht oder im Paket
+  // enthalten ist, sonst bleiben Auswahl und Logo unbeachtet.
+  const mitLayout = b.zeilen.some(z => (z.kind === 'addon' && z.slug === LAYOUT_ADDON)
+    || (z.kind === 'package' && !!findPackage(z.slug)?.designIncluded))
+  if (mitLayout && !b.layouts.length) {
+    throw createError({ statusCode: 422, statusMessage: 'Validierung fehlgeschlagen', data: { fields: { layouts: ['Bitte mindestens ein Layout wählen'] } } })
+  }
+  const layouts = mitLayout ? b.layouts : []
+  const firma = b.kundenart === 'firma' ? b.firma : undefined
   // Selbstabholung nur, wenn keine Fotobox dabei ist (die liefert OES immer).
   const abholung = b.uebergabe === 'abholung'
   if (abholung && korb.belegungen.some(x => x.geraet === 'fotobox')) {
@@ -63,6 +73,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 502, statusMessage: 'Bestellung konnte gerade nicht gespeichert werden' })
   }
   const { id, nummer } = (data as { id: string, nummer: string }[])[0]!
+
+  // Angaben von der Kasse (Migration 2026-11-11-kasse.sql). Getrennt vom
+  // Anlegen, damit buchung_anlegen nicht schon wieder geaendert werden muss.
+  const logoPfad = mitLayout && b.logo ? await logoSpeichern(id, b.logo) : null
+  const { error: angabenFehler } = await useSupabase().from('buchungen').update({
+    kundenart: b.kundenart,
+    firma: firma?.name ?? null,
+    ust_id: firma?.ustId || null,
+    anlass: b.veranstaltung.anlass,
+    anlass_text: b.veranstaltung.anlass === 'sonstiges' ? b.veranstaltung.anlassText : null,
+    layouts,
+    logo_pfad: logoPfad,
+    widerruf_zustimmung_am: b.kundenart === 'privat' && b.widerrufZustimmung ? new Date().toISOString() : null,
+  }).eq('id', id)
+  if (angabenFehler) console.error('[bestellung] Angaben nicht gespeichert:', angabenFehler.message)
 
   if (b.zahlungsart === 'online') {
     try {

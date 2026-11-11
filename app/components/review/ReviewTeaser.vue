@@ -4,12 +4,13 @@ import { formatSchnitt, THEMEN, type Thema, zusammenfassung } from '~~/shared/be
 // Startseite unter den Produkten: Kundenbewertungen mit Schnitt und einer
 // Bewertung, die alle 10 Sekunden wechselt, wenn es mehrere gibt (Lukas,
 // 19.10.2026). Ein beschriftetes Dropdown sagt klar, worum es geht:
-// "Bewertungen zu: OES allgemein" (Standard), Fotobox, Soundbox, Komplettpakete.
+// "Bewertungen zu: Alle Produkte" (Standard), Fotobox, Soundbox, Komplettpakete.
 const WECHSEL_MS = 10_000
 
 const { zumThema } = useBewertungen()
 const { oeffnen } = useBewertungDialog()
-const thema = ref<Thema>('allgemein')
+const thema = ref<Thema | null>(null)
+const themaText = computed(() => (thema.value ? THEMEN[thema.value] : 'allen Produkten'))
 const liste = zumThema(thema)
 const sum = computed(() => zusammenfassung(liste.value))
 
@@ -35,6 +36,7 @@ onBeforeUnmount(() => clearInterval(timer))
       <label class="rt__filter">
         <span class="label rt__filter-l">Bewertungen zu</span>
         <select v-model="thema" class="control rt__sel">
+          <option :value="null">Alle Produkte</option>
           <option v-for="(label, key) in THEMEN" :key="key" :value="key">{{ label }}</option>
         </select>
       </label>
@@ -45,7 +47,7 @@ onBeforeUnmount(() => clearInterval(timer))
       <span class="rt__sum-r">
         <ReviewStars :value="sum.schnitt" :size="18" />
         <span class="muted">
-          {{ sum.anzahl ? `${sum.anzahl === 1 ? '1 Bewertung' : `${sum.anzahl} Bewertungen`} zu ${THEMEN[thema]}` : `Noch keine Bewertungen zu ${THEMEN[thema]}` }}
+          {{ sum.anzahl ? `${sum.anzahl === 1 ? '1 Bewertung' : `${sum.anzahl} Bewertungen`} zu ${themaText}` : `Noch keine Bewertungen zu ${themaText}` }}
         </span>
       </span>
     </button>

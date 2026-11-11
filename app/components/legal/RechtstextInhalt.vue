@@ -52,7 +52,7 @@ const anker = (i: number) => `abschnitt-${i + 1}`
 .rt__body { max-width: 72ch; display: grid; gap: var(--s-6); }
 .rt__sec { display: grid; gap: var(--s-3); scroll-margin-top: calc(var(--hdr-h, 78px) + var(--s-4)); }
 .rt__h { font-size: 1.15rem; font-weight: 700; }
-.rt__p { line-height: 1.7; overflow-wrap: anywhere; }
+.rt__p { line-height: 1.7; overflow-wrap: anywhere; white-space: pre-line; }
 .rt__table { width: 100%; border-collapse: collapse; font-size: var(--t-small); background: var(--c-paper-pure); }
 .rt__table th, .rt__table td { text-align: left; padding: 0.55rem 0.75rem; border: var(--border-hair); }
 .rt__table th { background: var(--c-paper); font-weight: 600; }

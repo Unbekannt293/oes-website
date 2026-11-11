@@ -2,6 +2,8 @@ import type { H3Event } from 'h3'
 import { FIRMA } from '~~/shared/firma'
 import { formatPrice } from '~~/shared/pricing'
 import { AGB } from '~~/shared/rechtstexte/agb'
+import { WIDERRUF } from '~~/shared/rechtstexte/widerruf'
+import { ANLAESSE, type Anlass, layoutName } from '~~/shared/buchung'
 import { fristText, fristVon } from '~~/shared/zahlungsfrist'
 
 /**
@@ -31,6 +33,9 @@ export interface BuchungMitPositionen {
   uebergabe?: 'lieferung' | 'abholung'
   /** Nach Migration 2026-11-04-zahlungsfrist.sql. */
   zahlung_bis?: string | null, zahlungserinnerung_am?: string | null
+  /** Nach Migration 2026-11-11-kasse.sql. */
+  kundenart?: 'privat' | 'firma', firma?: string | null, ust_id?: string | null
+  anlass?: string | null, anlass_text?: string | null, layouts?: string[], logo_pfad?: string | null
   positionen: { name: string, detail: string | null, menge: number, einzelpreis_cent: number }[]
 }
 
@@ -52,6 +57,12 @@ const bankdaten = (b: BuchungMitPositionen) =>
   `Empfänger: ${FIRMA.name}\nBank: ${FIRMA.bank}\nIBAN: ${FIRMA.iban}\n`
   + `Betrag: ${formatPrice(b.summe_cent)}\nVerwendungszweck: ${b.nummer}\n`
 
+/** "Hochzeit" bzw. bei Sonstiges der eigene Text. */
+export function anlassText(b: Pick<BuchungMitPositionen, 'anlass' | 'anlass_text'>) {
+  if (!b.anlass) return null
+  return b.anlass === 'sonstiges' && b.anlass_text ? b.anlass_text : ANLAESSE[b.anlass as Anlass] ?? b.anlass
+}
+
 function zeitraumText(b: BuchungMitPositionen) {
   return b.von === b.bis ? tag(b.von) : `${tag(b.von)} bis ${tag(b.bis)}`
 }
@@ -64,9 +75,11 @@ function uebersicht(b: BuchungMitPositionen, abholadresse = false) {
   const kaution = b.kaution_zahlart === 'ueberweisung' ? 'per Überweisung vor der Übergabe' : 'bar bei der Übergabe'
   const abholung = b.uebergabe === 'abholung'
   const adresse = `${b.strasse}, ${b.plz} ${b.ort}${b.adresszusatz ? ` (${b.adresszusatz})` : ''}`
+  const anlass = anlassText(b)
   return [
     `Buchungsnummer: ${b.nummer}`,
-    `Termin: ${zeitraumText(b)}`,
+    ...(b.firma ? [`Firma: ${b.firma}${b.ust_id ? ` (USt-IdNr. ${b.ust_id})` : ''}`] : []),
+    `Termin: ${zeitraumText(b)}${anlass ? `, ${anlass}` : ''}`,
     abholung ? `Rechnungsadresse: ${adresse}` : `Lieferadresse: ${adresse}`,
     ...(abholung
       ? [`Übergabe: Selbstabholung in ${FIRMA.abholort}${abholadresse ? `, ${FIRMA.strasse}, ${FIRMA.plz} ${FIRMA.ort}` : ''}. Abhol- und Rückgabezeit stimmen wir mit Ihnen ab.`]
@@ -80,6 +93,7 @@ function uebersicht(b: BuchungMitPositionen, abholadresse = false) {
         : `Lieferung (${String(b.entfernung_km).replace('.', ',')} km): ${formatPrice(b.fahrtkosten_cent)}`,
     `Gesamt: ${formatPrice(b.summe_cent)}${b.entfernung_km === null && !abholung ? ' zzgl. Fahrtkosten' : ''}`,
     `Rückzahlbare Kaution: ${formatPrice(b.kaution_cent)}, ${kaution}`,
+    ...(b.layouts?.length ? ['', `Fotolayout${b.layouts.length > 1 ? 's' : ''}: ${b.layouts.map(layoutName).join(', ')}${b.logo_pfad ? ' (mit eigenem Logo)' : ''}`] : []),
   ].join('\n')
 }
 
@@ -98,11 +112,14 @@ export async function bestellMailsSenden(event: H3Event, buchungId: string) {
   const zahlung = b.zahlungsart === 'online' ? (b.bezahlt_am ? 'online, bezahlt' : 'online, noch offen') : 'Überweisung, noch offen'
 
   // 1. Benachrichtigung an OES. "Antworten" geht direkt an den Kunden.
+  //    Das Logo fuer das Layout haengt direkt an.
+  const logo = b.logo_pfad ? await logoLaden(b.logo_pfad).catch(() => null) : null
   try {
     await transport.sendMail({
       from, to,
+      attachments: logo ? [{ filename: `Logo_${b.nummer}_${logo.datei}`, content: logo.buf, contentType: logo.typ }] : [],
       replyTo: { name: `${b.vorname} ${b.nachname}`, address: b.email },
-      subject: `Neue Bestellung ${b.nummer}: ${b.vorname} ${b.nachname}, ${zeitraumText(b)}`,
+      subject: `Neue Bestellung ${b.nummer}: ${b.firma ? `${b.firma}, ` : ''}${b.vorname} ${b.nachname}, ${zeitraumText(b)}`,
       text: `${uebersicht(b)}\n\nZahlung: ${zahlung}\n\n`
         + `${b.vorname} ${b.nachname}\n${b.email}\n${b.telefon}\n\n`
         + (b.bezahlt_am
@@ -166,6 +183,9 @@ export async function buchungBestaetigen(event: H3Event, buchungId: string) {
     anhaenge.push({ filename: `OES_Rechnung_${b.rechnungsnummer}.pdf`, content: Buffer.from(pdf), contentType: 'application/pdf' })
   }
   anhaenge.push({ filename: 'OES_Mietbedingungen.pdf', content: Buffer.from(await rechtstextPdf(AGB)), contentType: 'application/pdf' })
+  // Verbraucher bekommen die Widerrufsbelehrung mit Formular dauerhaft (§ 312f BGB).
+  const privat = b.kundenart !== 'firma'
+  if (privat) anhaenge.push({ filename: 'OES_Widerrufsbelehrung.pdf', content: Buffer.from(await rechtstextPdf(WIDERRUF)), contentType: 'application/pdf' })
 
   const { transport, from, to } = useMailer(event)
   await transport.sendMail({
@@ -177,7 +197,9 @@ export async function buchungBestaetigen(event: H3Event, buchungId: string) {
         ? 'vielen Dank für Ihre Buchung! Hiermit bestätigen wir Ihre Buchung verbindlich. Ihre Rechnung senden wir Ihnen in Kürze separat.\n\n'
         : 'vielen Dank für Ihre Buchung! Hiermit bestätigen wir Ihre Buchung verbindlich. Ihre Rechnung finden Sie als PDF im Anhang.\n\n')
       + `Ihre Buchung im Überblick:\n${uebersicht(b, true)}\n\n`
-      + 'Unsere Mietbedingungen, die für diese Buchung gelten, finden Sie ebenfalls als PDF im Anhang.\n'
+      + (privat
+        ? 'Unsere Mietbedingungen, die für diese Buchung gelten, und die Widerrufsbelehrung mit Muster-Formular finden Sie ebenfalls als PDF im Anhang.\n'
+        : 'Unsere Mietbedingungen, die für diese Buchung gelten, finden Sie ebenfalls als PDF im Anhang.\n')
       + (b.uebergabe === 'abholung'
         ? 'Wegen der Abholzeit melden wir uns rechtzeitig vor Ihrem Termin.\n\n'
         : 'Wegen Lieferung und Aufbau melden wir uns rechtzeitig vor Ihrem Termin.\n\n')

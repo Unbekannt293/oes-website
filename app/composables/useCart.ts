@@ -3,6 +3,10 @@ import { depositCents, subtotalCents } from '~~/shared/pricing'
 
 export const CART_STORAGE_KEY = 'oes-warenkorb'
 export const KAUTION_STORAGE_KEY = 'oes-kaution'
+export const LOGO_STORAGE_KEY = 'oes-logo'
+
+/** Logo fuers Fotolayout. Eigener Speicherplatz: ist es zu gross, bleibt der Korb trotzdem. */
+export interface KorbLogo { daten: string, name: string }
 
 /**
  * Wie die Kaution gezahlt wird. Bewusst nie online: Kartenzahlung kostet
@@ -24,6 +28,7 @@ export function useCart() {
   const loaded = useState('cart-loaded', () => false)
   /** Wahl im Warenkorb, gilt fuer die ganze Bestellung. */
   const kaution = useState<KautionZahlung>('cart-kaution', () => 'bar')
+  const logo = useState<KorbLogo | null>('cart-logo', () => null)
 
   /** Gebuchte Positionen (Zubehoer zaehlt nicht extra). */
   const count = computed(() =>
@@ -50,11 +55,14 @@ export function useCart() {
     lines.value = line.kind === 'addon'
       ? lines.value.filter(l => l.id !== id)
       : lines.value.filter(l => l.group !== line.group)
+    // Ohne Fotobox mit Layout braucht es auch kein Logo mehr.
+    if (!lines.value.some(l => l.layouts?.length)) logo.value = null
   }
 
   function clear() {
     lines.value = []
+    logo.value = null
   }
 
-  return { lines, loaded, kaution, count, subtotal, deposit, add, remove, clear }
+  return { lines, loaded, kaution, logo, count, subtotal, deposit, add, remove, clear }
 }

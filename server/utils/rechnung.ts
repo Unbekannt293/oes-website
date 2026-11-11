@@ -23,6 +23,8 @@ export interface RechnungsDaten {
   summe_cent: number, kaution_cent: number, kaution_zahlart?: 'bar' | 'ueberweisung'
   zahlungsart: string, bezahlt_am: string | null
   uebergabe?: 'lieferung' | 'abholung'
+  /** Firmenkunde (Migration 2026-11-11-kasse.sql): Firma oben im Empfaenger. */
+  firma?: string | null, ust_id?: string | null
 }
 
 const datum = (iso: string) => new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Berlin' })
@@ -49,7 +51,10 @@ export async function rechnungPdf(r: RechnungsDaten): Promise<Uint8Array> {
   b.abstand(18)
   const oben = b.y
   b.text('Empfänger:', { groesse: 9, farbe: FARBE.grau, zeilenabstand: 13 })
-  for (const z of [`${r.vorname} ${r.nachname}`, r.strasse, r.adresszusatz, `${r.plz} ${r.ort}`].filter(Boolean) as string[]) {
+  const empfaenger = r.firma
+    ? [r.firma, `z. Hd. ${r.vorname} ${r.nachname}`, r.strasse, r.adresszusatz, `${r.plz} ${r.ort}`, r.ust_id ? `USt-IdNr.: ${r.ust_id}` : null]
+    : [`${r.vorname} ${r.nachname}`, r.strasse, r.adresszusatz, `${r.plz} ${r.ort}`]
+  for (const z of empfaenger.filter(Boolean) as string[]) {
     b.text(z, { groesse: 10, zeilenabstand: 14, breite: 240 })
   }
   const linksUnten = b.y

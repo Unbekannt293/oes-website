@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { BEZUG_KEYS, BILD_MAX_BYTES, BILDER_MAX } from './bewertungen'
+import { ANLASS_KEYS, LAYOUT_IDS, layoutFehler, LOGO_MAX_BYTES } from './buchung'
 
 /**
  * Dasselbe Schema validiert im Browser und auf dem Server.
@@ -58,9 +59,33 @@ export const lieferungAnfrageSchema = lieferadresseSchema.extend({
   zeilen: z.array(korbzeileSchema).min(1).max(30),
 })
 
+/** Firmenkunde: Name fuer Rechnung, USt-IdNr. freiwillig. */
+export const firmaSchema = z.object({
+  name: z.string().trim().min(2, 'Bitte den Firmennamen angeben').max(120),
+  ustId: z.string().trim().max(20).optional(),
+})
+
+/** Veranstaltung: Anlass, bei "Sonstiges" mit eigenem Text. */
+export const veranstaltungSchema = z.object({
+  anlass: z.enum(ANLASS_KEYS, { message: 'Bitte den Anlass wählen' }),
+  anlassText: z.string().trim().max(80).optional(),
+}).refine(v => v.anlass !== 'sonstiges' || (v.anlassText?.length ?? 0) >= 2, {
+  message: 'Bitte kurz beschreiben, was gefeiert wird', path: ['anlassText'],
+})
+
 export const bestellungSchema = z.object({
   adresse: lieferadresseSchema,
   kontakt: kontaktSchema,
+  /** Privat oder Firma (Louis, 11.11.2026). Firma: Name auf der Rechnung, kein Verbraucher-Widerruf. */
+  kundenart: z.enum(['privat', 'firma']).default('privat'),
+  firma: firmaSchema.optional(),
+  veranstaltung: veranstaltungSchema,
+  /** Gewaehlte Fotolayouts, nur mit Layout-Zubehoer bzw. Paket mit Layout (Server prueft). */
+  layouts: z.array(z.enum(LAYOUT_IDS)).max(LAYOUT_IDS.length).default([]),
+  /** Logo fuer das Layout als Data-URL, Inhalt prueft der Server. */
+  logo: z.string().regex(/^data:(image\/(png|jpeg|webp|svg\+xml)|application\/pdf);base64,/).max(Math.ceil(LOGO_MAX_BYTES * 4 / 3) + 40).optional(),
+  /** Verbraucher: ausdruecklich zugestimmt, dass OES vor Ablauf der Widerrufsfrist beginnt. */
+  widerrufZustimmung: z.boolean().default(false),
   zahlungsart: z.enum(['ueberweisung', 'online']),
   /** Fotobox immer Lieferung, Soundbox allein auch Selbstabholung (Mietbedingungen § 9). */
   uebergabe: z.enum(['lieferung', 'abholung']).default('lieferung'),
@@ -68,6 +93,15 @@ export const bestellungSchema = z.object({
   kaution: z.enum(['bar', 'ueberweisung']).default('bar'),
   zeilen: z.array(korbzeileSchema).min(1).max(30),
   mietvertrag: z.literal(true, { message: 'Bitte dem Mietvertrag zustimmen' }),
+}).superRefine((b, ctx) => {
+  if (b.kundenart === 'firma' && !b.firma) ctx.addIssue({ code: 'custom', path: ['firma'], message: 'Bitte den Firmennamen angeben' })
+  if (b.kundenart === 'privat' && !b.widerrufZustimmung) {
+    ctx.addIssue({ code: 'custom', path: ['widerrufZustimmung'], message: 'Bitte der Ausführung vor Ablauf der Widerrufsfrist zustimmen' })
+  }
+  if (b.layouts.length) {
+    const f = layoutFehler(b.layouts)
+    if (f) ctx.addIssue({ code: 'custom', path: ['layouts'], message: f })
+  }
 })
 
 export type Bestellung = z.infer<typeof bestellungSchema>
@@ -78,7 +112,8 @@ export const bewertungSchema = z.object({
   name: z.string().trim().min(2, 'Bitte Ihren Namen angeben').max(60),
   sterne: z.number({ message: 'Bitte Sterne vergeben' }).int().min(1, 'Bitte Sterne vergeben').max(5),
   text: z.string().trim().min(10, 'Bitte ein paar Worte mehr').max(1000, 'Bitte höchstens 1000 Zeichen'),
-  bezug: z.enum(BEZUG_KEYS).nullable(),
+  // Seit 11.11.2026 immer ein Produkt, "OES allgemein" gibt es nicht mehr (Louis).
+  bezug: z.enum(BEZUG_KEYS, { message: 'Bitte das gemietete Produkt wählen' }),
   /** Honeypot. Ausgefuellt = Bot, der Server antwortet dann "ok" und speichert nichts. */
   website: z.string().max(200).optional(),
   /** Zeitfalle: ms seit dem Oeffnen des Formulars (server/utils/bremse.ts). */

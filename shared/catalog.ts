@@ -28,7 +28,34 @@ export const products: Product[] = [
   {
     slug: 'fotobox', name: 'Fotobox', category: 'fotobox',
     priceCents: 14900, summary: 'Unsere Fotobox mit Touchscreen, LED-Licht und Sofortdruck.',
-    features: ['Hochwertige Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder in der Online-Galerie', 'Basis-Requisiten inklusive'],
+    features: ['Canon-Kamera & LED-Licht', 'Touchscreen & einfache Bedienung', 'Sofortdruck je nach Paket', 'Digitale Bilder in der Online-Galerie', 'Basis-Requisiten inklusive'],
+    // Text von Louis ("Beschreibung fotobox,soundboks.pdf", 11.11.2026), in Sie-Form wie die ganze Seite.
+    beschreibung: {
+      titel: 'Erinnerungen, die bleiben',
+      absaetze: [
+        'Ob Hochzeit, Geburtstag, Firmenfeier oder Weihnachtsfeier – unsere Fotobox sorgt für Unterhaltung und hält die schönsten Momente Ihrer Veranstaltung fest.',
+        'Mit einer hochwertigen Canon-Kamera, einem integrierten Touchscreen und professioneller Beleuchtung entstehen tolle Erinnerungsfotos. Dank der einfachen Bedienung können Ihre Gäste selbstständig Fotos aufnehmen und direkt ausdrucken (je nach gebuchtem Paket).',
+        'Die aufgenommenen Bilder werden zusätzlich in einer persönlichen Online-Galerie gesammelt, sodass Sie und Ihre Gäste die Erinnerungen auch nach der Veranstaltung jederzeit ansehen können.',
+      ],
+      ausstattung: {
+        titel: 'Technische Ausstattung',
+        punkte: [
+          'Kamera: Canon EOS 1200D',
+          'Drucker: DNP DS-RX1',
+          'Bedienung über integrierten Touchscreen',
+          'LED-Beleuchtung für gute Lichtverhältnisse',
+          'Sofortdruck je nach gebuchtem Paket',
+          'Digitale Bildbereitstellung über eine Online-Galerie',
+        ],
+      },
+      idealFuer: [
+        'Hochzeiten und Polterabende',
+        'Geburtstage und Jubiläen',
+        'Firmenfeiern und Weihnachtsfeiern',
+        'Abschlussfeiern und Abibälle',
+        'Vereinsfeiern und private Veranstaltungen',
+      ],
+    },
     images: [
       '/images/produkte/fotobox-oes.webp',
       '/images/produkte/fotobox-studio.webp',
@@ -46,7 +73,36 @@ export const products: Product[] = [
   {
     slug: 'soundbox', name: 'Soundbox', category: 'sound',
     priceCents: 2500, priceUnit: 'pro Tag', summary: 'Akkubetriebene Partybox mit kräftigem Sound, drinnen wie draußen.',
-    features: ['Bluetooth & Klinke', 'Akkubetrieb, kein Stromanschluss nötig', 'Stativ mit weißer Husse inklusive'],
+    modell: 'SOUNDBOKS 4',
+    features: ['Bluetooth & Klinke', 'Akkubetrieb, bis zu 40 Stunden', 'Stativ mit weißer Husse inklusive'],
+    beschreibung: {
+      titel: 'Sound für Ihre Veranstaltung',
+      absaetze: [
+        'Ob Gartenparty, Geburtstag, Hochzeit oder Firmenevent – mit der SOUNDBOKS 4 sorgen Sie für kraftvollen Sound und die passende Stimmung.',
+        'Dank des Akkubetriebs sind Sie nicht auf eine Steckdose angewiesen und können die Musik flexibel dort genießen, wo Sie sie brauchen. Über Bluetooth oder Klinke lässt sich Ihre eigene Musik ganz einfach verbinden.',
+        'Die SOUNDBOKS eignet sich sowohl für Veranstaltungen im Innenbereich als auch für Partys im Freien. Das mitgelieferte Stativ und die weiße Schutzhülle sorgen für eine praktische und ansprechende Aufstellung.',
+      ],
+      ausstattung: {
+        titel: 'Ausstattung',
+        punkte: [
+          'Modell: SOUNDBOKS 4',
+          'Leistungsstarker, akkubetriebener Partylautsprecher',
+          'Bluetooth-Verbindung',
+          'Klinkenanschluss (AUX)',
+          'Kein Stromanschluss während des Betriebs erforderlich',
+          'Bis zu 40 Stunden Akkulaufzeit bei mittlerer Lautstärke',
+          'Weiße Schutzhülle inklusive',
+        ],
+      },
+      idealFuer: [
+        'Geburtstage und Gartenpartys',
+        'Hochzeiten und freie Trauungen',
+        'Grillpartys und Sommerfeste',
+        'Firmenveranstaltungen',
+        'Vereinsfeiern und private Events',
+        'Musik und Beschallung bei kleineren Veranstaltungen',
+      ],
+    },
     images: [
       '/images/produkte/soundbox-front.webp',
       '/images/produkte/soundbox-schraeg.webp',

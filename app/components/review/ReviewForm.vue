@@ -9,7 +9,7 @@ const { bezug = null } = defineProps<{ bezug?: Bezug | null }>()
 const emit = defineEmits<{ fertig: [] }>()
 const MAX_TEXT = 1000
 
-type Field = 'name' | 'sterne' | 'text' | 'einwilligung' | 'bilder'
+type Field = 'name' | 'sterne' | 'text' | 'einwilligung' | 'bilder' | 'bezug'
 
 const form = reactive({
   name: '', sterne: 0, text: '', bezug: bezug as Bezug | null,
@@ -113,9 +113,9 @@ function a11y(field: Field) {
         <input id="bw-name" v-model="form.name" class="control" type="text" autocomplete="name" placeholder="Ihr Name, z. B. Anna M." v-bind="a11y('name')">
       </UiField>
 
-      <UiField id="bw-bezug" label="Gemietetes Produkt">
-        <select id="bw-bezug" v-model="form.bezug" class="control">
-          <option :value="null">OES allgemein</option>
+      <UiField id="bw-bezug" label="Gemietetes Produkt" :error="errors.bezug">
+        <select id="bw-bezug" v-model="form.bezug" class="control" v-bind="a11y('bezug')">
+          <option :value="null" disabled>Bitte wählen</option>
           <option v-for="(label, key) in BEZUEGE" :key="key" :value="key">{{ label }}</option>
         </select>
       </UiField>

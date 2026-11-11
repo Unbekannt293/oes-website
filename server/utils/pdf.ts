@@ -74,7 +74,8 @@ export class Blatt {
 
   zeilen(text: string, schrift: PDFFont, groesse: number, breite: number) {
     const out: string[] = []
-    for (const absatz of sicher(text).split('\n')) {
+    // Erst an Umbruechen trennen, dann bereinigen: sicher() entfernt "\n".
+    for (const absatz of text.split('\n').map(sicher)) {
       let zeile = ''
       for (const wort of absatz.split(/\s+/).filter(Boolean)) {
         const probe = zeile ? `${zeile} ${wort}` : wort

@@ -15,6 +15,15 @@ export interface Product {
   priceUnit?: string
   summary: string
   features: string[]
+  /** Modellbezeichnung unter dem Namen, z. B. "SOUNDBOKS 4". */
+  modell?: string
+  /** Ausfuehrliche Beschreibung (Louis, 11.11.2026): Ueberschrift, Absaetze, Listen. */
+  beschreibung?: {
+    titel: string
+    absaetze: string[]
+    ausstattung: { titel: string, punkte: string[] }
+    idealFuer: string[]
+  }
   /** Leer, solange es kein echtes Foto gibt. */
   images: string[]
   /**
@@ -105,6 +114,8 @@ export interface CartLine {
   freeDeliveryKm: number
   /** Was diese Zeile zur Kaution beitraegt. */
   deposit?: { fotobox: boolean, soundboxes: number }
+  /** Fotobox: gewaehlte Fotolayouts (shared/buchung.ts), Logo liegt extra (useCart().logo). */
+  layouts?: string[]
 }
 
 export interface DeliveryQuote {

@@ -82,7 +82,16 @@ create table if not exists buchungen (
   -- Zahlungsfrist Ueberweisung (supabase/migrationen/2026-11-04-zahlungsfrist.sql)
   zahlung_bis              date,
   zahlungserinnerung_am    timestamptz,
-  vorgewarnt_am            timestamptz   -- Louis morgens vorgewarnt, Kunden-Mails 4 h spaeter
+  vorgewarnt_am            timestamptz,  -- Louis morgens vorgewarnt, Kunden-Mails 4 h spaeter
+  -- Angaben an der Kasse (supabase/migrationen/2026-11-11-kasse.sql)
+  kundenart                text not null default 'privat' check (kundenart in ('privat', 'firma')),
+  firma                    text,
+  ust_id                   text,
+  anlass                   text,
+  anlass_text              text,
+  layouts                  text[] not null default '{}',
+  logo_pfad                text,          -- Storage-Bucket "logos" (privat)
+  widerruf_zustimmung_am   timestamptz
 );
 
 create index if not exists buchungen_von_idx on buchungen (von);
