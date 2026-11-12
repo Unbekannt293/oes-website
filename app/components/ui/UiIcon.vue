@@ -4,7 +4,7 @@
 export type IconName =
   | 'phone' | 'mail' | 'pin' | 'instagram' | 'tiktok'
   | 'calendar' | 'check' | 'arrow' | 'alert'
-  | 'cart' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close' | 'trash' | 'minus' | 'send' | 'lock' | 'camera' | 'funke'
+  | 'cart' | 'star' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close' | 'trash' | 'minus' | 'send' | 'lock' | 'camera' | 'funke'
 
 const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
 </script>
@@ -46,6 +46,10 @@ const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
       <path d="M3 4h2.2l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2" />
       <circle cx="9.5" cy="20" r="1.2" />
       <circle cx="17" cy="20" r="1.2" />
+    </template>
+    <!-- Bewertungsstern (Lukas, 12.11.2026: Bewertungen mit normalen Sternen). -->
+    <template v-else-if="name === 'star'">
+      <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z" />
     </template>
     <template v-else-if="name === 'gem'">
       <path d="M6.5 4h11l3.5 5-9 11-9-11z" />

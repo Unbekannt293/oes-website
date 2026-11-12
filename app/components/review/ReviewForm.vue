@@ -94,7 +94,7 @@ function a11y(field: Field) {
         <div class="bf__stars" @mouseleave="hover = 0">
           <label v-for="i in 5" :key="i" class="bf__star" :class="{ 'is-on': i <= (hover || form.sterne) }" @mouseenter="hover = i">
             <input v-model="form.sterne" type="radio" name="bw-sterne" :value="i" class="bf__radio" v-bind="a11y('sterne')">
-            <UiIcon name="funke" :size="32" />
+            <UiIcon name="star" :size="30" />
             <span class="visually-hidden">{{ i }} von 5 Sternen</span>
           </label>
           <span class="bf__stars-txt muted">{{ sterneText[hover || form.sterne] }}</span>
@@ -162,9 +162,9 @@ function a11y(field: Field) {
 .bf__stars { display: flex; align-items: center; gap: 0.15rem; }
 .bf__star { position: relative; cursor: pointer; color: var(--c-gold); line-height: 0; padding: 0.15rem; transition: transform var(--d-fast) var(--e-out); }
 /* Leer als Umriss, gewaehlt gefuellt, wie in Louis' Entwurf. */
-/* Leer als Umriss, gewaehlt gefuellt (Funke aus dem Logo, ReviewStars). */
-.bf__star :deep(path) { fill: transparent; stroke: currentColor; stroke-width: 1.3; transition: fill var(--d-fast) var(--e-out); }
-.bf__star.is-on :deep(path) { fill: currentColor; }
+/* Leer als Umriss, gewaehlt gefuellt. */
+.bf__star :deep(svg) { fill: transparent; stroke-width: 1.2; transition: fill var(--d-fast) var(--e-out); }
+.bf__star.is-on :deep(svg) { fill: currentColor; }
 .bf__star:hover { transform: scale(1.08); }
 .bf__radio { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .bf__star:has(.bf__radio:focus-visible) { outline: 2px solid var(--c-gold); outline-offset: 2px; border-radius: var(--r-sm); }
