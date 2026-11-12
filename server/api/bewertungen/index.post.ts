@@ -59,5 +59,6 @@ export default defineEventHandler(async (event) => {
     // Gespeichert ist sie trotzdem, Louis findet sie im Table Editor.
     console.error('[bewertungen] Mail an OES fehlgeschlagen:', err)
   }
-  return { ok: true }
+  // Dem Formular sagen, wenn Fotos fehlen: sonst glaubt der Kunde, sie seien dabei.
+  return { ok: true, fotosFehlen: bilder.length - fotos }
 })

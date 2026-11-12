@@ -5,11 +5,9 @@ defineProps<{ title: string, sub?: string, align?: 'center' | 'start' }>()
 <template>
   <header class="head" :class="align === 'start' ? 'head--start' : 'head--center'">
     <h2 class="display head__title">{{ title }}</h2>
-    <!-- Der goldene Stern-Trenner aus den Mockups -->
+    <!-- Goldener Trenner aus den Mockups, mit dem Funken aus dem Logo. -->
     <div class="head__rule" aria-hidden="true">
-      <span /><svg viewBox="0 0 24 24" width="11" height="11"><path
-        d="M12 2l2.4 7.2H22l-6 4.5 2.3 7.3-6.3-4.6L5.7 21 8 13.7 2 9.2h7.6z"
-        fill="currentColor" /></svg><span />
+      <span /><UiIcon name="funke" :size="12" /><span />
     </div>
     <p v-if="sub" class="head__sub muted">{{ sub }}</p>
   </header>
@@ -20,7 +18,8 @@ defineProps<{ title: string, sub?: string, align?: 'center' | 'start' }>()
 .head--center { justify-items: center; text-align: center; }
 .head--start  { justify-items: start; }
 
-.head__title { font-size: var(--t-h1); }
+/* Gleiche Groesse wie jede Abschnittsueberschrift (.h-col, --t-h2). */
+.head__title { font-size: var(--t-h2); }
 
 .head__rule {
   display: flex; align-items: center; gap: var(--s-2);

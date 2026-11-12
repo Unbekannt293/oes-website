@@ -61,7 +61,7 @@ Kartenfarben automatisch. Keine eigenen `rgb(255 255 255 / x)`-Werte.
 |---|---|
 | `UiButton` | Jeder Knopf. `solid` = Hauptaktion (gold gefüllt), `outline`/`light` = Nebenaktion, `ghost` nur im Paar mit einem `solid`. Größen `sm` (in Schritten), `lg`/`xl` (Kauf, Hero). |
 | `UiField` | Jedes Formularfeld mit Label, „optional", Fehlermeldung. Eingaben haben die Klasse `.control`. |
-| `UiIcon` | Jedes Symbol. Neue Symbole hier ergänzen (24er Raster, 1.6er Linie). Schmuck-Symbol der Marke ist `funke` (der Vierzack aus dem Logo), nicht der Stern. `star` nur für Bewertungen. |
+| `UiIcon` | Jedes Symbol. Neue Symbole hier ergänzen (24er Raster, 1.6er Linie). Symbol der Marke ist `funke` (der Vierzack aus dem Logo): Schmuck, Trenner und **Bewertungen** (`ReviewStars`, auch anteilig gefüllt). Einen fünfzackigen Stern gibt es nicht mehr. |
 | `UiHinweis` | **Der** Hinweis: Balken links, zarte Fläche, Symbol. `ton="info"` (gold), `"fehler"` (rot, Formular hat nicht geklappt), `"erfolg"` (grün, „Im Warenkorb"). Knopf/Link rechts über `<template #aktion>`. |
 | `UiFehler` | Fehler zu **einem** Feld oder einer Auswahl, direkt darunter. `UiField :error` nutzt ihn selbst. |
 | `UiErfolg` | Erfolgsansicht nach dem Absenden: Haken im Kreis, Titel, Text, Knöpfe (`#aktion`). Kasse, Bewertung, Kontakt, Zahlung. |

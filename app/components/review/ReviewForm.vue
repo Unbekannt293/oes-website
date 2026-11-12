@@ -2,6 +2,7 @@
 import type { FetchError } from 'ofetch'
 import { BEZUEGE, BILDER_MAX, type Bezug } from '~~/shared/bewertungen'
 import { bewertungSchema } from '~~/shared/schemas'
+import { FIRMA } from '~~/shared/firma'
 
 // Bewertung schreiben. Aufbau wie das Kontaktformular: gleiches Schema im
 // Browser und auf dem Server, Fehler je Feld, Honeypot gegen Bots.
@@ -28,6 +29,8 @@ const hover = ref(0)
 const { ausfuellzeit } = useZeitfalle()
 const errors = reactive<Partial<Record<Field, string>>>({})
 const status = ref<'idle' | 'sending' | 'sent' | 'failed'>('idle')
+/** Fotos, die der Server nicht speichern konnte (z. B. kaputte Datei). */
+const fotosFehlen = ref(0)
 const tried = ref(false)
 
 const sterneText = ['', 'Schlecht', 'Geht so', 'In Ordnung', 'Gut', 'Hervorragend']
@@ -47,7 +50,8 @@ async function submit() {
   if (!data) return
   status.value = 'sending'
   try {
-    await $fetch('/api/bewertungen', { method: 'POST', body: { ...data, ausfuellzeit: ausfuellzeit() } })
+    const antwort = await $fetch<{ ok: boolean, fotosFehlen?: number }>('/api/bewertungen', { method: 'POST', body: { ...data, ausfuellzeit: ausfuellzeit() } })
+    fotosFehlen.value = antwort.fotosFehlen ?? 0
     status.value = 'sent'
     Object.assign(form, { name: '', sterne: 0, text: '', einwilligung: false, bilder: [] })
     tried.value = false
@@ -75,6 +79,10 @@ function a11y(field: Field) {
   <div class="bf">
     <UiErfolg v-if="status === 'sent'" titel="Vielen Dank!">
       <p>Ihre Bewertung erscheint, sobald wir sie freigeschaltet haben.</p>
+      <UiHinweis v-if="fotosFehlen" ton="fehler">
+        {{ fotosFehlen === 1 ? 'Ein Foto konnte' : `${fotosFehlen} Fotos konnten` }} leider nicht gespeichert werden.
+        Schicken Sie es uns gern per E-Mail an {{ FIRMA.email }}.
+      </UiHinweis>
       <template #aktion>
         <UiButton variant="outline" size="sm" @click="status = 'idle'; emit('fertig')">Weitere Bewertung schreiben</UiButton>
       </template>
@@ -86,7 +94,7 @@ function a11y(field: Field) {
         <div class="bf__stars" @mouseleave="hover = 0">
           <label v-for="i in 5" :key="i" class="bf__star" :class="{ 'is-on': i <= (hover || form.sterne) }" @mouseenter="hover = i">
             <input v-model="form.sterne" type="radio" name="bw-sterne" :value="i" class="bf__radio" v-bind="a11y('sterne')">
-            <UiIcon name="star" :size="30" />
+            <UiIcon name="funke" :size="32" />
             <span class="visually-hidden">{{ i }} von 5 Sternen</span>
           </label>
           <span class="bf__stars-txt muted">{{ sterneText[hover || form.sterne] }}</span>
@@ -154,8 +162,9 @@ function a11y(field: Field) {
 .bf__stars { display: flex; align-items: center; gap: 0.15rem; }
 .bf__star { position: relative; cursor: pointer; color: var(--c-gold); line-height: 0; padding: 0.15rem; transition: transform var(--d-fast) var(--e-out); }
 /* Leer als Umriss, gewaehlt gefuellt, wie in Louis' Entwurf. */
-.bf__star :deep(svg) { fill: transparent; stroke-width: 1.2; transition: fill var(--d-fast) var(--e-out); }
-.bf__star.is-on :deep(svg) { fill: currentColor; }
+/* Leer als Umriss, gewaehlt gefuellt (Funke aus dem Logo, ReviewStars). */
+.bf__star :deep(path) { fill: transparent; stroke: currentColor; stroke-width: 1.3; transition: fill var(--d-fast) var(--e-out); }
+.bf__star.is-on :deep(path) { fill: currentColor; }
 .bf__star:hover { transform: scale(1.08); }
 .bf__radio { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .bf__star:has(.bf__radio:focus-visible) { outline: 2px solid var(--c-gold); outline-offset: 2px; border-radius: var(--r-sm); }

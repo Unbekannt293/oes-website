@@ -4,7 +4,7 @@
 export type IconName =
   | 'phone' | 'mail' | 'pin' | 'instagram' | 'tiktok'
   | 'calendar' | 'check' | 'arrow' | 'alert'
-  | 'cart' | 'star' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close' | 'trash' | 'minus' | 'send' | 'lock' | 'camera' | 'funke'
+  | 'cart' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close' | 'trash' | 'minus' | 'send' | 'lock' | 'camera' | 'funke'
 
 const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
 </script>
@@ -47,9 +47,6 @@ const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
       <circle cx="9.5" cy="20" r="1.2" />
       <circle cx="17" cy="20" r="1.2" />
     </template>
-    <template v-else-if="name === 'star'">
-      <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z" />
-    </template>
     <template v-else-if="name === 'gem'">
       <path d="M6.5 4h11l3.5 5-9 11-9-11z" />
       <path d="M3 9h18M9.5 4 8 9l4 11 4-11-1.5-5" />
@@ -85,9 +82,10 @@ const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
       <rect x="5" y="10.5" width="14" height="10" rx="1.5" />
       <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
     </template>
-    <!-- Der vierzackige Funke aus dem OES-Logo, gefuellt. -->
+    <!-- Der vierzackige Funke aus dem OES-Logo, gefuellt. Als Umriss (z. B.
+         leere Bewertung): per CSS path { fill: none; stroke: currentColor }. -->
     <template v-else-if="name === 'funke'">
-      <path d="M50 0C53 35 65 47 100 50 65 53 53 65 50 100 47 65 35 53 0 50 35 47 47 35 50 0Z" transform="scale(0.24)" fill="currentColor" stroke="none" />
+      <path d="M50 0C53 35 65 47 100 50 65 53 53 65 50 100 47 65 35 53 0 50 35 47 47 35 50 0Z" transform="translate(0.6 0.6) scale(0.228)" fill="currentColor" stroke="none" vector-effect="non-scaling-stroke" />
     </template>
     <template v-else-if="name === 'camera'">
       <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z" />
