@@ -59,7 +59,8 @@ const weitere = computed(() => liste.value.length - karten.value.length)
       <span>+ {{ weitere === 1 ? '1 weitere Bewertung' : `${weitere} weitere Bewertungen` }}</span>
       <span class="rsec__more-link">Alle anzeigen <UiIcon name="arrow" :size="12" /></span>
     </button>
-    <p v-else class="rsec__empty muted">
+    <!-- Nur wenn es gar keine gibt (nicht: keine weiteren ueber die Karten hinaus). -->
+    <p v-if="!liste.length" class="rsec__empty muted">
       Hier steht noch keine Bewertung. Wir freuen uns, wenn Sie die erste schreiben.
     </p>
   </section>
