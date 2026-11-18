@@ -9,7 +9,7 @@ interface LinkItem {
   label: string
   meta: string
   href?: string
-  icon: 'globe' | 'tag' | 'instagram' | 'tiktok'
+  icon: 'globe' | 'tag' | 'instagram' | 'tiktok' | 'google'
   soon?: boolean
 }
 
@@ -23,10 +23,9 @@ const links: LinkItem[] = [
   // Verkäuferprofils umstellen - die bleibt stabil.
   { label: 'Kleinanzeigen', meta: 'Unsere Angebote',        icon: 'tag',
     href: 'https://www.kleinanzeigen.de/s-anzeige/fotobox-fotoautomat-mieten-hamburg-umgebung/3505837332-168-26507' },
-  { label: 'Instagram',     meta: 'Eindrücke & Aktionen',  icon: 'instagram',
-    href: 'https://www.instagram.com/ottoseventservice' },
-  { label: 'TikTok',        meta: 'Videos von Events',      icon: 'tiktok',
-    href: 'https://www.tiktok.com/@ottos.event.servi' },
+  { label: 'Instagram',     meta: 'Eindrücke & Aktionen',  icon: 'instagram', href: contact.social.instagram },
+  { label: 'TikTok',        meta: 'Videos von Events',      icon: 'tiktok', href: contact.social.tiktok },
+  { label: 'Google',        meta: 'Bewertungen & Profil',   icon: 'google', href: contact.social.google },
 ]
 
 useSeoMeta({
@@ -68,27 +67,7 @@ useSeoMeta({
               class="row" :class="{ 'row--soon': l.soon }"
             >
               <span class="badge" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-                     stroke="currentColor" stroke-width="1.6"
-                     stroke-linecap="round" stroke-linejoin="round">
-                  <template v-if="l.icon === 'globe'">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" />
-                  </template>
-                  <template v-else-if="l.icon === 'tag'">
-                    <path d="M3 11V4a1 1 0 0 1 1-1h7l9 9-8 8z" />
-                    <circle cx="7.5" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
-                  </template>
-                  <template v-else-if="l.icon === 'instagram'">
-                    <rect x="3" y="3" width="18" height="18" rx="5" />
-                    <circle cx="12" cy="12" r="4" />
-                    <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none" />
-                  </template>
-                  <template v-else>
-                    <path d="M14 4v9.5a3.5 3.5 0 1 1-3-3.46" />
-                    <path d="M14 4c.4 2.2 2 3.7 4.5 3.9" />
-                  </template>
-                </svg>
+                <UiIcon :name="l.icon" :size="18" />
               </span>
 
               <span class="row__text">

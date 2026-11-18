@@ -4,6 +4,8 @@ import { BEZUEGE, BILDER_MAX, type Bezug } from '~~/shared/bewertungen'
 import { bewertungSchema } from '~~/shared/schemas'
 import { FIRMA } from '~~/shared/firma'
 
+const contact = useContact()
+
 // Bewertung schreiben. Aufbau wie das Kontaktformular: gleiches Schema im
 // Browser und auf dem Server, Fehler je Feld, Honeypot gegen Bots.
 const { bezug = null } = defineProps<{ bezug?: Bezug | null }>()
@@ -83,7 +85,11 @@ function a11y(field: Field) {
         {{ fotosFehlen === 1 ? 'Ein Foto konnte' : `${fotosFehlen} Fotos konnten` }} leider nicht gespeichert werden.
         Schicken Sie es uns gern per E-Mail an {{ FIRMA.email }}.
       </UiHinweis>
+      <p>Sie würden uns sehr helfen, wenn Sie Ihre Bewertung auch auf Google teilen.</p>
       <template #aktion>
+        <UiButton :to="contact.googleBewerten" target="_blank" rel="noopener" variant="solid" size="sm">
+          <UiIcon name="google" :size="16" /> Auch auf Google bewerten
+        </UiButton>
         <UiButton variant="outline" size="sm" @click="status = 'idle'; emit('fertig')">Weitere Bewertung schreiben</UiButton>
       </template>
     </UiErfolg>

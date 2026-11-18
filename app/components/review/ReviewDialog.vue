@@ -7,6 +7,7 @@ import { formatSchnitt, THEMEN, type Thema, zusammenfassung } from '~~/shared/be
 // untereinander, das Formular zuerst, wenn man ueber "Schreiben" kommt.
 const { zustand } = useBewertungDialog()
 const { zumThema } = useBewertungen()
+const contact = useContact()
 const dlg = ref<{ oeffnen: () => void, schliessen: () => void } | null>(null)
 const schreibBereich = ref<HTMLElement | null>(null)
 const istOffen = ref(false)
@@ -81,7 +82,10 @@ function zu() {
 
       <section ref="schreibBereich" class="rd__write" aria-labelledby="rd-write-h">
         <h3 id="rd-write-h" class="display rd__h rd__h--sm">Eigene Bewertung schreiben</h3>
-        <p class="muted rd__write-sub">Teilen Sie Ihre Erfahrung mit OES.</p>
+        <p class="muted rd__write-sub">
+          Teilen Sie Ihre Erfahrung mit OES, hier oder
+          <a :href="contact.googleBewerten" target="_blank" rel="noopener" class="rd__google">auf Google</a>.
+        </p>
         <ReviewForm :bezug="zustand.bezug" />
       </section>
     </div>
@@ -123,6 +127,8 @@ function zu() {
   background: var(--c-gold-tint); border-radius: var(--r-md);
   max-height: 100%; overflow-y: auto; overscroll-behavior: contain;
 }
+.rd__google { color: var(--c-text); text-decoration: underline; text-underline-offset: 2px; }
+.rd__google:hover { color: var(--c-gold); }
 .rd__write-sub { font-size: var(--t-small); margin: var(--s-1) 0 var(--s-5); }
 
 /* Handy: untereinander, das ganze Popup scrollt. */

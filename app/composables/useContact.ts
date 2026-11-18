@@ -20,7 +20,11 @@ export function useContact() {
     social: {
       instagram: 'https://www.instagram.com/ottoseventservice',
       tiktok: 'https://www.tiktok.com/@ottos.event.servi',
+      /** Google-Unternehmensprofil (Louis, 18.11.2026), Link aus "Teilen". */
+      google: 'https://share.google/D0uuC0P1Ps1snLqS8',
     },
+    /** Direkt zum Bewerten auf Google (Profil -> "Um Rezensionen bitten"). */
+    googleBewerten: 'https://g.page/r/CXLB7IqhF8NGEBM/review',
     /** Ladungsfaehige Anschrift fuers Impressum, aus shared/firma.ts (Louis' Unterlagen, 04.11.2026). */
     legal: {
       name: FIRMA.inhaber,

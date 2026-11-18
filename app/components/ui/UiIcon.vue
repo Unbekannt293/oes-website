@@ -4,7 +4,7 @@
 export type IconName =
   | 'phone' | 'mail' | 'pin' | 'instagram' | 'tiktok'
   | 'calendar' | 'check' | 'arrow' | 'alert'
-  | 'cart' | 'star' | 'gem' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close' | 'trash' | 'minus' | 'send' | 'lock' | 'camera' | 'funke'
+  | 'cart' | 'star' | 'gem' | 'google' | 'globe' | 'tag' | 'crown' | 'trophy' | 'puzzle' | 'chat' | 'info' | 'close' | 'trash' | 'minus' | 'send' | 'lock' | 'camera' | 'funke'
 
 const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
 </script>
@@ -46,6 +46,19 @@ const { name, size = 20 } = defineProps<{ name: IconName, size?: number }>()
       <path d="M3 4h2.2l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2" />
       <circle cx="9.5" cy="20" r="1.2" />
       <circle cx="17" cy="20" r="1.2" />
+    </template>
+    <!-- Google als schlichtes G in der Linienart des Satzes (Link zum Profil). -->
+    <template v-else-if="name === 'google'">
+      <path d="M20 12a8 8 0 1 1-2.35-5.65" />
+      <path d="M20.5 12H12.5" />
+    </template>
+    <template v-else-if="name === 'globe'">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" />
+    </template>
+    <template v-else-if="name === 'tag'">
+      <path d="M3 11V4a1 1 0 0 1 1-1h7l9 9-8 8z" />
+      <circle cx="7.5" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
     </template>
     <!-- Bewertungsstern (Lukas, 12.11.2026: Bewertungen mit normalen Sternen). -->
     <template v-else-if="name === 'star'">

@@ -88,6 +88,9 @@ useSeoMeta({
               <a :href="contact.social.tiktok" target="_blank" rel="noopener" class="kt__soc">
                 <UiIcon name="tiktok" :size="18" /> TikTok
               </a>
+              <a :href="contact.social.google" target="_blank" rel="noopener" class="kt__soc">
+                <UiIcon name="google" :size="18" /> Google
+              </a>
             </div>
           </div>
         </aside>

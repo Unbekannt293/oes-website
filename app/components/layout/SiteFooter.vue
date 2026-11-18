@@ -57,6 +57,9 @@ const year = new Date().getFullYear()
         <a :href="contact.social.tiktok" target="_blank" rel="noopener">
           <UiIcon name="tiktok" :size="16" /> TikTok
         </a>
+        <a :href="contact.social.google" target="_blank" rel="noopener">
+          <UiIcon name="google" :size="16" /> Google
+        </a>
       </p>
     </div>
   </footer>
@@ -85,7 +88,7 @@ const year = new Date().getFullYear()
   border-top: 1px solid var(--c-gold-hair);
   font-size: var(--t-small);
 }
-.ftr__social { display: flex; gap: var(--s-5); }
+.ftr__social { display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-5); }
 .ftr__social a { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--c-text-muted); }
 .ftr__social a:hover { color: var(--c-gold); }
 </style>

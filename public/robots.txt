@@ -1,2 +1,8 @@
 User-Agent: *
-Disallow:
+Disallow: /admin
+Disallow: /kasse
+Disallow: /warenkorb
+Disallow: /bestellung
+Disallow: /bewertungen/freigabe
+
+Sitemap: https://ottos-eventservice.de/sitemap.xml
